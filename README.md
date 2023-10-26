@@ -18,61 +18,29 @@ KuPass is an open source password manager application.
 * With KuPass, you can forget about the problem of forgotten passwords.
 * Your personal data is secure and well encrypted.
 
-## Screenshot
+# Screenshot
 ### Light mode
 <p align="center">
-	<table width="100">
-		<tr>
-			<td align="center">
-				<img src="https://github.com/achmaddaniel24/kupass/blob/master/image/light_home.jpg?raw=true">
-			</td>
-			<td align="center">
-				<img src="https://github.com/achmaddaniel24/kupass/blob/master/image/light_settings.jpg?raw=true">
-			</td>
-			<td align="center">
-				<img src="https://github.com/achmaddaniel24/kupass/blob/master/image/light_password.jpg?raw=true">
-			</td>
-			<td align="center">
-				<img src="https://github.com/achmaddaniel24/kupass/blob/master/image/light_export.jpg?raw=true">
-			</td>
-			<td align="center">
-				<img src="https://github.com/achmaddaniel24/kupass/blob/master/image/light_theme.jpg?raw=true">
-			</td>
-			<td align="center">
-				<img src="https://github.com/achmaddaniel24/kupass/blob/master/image/light_lang.jpg?raw=true">
-			</td>
-		</tr>
-	</table>
+	<img src="https://github.com/achmaddaniel24/kupass/blob/master/image/light_home.jpg?raw=true" width="30%">
+	<img src="https://github.com/achmaddaniel24/kupass/blob/master/image/light_settings.jpg?raw=true" width="30%">
+	<img src="https://github.com/achmaddaniel24/kupass/blob/master/image/light_password.jpg?raw=true" width="30%">
+	<img src="https://github.com/achmaddaniel24/kupass/blob/master/image/light_export.jpg?raw=true" width="30%">
+	<img src="https://github.com/achmaddaniel24/kupass/blob/master/image/light_theme.jpg?raw=true" width="30%">
+	<img src="https://github.com/achmaddaniel24/kupass/blob/master/image/light_lang.jpg?raw=true" width="30%">
 </p>
 
 ### Dark mode
 <p align="center">
-	<table width="100">
-		<tr>
-			<td align="center">
-				<img src="https://github.com/achmaddaniel24/kupass/blob/master/image/dark_home.jpg?raw=true">
-			</td>
-			<td align="center">
-				<img src="https://github.com/achmaddaniel24/kupass/blob/master/image/dark_settings.jpg?raw=true">
-			</td>
-			<td align="center">
-				<img src="https://github.com/achmaddaniel24/kupass/blob/master/image/dark_password.jpg?raw=true">
-			</td>
-			<td align="center">
-				<img src="https://github.com/achmaddaniel24/kupass/blob/master/image/dark_export.jpg?raw=true">
-			</td>
-			<td align="center">
-				<img src="https://github.com/achmaddaniel24/kupass/blob/master/image/dark_theme.jpg?raw=true">
-			</td>
-			<td align="center">
-				<img src="https://github.com/achmaddaniel24/kupass/blob/master/image/dark_lang.jpg?raw=true">
-			</td>
-		</tr>
-	</table>
+	<img src="https://github.com/achmaddaniel24/kupass/blob/master/image/dark_home.jpg?raw=true" width="30%">
+	<img src="https://github.com/achmaddaniel24/kupass/blob/master/image/dark_settings.jpg?raw=true" width="30%">
+	<img src="https://github.com/achmaddaniel24/kupass/blob/master/image/dark_password.jpg?raw=true" width="30%">
+	<img src="https://github.com/achmaddaniel24/kupass/blob/master/image/dark_export.jpg?raw=true" width="30%">
+	<img src="https://github.com/achmaddaniel24/kupass/blob/master/image/dark_theme.jpg?raw=true" width="30%">
+	<img src="https://github.com/achmaddaniel24/kupass/blob/master/image/dark_lang.jpg?raw=true" width="30%">
 </p>
 
 ## Download
-Download [here.](https://github.com/achmaddaniel24/kupass/releases/download/v1.0.0/app-release.apk)
+DOWNLOAD [HERE.](https://github.com/achmaddaniel24/kupass/releases/download/v1.0.0/app-release.apk)
 
 ## License
-See [LICENSE.](LICENSE)
+SEE [LICENSE.](LICENSE)
