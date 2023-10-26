@@ -1,0 +1,41 @@
+plugins {
+	id 'com.android.application'
+}
+
+android {
+	namespace 'com.achmaddaniel.kupass'
+	compileSdk 33
+	
+	defaultConfig {
+		applicationId "com.achmaddaniel.kupass"
+		minSdk 23
+		targetSdk 33
+		versionCode 1
+		versionName "1.0"
+		multiDexEnabled true
+	}
+	
+	buildTypes {
+		release {
+			minifyEnabled false
+			proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+		}
+	}
+	
+	compileOptions {
+		sourceCompatibility JavaVersion.VERSION_1_8
+		targetCompatibility JavaVersion.VERSION_1_8
+	}
+}
+
+dependencies {
+	implementation 'androidx.appcompat:appcompat:1.7.0-alpha01'
+	implementation 'androidx.constraintlayout:constraintlayout:2.2.0-alpha11'
+	implementation 'com.google.android.material:material:1.9.0'
+	implementation 'com.google.code.gson:gson:2.10.1'
+	
+	// Not Support in CodeAssist
+	// implementation 'com.opencsv:opencsv:5.8'
+	// implementation 'org.apache.poi:poi:5.2.4'
+	// implementation 'org.apache.poi:poi-ooxml:5.2.4'
+}

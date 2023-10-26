@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="app_name">KuPass</string>
+	<string name="settings">Settings</string>
+	<string name="search_hint">Search passwords</string>
+	
+	<string name="toast_no_data">There is no password to save</string>
+	<string name="toast_success">Password created</string>
+	<string name="toast_success_delete">Success delete</string>
+	<string name="toast_success_update">Success update</string>
+	<string name="toast_success_export">Success export</string>
+	<string name="toast_failed_export">Failed export</string>
+	
+	<string name="dialog_title_create">Create new password</string>
+	<string name="dialog_title_edit">Edit password</string>
+	<string name="dialog_title_export">Export password</string>
+	<string name="dialog_title_delete">Delete password</string>
+	<string name="dialog_title_permission">Permission</string>
+	<string name="dialog_title_theme">Change theme</string>
+	<string name="dialog_title_language">Change language</string>
+	<string name="dialog_message_language">We need to restart app for change language</string>
+	<string name="dialog_message_delete">Are you sure to delete this password?</string>
+	<string name="dialog_message_permission">We need permission to access write files</string>
+	<string name="dialog_create">CREATE</string>
+	<string name="dialog_cancel">CANCEL</string>
+	<string name="dialog_delete">DELETE</string>
+	<string name="dialog_export">EXPORT</string>
+	<string name="dialog_restart">RESTART</string>
+	<string name="dialog_apply">APPLY</string>
+	<string name="dialog_save">SAVE</string>
+	<string name="dialog_request">REQUEST</string>
+	<string name="dialog_password_name_hint">Enter password name</string>
+	<string name="dialog_username_hint">Enter username</string>
+	<string name="dialog_password_hint">Enter password</string>
+	<string name="dialog_note_hint">Enter note (for site)</string>
+	<string name="dialog_export_method_hint">Select export type</string>
+	
+</resources>

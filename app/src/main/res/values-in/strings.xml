@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="app_name">KuPass</string>
+	<string name="settings">Pengaturan</string>
+	<string name="search_hint">Cari password</string>
+	
+	<string name="toast_no_data">Tidak ada password untuk disimpan</string>
+	<string name="toast_success">Password berhasil dibuat</string>
+	<string name="toast_success_delete">Sukses menghapus</string>
+	<string name="toast_success_update">Sukses memperbarui</string>
+	<string name="toast_success_export">Sukses ekspor</string>
+	<string name="toast_failed_export">Gagal ekspor</string>
+	
+	<string name="dialog_title_create">Buat password baru</string>
+	<string name="dialog_title_edit">Edit password</string>
+	<string name="dialog_title_export">Ekspor password</string>
+	<string name="dialog_title_delete">Hapus password</string>
+	<string name="dialog_title_permission">Izin aplikasi</string>
+	<string name="dialog_title_theme">Ganti tema</string>
+	<string name="dialog_title_language">Ganti bahasa</string>
+	<string name="dialog_message_language">Kita butuh memulai ulang aplikasi untuk mengganti bahasa</string>
+	<string name="dialog_message_delete">Apakah anda yakin untuk menghapus password ini?</string>
+	<string name="dialog_message_permission">Kita memerlukan akses untuk menulis files</string>
+	<string name="dialog_create">BUAT</string>
+	<string name="dialog_cancel">BATAL</string>
+	<string name="dialog_delete">HAPUS</string>
+	<string name="dialog_export">EKSPOR</string>
+	<string name="dialog_restart">MULAI ULANG</string>
+	<string name="dialog_apply">TERAPKAN</string>
+	<string name="dialog_save">SIMPAN</string>
+	<string name="dialog_request">MINTA</string>
+	<string name="dialog_password_name_hint">Masukan nama password</string>
+	<string name="dialog_username_hint">Masukan username</string>
+	<string name="dialog_password_hint">Masukan password</string>
+	<string name="dialog_note_hint">Masukan catatan (untuk situs)</string>
+	<string name="dialog_export_method_hint">Pilih tipe ekspor</string>
+	
+</resources>

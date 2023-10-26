@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string-array name="export_method_list">
+	<!--<item>CSV</item> -->
+		<item>JSON</item>
+		<item>TEXT</item>
+	<!--<item>XLSX</item>-->
+	</string-array>
+	<string-array name="settings_item_title">
+		<item>Penampilan</item>
+		<item>Bahasa</item>
+		<item>Tentang</item>
+	</string-array>
+	<string-array name="settings_item_subtitle">
+		<item>Ganti tema</item>
+		<item>Ganti bahasa</item>
+		<item>Tentang pembuat</item>
+	</string-array>
+	<string-array name="theme_list">
+		<item>Bawaan sistem</item>
+		<item>Terang</item>
+		<item>Gelap</item>
+	</string-array>
+	<string-array name="language_list">
+		<item>Inggris</item>
+		<item>Indonesia</item>
+	</string-array>
+</resources>
