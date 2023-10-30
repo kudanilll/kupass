@@ -32,10 +32,6 @@ public class ScoopedStorage {
 	public static final int REQUEST_ACTION_CODE = 101;
 	public static final int REQUEST_ACTION_XLSX = 102;
 	
-	/** Not Support in CodeAssist
-	private static ActivityResultLauncher<Intent> mCreateDocumentLauncher;
-	**/
-	
 	private static Activity mActivity;
 	private static Context mContext;
 	private static String mContent;
@@ -47,13 +43,6 @@ public class ScoopedStorage {
 		mActivity = activity;
 		mContext  = context;
 	}
-	
-	/** Not Support in CodeAssist
-	public static void setCallback(ActivityResultCallback<Uri> callback) {
-		mCreateDocumentLauncher = mActivity.registerForActivityResult(
-			new ActivityResultContracts.CreateDocument(), callback);
-	}
-	**/
 	
 	public static void createFile(String content, int extension) {
 		mContent = content;
