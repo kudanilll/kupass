@@ -1,8 +1,5 @@
 package com.achmaddaniel.kupass.core;
 
-import androidx.activity.result.ActivityResultCallback;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.documentfile.provider.DocumentFile;
 
 import android.app.Activity;
@@ -58,14 +55,6 @@ public class ScoopedStorage {
 		
 		SimpleDateFormat formatter = new SimpleDateFormat("ddMMyyyyHHmmss");
 		String filename = "kupass_backup_" + formatter.format(new Date()) + extensionString;
-		
-		/** Not Support in CodeAssist
-		Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
-		mCreateDocumentLauncher.addCategory(Intent.CATEGORY_OPENABLE);
-		mCreateDocumentLauncher.setType("text/plain");
-		mCreateDocumentLauncher.putExtra(Intent.EXTRA_TITLE, filename);
-		mCreateDocumentLauncher.launch(intent);
-		**/
 		
 		// Deprecated code :(
 		Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
