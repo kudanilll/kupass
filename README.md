@@ -33,6 +33,10 @@ KuPass is an open source password manager application.
 	<img src="https://github.com/achmaddaniel24/kupass/blob/master/image/dark_password.jpg?raw=true" width="30%">
 </p>
 
+## What's new?
+- Update UI/UX
+- Import feature
+
 ## Download
 [Release Version 2.0](https://github.com/achmaddaniel24/kupass/releases/download/v2.0.0/app-release-sign.apk)
 
