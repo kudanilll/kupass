@@ -1,38 +1,109 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+	<!-- General -->
 	<string name="app_name">KuPass</string>
-	<string name="settings">Pengaturan</string>
-	<string name="search_hint">Cari password</string>
+	<string name="home">Beranda</string>
+	<string name="accessibility">Aksesibilitas</string>
+	<string name="password_page">Buat kata sandi baru</string>
+	<string name="edit_password_page">Edit kata sandi</string>
+	<string name="search_hint">Cari kata sandi</string>
 	
-	<string name="toast_no_data">Tidak ada password untuk disimpan</string>
-	<string name="toast_success">Password berhasil dibuat</string>
+	<!-- FAB -->
+	<string name="fab_open">Tambah</string>
+	<string name="fab_close">Tutup</string>
+	
+	<!-- Shortcut -->
+	<string name="shortcut_feature_disabled">Fitur pintasan dinonaktifkan</string>
+	<string name="shortcut_label">Tambah sandi baru</string>
+	
+	<!-- Language -->
+	<string name="lang_default">Bawaan sistem</string>
+	<string name="lang_en">Inggris</string>
+	<string name="lang_in">Indonesia</string>
+	
+	<!-- Theme -->
+	<string name="theme_default">Bawaan sistem</string>
+	<string name="theme_light">Terang</string>
+	<string name="theme_dark">Gelap</string>
+	
+	<!-- Settings -->
+	<string name="settings">Pengaturan</string>
+	<string name="settings_category_general">Umum</string>
+	<string name="settings_category_appearance">Tampilan</string>
+	<string name="settings_category_developer">Tentang</string>
+	<string name="settings_language_title">Bahasa</string>
+	<string name="settings_import_title">Impor</string>
+	<string name="settings_export_title">Ekspor</string>
+	<string name="settings_theme_title">Tema</string>
+	<string name="settings_version_title">Versi KuPass</string>
+	<string name="settings_license_title">Lisensi</string>
+	<string name="settings_about_title">Pengembang</string>
+	<string name="settings_contributor_title">Penyumbang</string>
+	<string name="settings_license_summary">Lisensi aplikasi pihak ketiga</string>
+	
+	<!-- Toast -->
+	<string name="toast_no_data">Tidak ada kata sandi untuk disimpan</string>
+	<string name="toast_success">Kata sandi berhasil dibuat</string>
 	<string name="toast_success_delete">Sukses menghapus</string>
 	<string name="toast_success_update">Sukses memperbarui</string>
 	<string name="toast_success_export">Sukses ekspor</string>
+	<string name="toast_success_import">Berhasil impor dari file</string>
 	<string name="toast_failed_export">Gagal ekspor</string>
+	<string name="toast_failed_import">Terjadi kesalahan saat membaca file JSON</string>
 	
-	<string name="dialog_title_create">Buat password baru</string>
-	<string name="dialog_title_edit">Edit password</string>
-	<string name="dialog_title_export">Ekspor password</string>
-	<string name="dialog_title_delete">Hapus password</string>
+	<!-- Error -->
+	<string name="error_column_is_empty">Kolom ini wajib diisi</string>
+	
+	<!-- Dialog -->
+	<string name="dialog_title_export">Ekspor kata sandi sebagai</string>
+	<string name="dialog_title_import">Impor kata sandi dari</string>
+	<string name="dialog_title_delete">Hapus kata sandi</string>
 	<string name="dialog_title_permission">Izin aplikasi</string>
-	<string name="dialog_title_theme">Ganti tema</string>
-	<string name="dialog_title_language">Ganti bahasa</string>
 	<string name="dialog_message_language">Kita butuh memulai ulang aplikasi untuk mengganti bahasa</string>
-	<string name="dialog_message_delete">Apakah anda yakin untuk menghapus password ini?</string>
+	<string name="dialog_message_delete">Apakah anda yakin untuk menghapus kata sandi ini?</string>
 	<string name="dialog_message_permission">Kita memerlukan akses untuk menulis files</string>
-	<string name="dialog_create">BUAT</string>
 	<string name="dialog_cancel">BATAL</string>
 	<string name="dialog_delete">HAPUS</string>
 	<string name="dialog_export">EKSPOR</string>
+	<string name="dialog_import">IMPOR</string>
 	<string name="dialog_restart">MULAI ULANG</string>
-	<string name="dialog_apply">TERAPKAN</string>
 	<string name="dialog_save">SIMPAN</string>
 	<string name="dialog_request">MINTA</string>
-	<string name="dialog_password_name_hint">Masukan nama password</string>
-	<string name="dialog_username_hint">Masukan username</string>
-	<string name="dialog_password_hint">Masukan password</string>
-	<string name="dialog_note_hint">Masukan catatan (untuk situs)</string>
-	<string name="dialog_export_method_hint">Pilih tipe ekspor</string>
 	
+	<!-- Hint -->
+	<string name="site_or_app_hint">Masukan situs atau aplikasi</string>
+	<string name="username_hint">Masukan username</string>
+	<string name="password_hint">Masukan password</string>
+	<string name="note_hint">Masukan catatan</string>
+	
+	<!-- Array -->
+	<string-array name="export_method_list">
+		<!--<item>CSV</item>-->
+		<item>JSON</item>
+		<item>TEXT</item>
+	</string-array>
+	<string-array name="import_method_list">
+		<item>CSV</item>
+		<item>JSON</item>
+	</string-array>
+	<string-array name="language_values">
+		<item>default</item>
+		<item>en</item>
+		<item>in</item>
+	</string-array>
+	<string-array name="language_list">
+		<item>@string/lang_default</item>
+		<item>@string/lang_en</item>
+		<item>@string/lang_in</item>
+	</string-array>
+	<string-array name="theme_values">
+		<item>default</item>
+		<item>light</item>
+		<item>dark</item>
+	</string-array>
+	<string-array name="theme_list">
+		<item>@string/theme_default</item>
+		<item>@string/theme_light</item>
+		<item>@string/theme_dark</item>
+	</string-array>
 </resources>

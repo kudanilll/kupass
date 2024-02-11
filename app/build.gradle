@@ -1,41 +1,55 @@
 plugins {
 	id 'com.android.application'
+	id 'com.google.android.gms.oss-licenses-plugin'
 }
 
 android {
 	namespace 'com.achmaddaniel.kupass'
-	compileSdk 33
+	compileSdk 34
+	buildToolsVersion "34.0.0"
 	
 	defaultConfig {
 		applicationId "com.achmaddaniel.kupass"
-		minSdk 23
-		targetSdk 33
-		versionCode 1
-		versionName "1.0"
-		multiDexEnabled true
+		minSdk 26
+		targetSdk 34
+		versionCode 2
+		versionName "2.0.0"
 	}
 	
 	buildTypes {
+		debug {
+			buildConfigField "String", "GIT_URL", "\"http://github.com/achmaddaniel24/kupass/tree/master\""
+			buildConfigField "String", "DEV_URL", "\"http://linktr.ee/achmaddaniel\""
+			buildConfigField "String", "DEV_NAME", "\"Achmad Daniel Syahputra\""
+		}
 		release {
+			buildConfigField "String", "GIT_URL", "\"http://github.com/achmaddaniel24/kupass/tree/master\""
+			buildConfigField "String", "DEV_URL", "\"http://linktr.ee/achmaddaniel\""
+			buildConfigField "String", "DEV_NAME", "\"Achmad Daniel Syahputra\""
+			
 			minifyEnabled false
 			proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
 		}
 	}
 	
 	compileOptions {
-		sourceCompatibility JavaVersion.VERSION_1_8
-		targetCompatibility JavaVersion.VERSION_1_8
+		sourceCompatibility JavaVersion.VERSION_17
+		targetCompatibility JavaVersion.VERSION_17
+	}
+	
+	buildFeatures {
+		viewBinding true
+		buildConfig true
 	}
 }
 
 dependencies {
-	implementation 'androidx.appcompat:appcompat:1.7.0-alpha01'
-	implementation 'androidx.constraintlayout:constraintlayout:2.2.0-alpha11'
-	implementation 'com.google.android.material:material:1.9.0'
+	implementation 'androidx.appcompat:appcompat:1.6.1'
+	implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+	implementation 'androidx.preference:preference:1.2.1'
+	implementation 'androidx.recyclerview:recyclerview:1.3.2'
+	implementation 'com.google.android.gms:play-services-oss-licenses:17.0.1'
+	implementation 'com.google.android.material:material:1.10.0'
 	implementation 'com.google.code.gson:gson:2.10.1'
-	
-	// Not Support in CodeAssist
-	// implementation 'com.opencsv:opencsv:5.8'
-	// implementation 'org.apache.poi:poi:5.2.4'
-	// implementation 'org.apache.poi:poi-ooxml:5.2.4'
+	//implementation 'com.opencsv:opencsv:5.8'
 }

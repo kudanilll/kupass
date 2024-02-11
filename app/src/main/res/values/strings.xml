@@ -1,38 +1,109 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+	<!-- General -->
 	<string name="app_name">KuPass</string>
-	<string name="settings">Settings</string>
-	<string name="search_hint">Search passwords</string>
+	<string name="home">Home</string>
+	<string name="accessibility">Accessibility</string>
+	<string name="password_page">Create new password</string>
+	<string name="edit_password_page">Edit password</string>
+	<string name="search_hint">Search password</string>
 	
+	<!-- FAB -->
+	<string name="fab_open">Create</string>
+	<string name="fab_close">Close</string>
+	
+	<!-- Shortcut -->
+	<string name="shortcut_feature_disabled">Shortcut feature disabled</string>
+	<string name="shortcut_label">Add new password</string>
+	
+	<!-- Language -->
+	<string name="lang_default">System default</string>
+	<string name="lang_en">English</string>
+	<string name="lang_in">Indonesian</string>
+	
+	<!-- Theme -->
+	<string name="theme_default">System default</string>
+	<string name="theme_light">Light</string>
+	<string name="theme_dark">Dark</string>
+	
+	<!-- Settings -->
+	<string name="settings">Settings</string>
+	<string name="settings_category_general">General</string>
+	<string name="settings_category_appearance">Appearance</string>
+	<string name="settings_category_developer">About</string>
+	<string name="settings_language_title">Language</string>
+	<string name="settings_import_title">Import</string>
+	<string name="settings_export_title">Export</string>
+	<string name="settings_theme_title">Theme</string>
+	<string name="settings_version_title">KuPass version</string>
+	<string name="settings_license_title">License</string>
+	<string name="settings_about_title">Developer</string>
+	<string name="settings_contributor_title">Contributor</string>
+	<string name="settings_license_summary">Third-party app licenses</string>
+	
+	<!-- Toast -->
 	<string name="toast_no_data">There is no password to save</string>
 	<string name="toast_success">Password created</string>
 	<string name="toast_success_delete">Success delete</string>
 	<string name="toast_success_update">Success update</string>
 	<string name="toast_success_export">Success export</string>
+	<string name="toast_success_import">Success import</string>
 	<string name="toast_failed_export">Failed export</string>
+	<string name="toast_failed_import">Error reading JSON file</string>
 	
-	<string name="dialog_title_create">Create new password</string>
-	<string name="dialog_title_edit">Edit password</string>
-	<string name="dialog_title_export">Export password</string>
+	<!-- Error -->
+	<string name="error_column_is_empty">This column is required</string>
+	
+	<!-- Dialog -->
+	<string name="dialog_title_export">Export password as</string>
+	<string name="dialog_title_import">Import password from</string>
 	<string name="dialog_title_delete">Delete password</string>
 	<string name="dialog_title_permission">Permission</string>
-	<string name="dialog_title_theme">Change theme</string>
-	<string name="dialog_title_language">Change language</string>
 	<string name="dialog_message_language">We need to restart app for change language</string>
 	<string name="dialog_message_delete">Are you sure to delete this password?</string>
 	<string name="dialog_message_permission">We need permission to access write files</string>
-	<string name="dialog_create">CREATE</string>
 	<string name="dialog_cancel">CANCEL</string>
 	<string name="dialog_delete">DELETE</string>
 	<string name="dialog_export">EXPORT</string>
+	<string name="dialog_import">IMPORT</string>
 	<string name="dialog_restart">RESTART</string>
-	<string name="dialog_apply">APPLY</string>
 	<string name="dialog_save">SAVE</string>
 	<string name="dialog_request">REQUEST</string>
-	<string name="dialog_password_name_hint">Enter password name</string>
-	<string name="dialog_username_hint">Enter username</string>
-	<string name="dialog_password_hint">Enter password</string>
-	<string name="dialog_note_hint">Enter note (for site)</string>
-	<string name="dialog_export_method_hint">Select export type</string>
 	
+	<!-- Hint -->
+	<string name="site_or_app_hint">Enter site or app</string>
+	<string name="username_hint">Enter username</string>
+	<string name="password_hint">Enter password</string>
+	<string name="note_hint">Enter note</string>
+	
+	<!-- Array -->
+	<string-array name="export_method_list">
+		<!--<item>CSV</item>-->
+		<item>JSON</item>
+		<item>TEXT</item>
+	</string-array>
+	<string-array name="import_method_list">
+		<item>CSV</item>
+		<item>JSON</item>
+	</string-array>
+	<string-array name="language_values">
+		<item>default</item>
+		<item>en</item>
+		<item>in</item>
+	</string-array>
+	<string-array name="language_list">
+		<item>@string/lang_default</item>
+		<item>@string/lang_en</item>
+		<item>@string/lang_in</item>
+	</string-array>
+	<string-array name="theme_values">
+		<item>default</item>
+		<item>light</item>
+		<item>dark</item>
+	</string-array>
+	<string-array name="theme_list">
+		<item>@string/theme_default</item>
+		<item>@string/theme_light</item>
+		<item>@string/theme_dark</item>
+	</string-array>
 </resources>

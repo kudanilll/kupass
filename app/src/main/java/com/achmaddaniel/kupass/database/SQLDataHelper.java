@@ -1,14 +1,12 @@
 package com.achmaddaniel.kupass.database;
 
-import com.achmaddaniel.kupass.adapter.ListItem;
+import com.achmaddaniel.kupass.adapter.list.ListItem;
 
 import android.content.Context;
 import android.content.ContentValues;
-
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.Cursor;
-
 import android.provider.BaseColumns;
 
 import java.util.ArrayList;

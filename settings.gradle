@@ -1,16 +1,18 @@
 pluginManagement {
 	repositories {
 		gradlePluginPortal()
-		google()
 		mavenCentral()
+		google()
 	}
 }
+
 dependencyResolutionManagement {
 	repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
 	repositories {
-		google()
 		mavenCentral()
+		google()
 	}
 }
+
 rootProject.name = "KuPass"
-include ':app'
+include(":app")

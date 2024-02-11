@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+
+	<PreferenceCategory
+		app:title="@string/settings_category_general"
+		app:iconSpaceReserved="false">
+
+		<ListPreference
+			app:title="@string/settings_language_title"
+			app:icon="@drawable/ic_translate"
+			app:defaultValue="default"
+			app:key="language"
+			app:entryValues="@array/language_values"
+			app:entries="@array/language_list"/>
+
+	</PreferenceCategory>
+
+	<PreferenceCategory
+		app:title="@string/settings_category_appearance"
+		app:iconSpaceReserved="false"
+		app:allowDividerAbove="false"
+		app:allowDividerBelow="false">
+
+		<ListPreference
+			app:title="@string/settings_theme_title"
+			app:icon="@drawable/ic_light_mode"
+			app:defaultValue="default"
+			app:key="theme"
+			app:entryValues="@array/theme_values"
+			app:entries="@array/theme_list"/>
+
+	</PreferenceCategory>
+
+	<PreferenceCategory
+		app:title="@string/settings_category_developer"
+		app:iconSpaceReserved="false"
+		app:allowDividerAbove="false">
+
+		<Preference
+			app:title="@string/settings_version_title"
+			app:icon="@drawable/ic_info"
+			app:key="version"/>
+
+		<Preference
+			app:title="@string/settings_license_title"
+			app:summary="@string/settings_license_summary"
+			app:icon="@drawable/ic_license"
+			app:key="license"/>
+
+		<Preference
+			app:title="@string/settings_about_title"
+			app:icon="@drawable/ic_account_circle"
+			app:key="developer"/>
+
+<!--	Contributor: You can add your name here.
+		<Preference
+			app:title="@string/settings_contributor_title"
+			app:summary="YOUR NAME" or you can add in build.gradle
+			app:icon="@drawable/ic_person"
+			app:key="contributor"/>
+-->
+
+	</PreferenceCategory>
+
+</PreferenceScreen>
