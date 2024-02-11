@@ -40,6 +40,9 @@ KuPass is an open source password manager application.
 ## Download
 [Release Version 2.0](https://github.com/achmaddaniel24/kupass/releases/download/v2.0.0/app-release-sign.apk)
 
+## Support
+If you like my work, you can [buy me a coffee](https://www.buymeacoffee.com/kudanil) and share your thoughts 🎉 ☕
+
 ## License
 ```
 MIT License
