@@ -1,25 +1,32 @@
 # KuPass
+
 KuPass is an open source password manager application.
 
 <p align="center">
-	<img src="https://github.com/achmaddaniel24/kupass/blob/master/image/icon.png?raw=true" alt="kupass">
+	<img src="https://github.com/achmaddaniel24/kupass/blob/master/image/play_store_512.png?raw=true" alt="kupass">
 </p>
 
 # Why KuPass?
+
 ## Design
+
 * Designed with a focus on security and convenience.
 * KuPass allows users to store, manage, and secure their passwords with ease.
 
 ## Open Source
+
 * Its main advantage is its open source nature.
 * Anyone can audit and contribute to its source code.
 
 ## Secure
+
 * With KuPass, you can forget about the problem of forgotten passwords.
 * Your personal data is secure and well encrypted.
 
 # Screenshot
+
 ### Light mode
+
 <p align="center">
 	<img src="https://github.com/achmaddaniel24/kupass/blob/master/image/light_home.jpg?raw=true" width="30%" alt="home light mode">
 	<img src="https://github.com/achmaddaniel24/kupass/blob/master/image/light_accessibility.jpg?raw=true" width="30%" alt="accessibility light mode">
@@ -27,6 +34,7 @@ KuPass is an open source password manager application.
 </p>
 
 ### Dark mode
+
 <p align="center">
 	<img src="https://github.com/achmaddaniel24/kupass/blob/master/image/dark_home.jpg?raw=true" width="30%" alt="home dark mode">
 	<img src="https://github.com/achmaddaniel24/kupass/blob/master/image/dark_accessibility.jpg?raw=true" width="30%" alt="accessibility dark mode">
@@ -34,16 +42,21 @@ KuPass is an open source password manager application.
 </p>
 
 ## What's new?
+
 - Update UI/UX
 - Import feature
 
 ## Download
+
 [Release Version 2.1](https://github.com/achmaddaniel24/kupass/releases/download/v2.0.0/app-release-sign.apk)
 
 ## Support
-If you like my work, you can [buy me a coffee](https://www.buymeacoffee.com/kudanil) and share your thoughts 🎉 ☕
+
+If you like my work, you can [buy me a coffee](https://www.buymeacoffee.com/kudanil) and share your
+thoughts 🎉 ☕
 
 ## License
+
 ```License
 MIT License
 
