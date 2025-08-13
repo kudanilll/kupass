@@ -1,7 +1,9 @@
 plugins {
     alias(libs.plugins.androidApplication)
+    alias(libs.plugins.ossLicenses)
 }
 
+@Suppress("UnstableApiUsage")
 android {
     namespace = "com.nielcode.kupass"
     compileSdk = 34
@@ -19,12 +21,12 @@ android {
     buildTypes {
         debug {
             buildConfigField("String", "GIT_URL", "\"https://github.com/kudanilll/kupass\"")
-            buildConfigField("String", "DEV_URL", "\"https://linkhub-achmaddaniel.vercel.app/\"")
+            buildConfigField("String", "DEV_URL", "\"https://www.kudaniel.my.id\"")
             buildConfigField("String", "DEV_NAME", "\"Achmad Daniel Syahputra\"")
         }
         release {
             buildConfigField("String", "GIT_URL", "\"https://github.com/kudanilll/kupass\"")
-            buildConfigField("String", "DEV_URL", "\"https://linkhub-achmaddaniel.vercel.app/\"")
+            buildConfigField("String", "DEV_URL", "\"https://www.kudaniel.my.id\"")
             buildConfigField("String", "DEV_NAME", "\"Achmad Daniel Syahputra\"")
             isMinifyEnabled = false
             proguardFiles(
@@ -54,6 +56,7 @@ dependencies {
     implementation(libs.activity)
     implementation(libs.preference)
     implementation(libs.gson)
+    implementation(libs.gms.play.services.oss.licenses)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
