@@ -3,7 +3,6 @@ plugins {
     alias(libs.plugins.ossLicenses)
 }
 
-@Suppress("UnstableApiUsage")
 android {
     namespace = "com.nielcode.kupass"
     compileSdk = 36
@@ -14,7 +13,6 @@ android {
         targetSdk = 36
         versionCode = 4
         versionName = "3.0.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -35,10 +33,12 @@ android {
             )
         }
     }
+
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
+
     buildFeatures {
         viewBinding = true
         buildConfig = true
@@ -48,13 +48,6 @@ android {
 dependencies {
     implementation(libs.appcompat)
     implementation(libs.material)
-    implementation(libs.constraintlayout)
-    implementation(libs.navigation.fragment)
-    implementation(libs.navigation.ui)
-    implementation(libs.lifecycle.livedata.ktx)
-    implementation(libs.lifecycle.viewmodel.ktx)
-    implementation(libs.activity)
-    implementation(libs.preference)
     implementation(libs.gson)
     implementation(libs.gms.play.services.oss.licenses)
     testImplementation(libs.junit)
