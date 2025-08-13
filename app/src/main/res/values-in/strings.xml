@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">KuPass</string>
+    <string name="app_name">Kupass</string>
 
     <string name="title_home">Beranda</string>
     <string name="title_accessibility">Aksesibilitas</string>
@@ -31,7 +31,7 @@
     <string name="about">Tentang</string>
     <string name="import_data">Impor Data</string>
     <string name="export_data">Ekspor Data</string>
-    <string name="app_version">Versi KuPass</string>
+    <string name="app_version">Versi Kupass</string>
     <string name="license">Lisensi</string>
     <string name="developer">Pengembang</string>
     <string name="contributor">Kontributor</string>

@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
-	<shortcut
-		android:enabled="true"
-		android:icon="@drawable/ic_add_24"
-		android:shortcutId="add_password"
-		android:shortcutDisabledMessage="@string/shortcut_feature_disabled"
-		android:shortcutShortLabel="@string/shortcut_add_password"
-		android:shortcutLongLabel="@string/shortcut_add_password">
-		<intent
-			android:action="android.intent.action.ACTION_RUN"
-			android:targetPackage="com.achmaddaniel.kupass"
-			android:targetClass="com.achmaddaniel.kupass.ui.password.PasswordAddActivity"/>
-	</shortcut>
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/ic_plus"
+        android:shortcutDisabledMessage="@string/shortcut_feature_disabled"
+        android:shortcutId="add_password"
+        android:shortcutLongLabel="@string/shortcut_add_password"
+        android:shortcutShortLabel="@string/shortcut_add_password">
+        <intent
+            android:action="android.intent.action.ACTION_RUN"
+            android:targetClass="com.achmaddaniel.kupass.ui.activities.HomeActivity"
+            android:targetPackage="com.achmaddaniel.kupass" />
+    </shortcut>
 </shortcuts>
