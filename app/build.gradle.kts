@@ -6,12 +6,12 @@ plugins {
 @Suppress("UnstableApiUsage")
 android {
     namespace = "com.nielcode.kupass"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.nielcode.kupass"
         minSdk = 26
-        targetSdk = 34
+        targetSdk = 36
         versionCode = 4
         versionName = "3.0.0"
 
