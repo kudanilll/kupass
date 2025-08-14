@@ -1,178 +1,170 @@
-package com.nielcode.kupass.ui.activities;
+package com.nielcode.kupass.ui.activities
 
-import android.annotation.SuppressLint;
-import android.content.Intent;
-import android.net.Uri;
-import android.os.Bundle;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.app.AppCompatDelegate;
-import com.google.android.gms.oss.licenses.OssLicensesMenuActivity;
-import com.google.android.material.color.DynamicColors;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.nielcode.kupass.BuildConfig;
-import com.nielcode.kupass.R;
-import com.nielcode.kupass.core.KupassApplication;
-import com.nielcode.kupass.core.PreferenceManager;
-import com.nielcode.kupass.databinding.ActivitySettingsBinding;
-import com.nielcode.kupass.utils.Config;
+import android.annotation.SuppressLint
+import android.content.Intent
+import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.net.toUri
+import androidx.core.os.LocaleListCompat
+import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
+import com.google.android.material.color.DynamicColors
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.nielcode.kupass.BuildConfig
+import com.nielcode.kupass.R
+import com.nielcode.kupass.core.PreferenceManager
+import com.nielcode.kupass.databinding.ActivitySettingsBinding
+import com.nielcode.kupass.utils.AppConfig
 
-public class SettingsActivity extends AppCompatActivity {
+class SettingsActivity : AppCompatActivity() {
 
-  private ActivitySettingsBinding binding;
-  private PreferenceManager pref;
+    // Using lazy initialization for binding and preferences.
+    private val binding by lazy { ActivitySettingsBinding.inflate(layoutInflater) }
+    private val prefs by lazy { PreferenceManager(this) }
 
-  @SuppressLint("SetTextI18n")
-  @Override
-  protected void onCreate(Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
-    binding = ActivitySettingsBinding.inflate(getLayoutInflater());
-    setContentView(binding.getRoot());
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        // This must be called before setContentView to apply dynamic colors correctly on recreation.
+        if (prefs.dynamicColor == AppConfig.DynamicColors.Code.ENABLE && DynamicColors.isDynamicColorAvailable()) {
+            DynamicColors.applyToActivityIfAvailable(this)
+        }
+        setContentView(binding.root)
 
-    pref = new PreferenceManager(this);
-    binding.appVersion.setText(BuildConfig.VERSION_NAME + " - " + BuildConfig.BUILD_TYPE);
-    binding.developerName.setText(BuildConfig.DEV_NAME);
-
-    updateUi();
-    setupButtonListener();
-  }
-
-  @Override
-  protected void onDestroy() {
-    super.onDestroy();
-    binding = null;
-  }
-
-  private void setupButtonListener() {
-    binding.toolbar.setNavigationOnClickListener(v -> finish());
-    binding.languageSwitchButton.setOnClickListener(v -> showLanguageDialog());
-    binding.themeSwitchButton.setOnClickListener(v -> showThemeDialog());
-    binding.dynamicColorsSwitchButton.setOnClickListener(v -> showDynamicColorsDialog());
-    binding.aboutButton.setOnClickListener(
-        v -> startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(BuildConfig.GIT_URL))));
-    binding.licenseButton.setOnClickListener(
-        v -> startActivity(new Intent(this, OssLicensesMenuActivity.class)));
-  }
-
-  private void updateUi() {
-    String[] languageList = getResources().getStringArray(R.array.language_list);
-    binding.currentLanguage.setText(languageList[pref.getLanguage()]);
-
-    String[] themeList = getResources().getStringArray(R.array.theme_list);
-    binding.currentTheme.setText(themeList[pref.getTheme()]);
-
-    handleDynamicColors();
-  }
-
-  private void handleDynamicColors() {
-    if (DynamicColors.isDynamicColorAvailable()) {
-      binding.dynamicColorsSwitchButton.setEnabled(true);
-      binding.dynamicColorsSwitchButton.setAlpha(1.0f);
-      boolean isEnabled = pref.getDynamicColor() == Config.DynamicColors.Code.ENABLE;
-      binding.currentDynamicColors.setText(isEnabled ? R.string.enable : R.string.disable);
-    } else {
-      binding.dynamicColorsSwitchButton.setEnabled(false);
-      binding.dynamicColorsSwitchButton.setAlpha(0.5f);
-      binding.currentDynamicColors.setText(R.string.not_supported);
+        setupToolbar()
+        setupInfo()
+        setupListeners()
+        updateUiWithCurrentSettings()
     }
-  }
 
-  private void showLanguageDialog() {
-    final int[] selectedItem = {pref.getLanguage()};
-    new MaterialAlertDialogBuilder(this)
-        .setTitle(R.string.settings_language_title)
-        .setSingleChoiceItems(
-            R.array.language_list,
-            selectedItem[0], // Default selection
-            (dialog, which) -> selectedItem[0] = which)
-        .setNegativeButton(R.string.dialog_cancel, (dialog, which) -> dialog.dismiss())
-        .setPositiveButton(
-            R.string.dialog_apply,
-            (dialog, which) -> {
-              // Apply changes if has changed
-              if (pref.getLanguage() != selectedItem[0]) {
-                pref.setLanguage(selectedItem[0]);
-                updateUi();
-                showRestartDialog();
-              }
-            })
-        .show();
-  }
-
-  private void showThemeDialog() {
-    final int[] selectedItem = {pref.getTheme()};
-    new MaterialAlertDialogBuilder(this)
-        .setTitle(R.string.settings_theme_title)
-        .setSingleChoiceItems(
-            R.array.theme_list, selectedItem[0], (dialog, which) -> selectedItem[0] = which)
-        .setNegativeButton(R.string.dialog_cancel, (dialog, which) -> dialog.dismiss())
-        .setPositiveButton(
-            R.string.dialog_apply,
-            (dialog, which) -> {
-              if (pref.getTheme() != selectedItem[0]) {
-                pref.setTheme(selectedItem[0]);
-                applyTheme(selectedItem[0]);
-                updateUi();
-              }
-              dialog.dismiss();
-            })
-        .show();
-  }
-
-  private void showDynamicColorsDialog() {
-    String[] options = {getString(R.string.enable), getString(R.string.disable)};
-    int currentSelection = pref.getDynamicColor() == Config.DynamicColors.Code.ENABLE ? 0 : 1;
-    final int[] selectedItem = {currentSelection};
-
-    new MaterialAlertDialogBuilder(this)
-        .setTitle(R.string.settings_dynamic_colors_title)
-        .setSingleChoiceItems(options, selectedItem[0], (dialog, which) -> selectedItem[0] = which)
-        .setNegativeButton(R.string.dialog_cancel, (dialog, which) -> dialog.dismiss())
-        .setPositiveButton(
-            R.string.dialog_apply,
-            (dialog, which) -> {
-              int newSetting =
-                  (selectedItem[0] == 0)
-                      ? Config.DynamicColors.Code.ENABLE
-                      : Config.DynamicColors.Code.DISABLE;
-              if (pref.getDynamicColor() != newSetting) {
-                pref.setDynamicColor(newSetting);
-                updateUi();
-                showRestartDialog();
-              }
-            })
-        .show();
-  }
-
-  private void applyTheme(int themeCode) {
-    switch (themeCode) {
-      case Config.Theme.Code.SYSTEM:
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
-        break;
-      case Config.Theme.Code.LIGHT:
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-        break;
-      case Config.Theme.Code.DARK:
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-        break;
+    private fun setupToolbar() {
+        binding.toolbar.setNavigationOnClickListener { finish() }
     }
-  }
 
-  /** Show dialog to restart the app. */
-  private void showRestartDialog() {
-    new MaterialAlertDialogBuilder(this)
-        .setMessage(R.string.dialog_message_language)
-        .setPositiveButton(
-            R.string.dialog_restart,
-            (dialog, which) -> {
-              // Restart app
-              KupassApplication.updateUi(getApplication(), this);
-              Intent restart = new Intent(this, HomeActivity.class);
-              restart.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-              restart.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-              startActivity(restart);
-              recreate();
-            })
-        .setCancelable(false)
-        .show();
-  }
+    @SuppressLint("SetTextI18n")
+    private fun setupInfo() {
+        binding.appVersion.text = "${BuildConfig.VERSION_NAME} - ${BuildConfig.BUILD_TYPE}"
+        binding.developerName.text = BuildConfig.DEV_NAME
+    }
+
+    private fun setupListeners() {
+        binding.apply {
+            languageSwitchButton.setOnClickListener { showLanguageDialog() }
+            themeSwitchButton.setOnClickListener { showThemeDialog() }
+            dynamicColorsSwitchButton.setOnClickListener { showDynamicColorsDialog() }
+            licenseButton.setOnClickListener { showOpenSourceLicenses() }
+            aboutButton.setOnClickListener { openUrl(BuildConfig.DEV_URL) }
+            githubButton.setOnClickListener { openUrl(BuildConfig.GIT_URL) }
+        }
+    }
+
+    private fun updateUiWithCurrentSettings() {
+        val languageList = resources.getStringArray(R.array.language_list)
+        binding.currentLanguage.text = languageList[prefs.language]
+
+        val themeList = resources.getStringArray(R.array.theme_list)
+        binding.currentTheme.text = themeList[prefs.theme]
+
+        updateDynamicColorsUi()
+    }
+
+    private fun updateDynamicColorsUi() {
+        val isSupported = DynamicColors.isDynamicColorAvailable()
+        binding.dynamicColorsSwitchButton.isEnabled = isSupported
+        binding.dynamicColorsSwitchButton.alpha = if (isSupported) 1.0f else 0.5f
+
+        val statusTextRes = when {
+            !isSupported -> R.string.not_supported
+            prefs.dynamicColor == AppConfig.DynamicColors.Code.ENABLE -> R.string.enable
+            else -> R.string.disable
+        }
+        binding.currentDynamicColors.setText(statusTextRes)
+    }
+
+    private fun showLanguageDialog() {
+        val languageNames = resources.getStringArray(R.array.language_list)
+        var selectedIndex = prefs.language
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.settings_language_title)
+            .setSingleChoiceItems(languageNames, selectedIndex) { _, which ->
+                selectedIndex = which
+            }
+            .setNegativeButton(R.string.dialog_cancel, null)
+            .setPositiveButton(R.string.dialog_apply) { _, _ ->
+                if (prefs.language != selectedIndex) {
+                    prefs.language = selectedIndex
+                    applyLanguage(selectedIndex)
+                }
+            }
+            .show()
+    }
+
+    private fun applyLanguage(selectedIndex: Int) {
+        val languageTags = resources.getStringArray(R.array.language_values)
+        AppCompatDelegate.setApplicationLocales(
+            LocaleListCompat.forLanguageTags(languageTags[selectedIndex])
+        )
+    }
+
+    private fun showThemeDialog() {
+        var selectedIndex = prefs.theme
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.settings_theme_title)
+            .setSingleChoiceItems(R.array.theme_list, selectedIndex) { _, which ->
+                selectedIndex = which
+            }
+            .setNegativeButton(R.string.dialog_cancel, null)
+            .setPositiveButton(R.string.dialog_apply) { _, _ ->
+                if (prefs.theme != selectedIndex) {
+                    prefs.theme = selectedIndex
+                    applyTheme(selectedIndex)
+                }
+            }
+            .show()
+    }
+
+    private fun applyTheme(themeCode: Int) {
+        val nightMode = when (themeCode) {
+            AppConfig.Theme.Code.LIGHT -> AppCompatDelegate.MODE_NIGHT_NO
+            AppConfig.Theme.Code.DARK -> AppCompatDelegate.MODE_NIGHT_YES
+            else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+        }
+        AppCompatDelegate.setDefaultNightMode(nightMode)
+    }
+
+    private fun showDynamicColorsDialog() {
+        val options = arrayOf(getString(R.string.enable), getString(R.string.disable))
+        val currentSelection =
+            if (prefs.dynamicColor == AppConfig.DynamicColors.Code.ENABLE) 0 else 1
+        var selectedIndex = currentSelection
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.settings_dynamic_colors_title)
+            .setSingleChoiceItems(options, selectedIndex) { _, which ->
+                selectedIndex = which
+            }
+            .setNegativeButton(R.string.dialog_cancel, null)
+            .setPositiveButton(R.string.dialog_apply) { _, _ ->
+                val newSetting = if (selectedIndex == 0) {
+                    AppConfig.DynamicColors.Code.ENABLE
+                } else {
+                    AppConfig.DynamicColors.Code.DISABLE
+                }
+
+                if (prefs.dynamicColor != newSetting) {
+                    prefs.dynamicColor = newSetting
+                    recreate()
+                }
+            }
+            .show()
+    }
+
+    private fun showOpenSourceLicenses() {
+        startActivity(Intent(this, OssLicensesMenuActivity::class.java))
+    }
+
+    private fun openUrl(url: String) {
+        val intent = Intent(Intent.ACTION_VIEW, url.toUri())
+        startActivity(intent)
+    }
 }

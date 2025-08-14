@@ -1,67 +1,52 @@
-package com.nielcode.kupass.core;
+package com.nielcode.kupass.core
 
-import android.app.Application;
-import android.content.Context;
-import android.content.res.Configuration;
-import android.content.res.Resources;
-import androidx.appcompat.app.AppCompatDelegate;
-import com.google.android.material.color.DynamicColors;
-import com.nielcode.kupass.utils.Config;
-import java.util.Locale;
+import android.app.Application
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
+import com.google.android.material.color.DynamicColors
+import com.nielcode.kupass.R
+import com.nielcode.kupass.utils.AppConfig
 
-public class KupassApplication extends Application {
+class KupassApplication : Application() {
 
-  public static void updateUi(Application application, Context context) {
+    override fun onCreate() {
+        super.onCreate()
+        val prefs = PreferenceManager(this)
 
-    // Initialize preferences
-    PreferenceManager pref = new PreferenceManager(context);
-
-    // Apply preferences
-    setLanguage(pref.getLanguage(), context);
-    setAppTheme(pref.getTheme());
-
-    // Dynamic colors
-    if (DynamicColors.isDynamicColorAvailable()) {
-      if (pref.getDynamicColor() == Config.DynamicColors.Code.ENABLE) {
-        DynamicColors.applyToActivitiesIfAvailable(application);
-      }
-    } else {
-      pref.setDynamicColor(Config.DynamicColors.Code.NOT_SUPPORTED);
+        // Apply user settings on app startup
+        applyLanguage(prefs.language)
+        applyTheme(prefs.theme)
+        applyDynamicColors(prefs)
     }
-  }
 
-  private static void setLanguage(int languageCode, Context context) {
-    Resources res = context.getResources();
-    Configuration config = res.getConfiguration();
-    switch (languageCode) {
-      case Config.Language.Code.DEFAULT:
-      case Config.Language.Code.ENGLISH:
-        config.setLocale(Locale.getDefault());
-        break;
-      case Config.Language.Code.INDONESIA:
-        config.setLocale(new Locale(Config.Language.INDONESIA));
-        break;
+    private fun applyLanguage(languageIndex: Int) {
+        val languageTags = resources.getStringArray(R.array.language_values)
+        // Ensure index is valid to prevent crashes
+        if (languageIndex in languageTags.indices) {
+            val localeTag = languageTags[languageIndex]
+            val appLocale = LocaleListCompat.forLanguageTags(localeTag)
+            AppCompatDelegate.setApplicationLocales(appLocale)
+        }
     }
-    res.updateConfiguration(config, res.getDisplayMetrics());
-  }
 
-  private static void setAppTheme(int themeCode) {
-    switch (themeCode) {
-      case Config.Theme.Code.SYSTEM:
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
-        break;
-      case Config.Theme.Code.LIGHT:
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-        break;
-      case Config.Theme.Code.DARK:
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-        break;
+    private fun applyTheme(themeCode: Int) {
+        val nightMode = when (themeCode) {
+            AppConfig.Theme.Code.LIGHT -> AppCompatDelegate.MODE_NIGHT_NO
+            AppConfig.Theme.Code.DARK -> AppCompatDelegate.MODE_NIGHT_YES
+            else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+        }
+        AppCompatDelegate.setDefaultNightMode(nightMode)
     }
-  }
 
-  @Override
-  public void onCreate() {
-    super.onCreate();
-    updateUi(this, this);
-  }
+    private fun applyDynamicColors(prefs: PreferenceManager) {
+        if (DynamicColors.isDynamicColorAvailable()) {
+            // Apply dynamic colors only if it's enabled by the user.
+            if (prefs.dynamicColor == AppConfig.DynamicColors.Code.ENABLE) {
+                DynamicColors.applyToActivitiesIfAvailable(this)
+            }
+        } else {
+            // If the device does not support it, ensure the preference reflects this.
+            prefs.dynamicColor = AppConfig.DynamicColors.Code.NOT_SUPPORTED
+        }
+    }
 }

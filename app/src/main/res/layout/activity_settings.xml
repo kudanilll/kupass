@@ -90,7 +90,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:alpha="0.8"
-                            android:text="@string/lang_default"
+                            android:text="@string/lang_en"
                             android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
                             android:textColor="?attr/colorOnSurface" />
                     </LinearLayout>
@@ -363,6 +363,7 @@
                 android:layout_height="4dp" />
 
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/github_button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:clickable="true"

@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="language_values">
-        <item>default</item>
-        <item>en</item>
-        <item>in</item>
+        <item>en-US</item>
+        <item>id-ID</item>
     </string-array>
     <string-array name="language_list">
-        <item>@string/lang_default</item>
         <item>@string/lang_en</item>
         <item>@string/lang_in</item>
     </string-array>

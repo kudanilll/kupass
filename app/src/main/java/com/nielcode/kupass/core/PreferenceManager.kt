@@ -1,58 +1,45 @@
-package com.nielcode.kupass.core;
+package com.nielcode.kupass.core
 
-import android.content.Context;
-import android.content.SharedPreferences;
-import com.nielcode.kupass.utils.Config;
+import android.content.Context
+import android.content.SharedPreferences
+import com.nielcode.kupass.utils.AppConfig
 
-public class PreferenceManager {
+class PreferenceManager(context: Context) {
 
-  private static final String PREF_NAME = "preferences";
+    private val sharedPreferences: SharedPreferences =
+        context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
 
-  private final SharedPreferences sharedPreferences;
-  private final SharedPreferences.Editor editor;
+    // A helper function to avoid repeating 'sharedPreferences.edit()'.
+    private inline fun edit(block: SharedPreferences.Editor.() -> Unit) {
+        sharedPreferences.edit().apply(block).apply()
+    }
 
-  public PreferenceManager(Context context) {
-    sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-    editor = sharedPreferences.edit();
-  }
+    var exportMethod: Int
+        get() = sharedPreferences.getInt(KEY_EXPORT_METHOD, AppConfig.FileType.TEXT)
+        set(value) = edit { putInt(KEY_EXPORT_METHOD, value) }
 
-  public int getExportMethod() {
-    return sharedPreferences.getInt("export_method", Config.FileType.TEXT);
-  }
+    var importMethod: Int
+        get() = sharedPreferences.getInt(KEY_IMPORT_METHOD, AppConfig.FileType.JSON)
+        set(value) = edit { putInt(KEY_IMPORT_METHOD, value) }
 
-  public void setExportMethod(int method) {
-    editor.putInt("export_method", method).apply();
-  }
+    var language: Int
+        get() = sharedPreferences.getInt(KEY_LANGUAGE, AppConfig.Language.Code.ENGLISH)
+        set(value) = edit { putInt(KEY_LANGUAGE, value) }
 
-  public int getImportMethod() {
-    return sharedPreferences.getInt("import_method", Config.FileType.JSON);
-  }
+    var theme: Int
+        get() = sharedPreferences.getInt(KEY_THEME, AppConfig.Theme.Code.SYSTEM)
+        set(value) = edit { putInt(KEY_THEME, value) }
 
-  public void setImportMethod(int method) {
-    editor.putInt("import_method", method).apply();
-  }
+    var dynamicColor: Int
+        get() = sharedPreferences.getInt(KEY_DYNAMIC_COLOR, AppConfig.DynamicColors.Code.DISABLE)
+        set(value) = edit { putInt(KEY_DYNAMIC_COLOR, value) }
 
-  public int getLanguage() {
-    return sharedPreferences.getInt("language", Config.Language.Code.DEFAULT);
-  }
-
-  public void setLanguage(int language) {
-    editor.putInt("language", language).apply();
-  }
-
-  public int getTheme() {
-    return sharedPreferences.getInt("theme", Config.Theme.Code.SYSTEM);
-  }
-
-  public void setTheme(int theme) {
-    editor.putInt("theme", theme).apply();
-  }
-
-  public int getDynamicColor() {
-    return sharedPreferences.getInt("dynamic_color", Config.DynamicColors.Code.DISABLE);
-  }
-
-  public void setDynamicColor(int dynamicColor) {
-    editor.putInt("dynamic_color", dynamicColor).apply();
-  }
+    companion object {
+        private const val PREF_NAME = "kupass_preferences"
+        private const val KEY_EXPORT_METHOD = "export_method"
+        private const val KEY_IMPORT_METHOD = "import_method"
+        private const val KEY_LANGUAGE = "language"
+        private const val KEY_THEME = "theme"
+        private const val KEY_DYNAMIC_COLOR = "dynamic_color"
+    }
 }
