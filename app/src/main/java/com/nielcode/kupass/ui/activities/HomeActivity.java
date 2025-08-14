@@ -5,12 +5,15 @@ import android.os.Bundle;
 import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import com.google.android.material.color.DynamicColors;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.nielcode.kupass.R;
 import com.nielcode.kupass.core.Permission;
+import com.nielcode.kupass.core.PreferenceManager;
 import com.nielcode.kupass.databinding.ActivityHomeBinding;
 import com.nielcode.kupass.ui.adapters.ListPasswordAdapter;
 import com.nielcode.kupass.ui.adapters.ListPasswordItem;
+import com.nielcode.kupass.utils.AppConfig;
 import java.util.ArrayList;
 
 public class HomeActivity extends AppCompatActivity {
@@ -23,6 +26,14 @@ public class HomeActivity extends AppCompatActivity {
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
+
+    // This must be called before setContentView to apply dynamic colors correctly.
+    PreferenceManager pref = new PreferenceManager(this);
+    if (pref.getDynamicColor() == AppConfig.DynamicColors.Code.ENABLE
+        && DynamicColors.isDynamicColorAvailable()) {
+      DynamicColors.applyToActivityIfAvailable(this);
+    }
+
     binding = ActivityHomeBinding.inflate(getLayoutInflater());
     setContentView(binding.getRoot());
 

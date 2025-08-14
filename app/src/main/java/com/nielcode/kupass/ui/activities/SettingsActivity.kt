@@ -3,6 +3,7 @@ package com.nielcode.kupass.ui.activities
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.net.toUri
@@ -18,6 +19,8 @@ import com.nielcode.kupass.utils.AppConfig
 
 class SettingsActivity : AppCompatActivity() {
 
+    private val TAG = "SettingsActivity"
+
     // Using lazy initialization for binding and preferences.
     private val binding by lazy { ActivitySettingsBinding.inflate(layoutInflater) }
     private val prefs by lazy { PreferenceManager(this) }
@@ -26,6 +29,7 @@ class SettingsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         // This must be called before setContentView to apply dynamic colors correctly on recreation.
         if (prefs.dynamicColor == AppConfig.DynamicColors.Code.ENABLE && DynamicColors.isDynamicColorAvailable()) {
+            Log.d(TAG, "Applying dynamic colors")
             DynamicColors.applyToActivityIfAvailable(this)
         }
         setContentView(binding.root)
@@ -153,7 +157,10 @@ class SettingsActivity : AppCompatActivity() {
 
                 if (prefs.dynamicColor != newSetting) {
                     prefs.dynamicColor = newSetting
-                    recreate()
+                    Log.d(TAG, "Dynamic colors state: $newSetting")
+
+                    // Restart the app to apply dynamic colors.
+                    showRestartDialog()
                 }
             }
             .show()
@@ -166,5 +173,18 @@ class SettingsActivity : AppCompatActivity() {
     private fun openUrl(url: String) {
         val intent = Intent(Intent.ACTION_VIEW, url.toUri())
         startActivity(intent)
+    }
+
+    private fun showRestartDialog() {
+        MaterialAlertDialogBuilder(this)
+            .setMessage(R.string.dialog_message_language)
+            .setPositiveButton(R.string.dialog_restart) { _, _ ->
+                val restart = Intent(this, HomeActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+                }
+                startActivity(restart)
+            }
+            .setCancelable(false)
+            .show()
     }
 }
