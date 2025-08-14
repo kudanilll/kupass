@@ -83,10 +83,7 @@ public class SettingsActivity extends AppCompatActivity {
         .setSingleChoiceItems(
             R.array.language_list,
             selectedItem[0], // Default selection
-            (dialog, which) -> {
-              // Save selected item
-              selectedItem[0] = which;
-            })
+            (dialog, which) -> selectedItem[0] = which)
         .setNegativeButton(R.string.dialog_cancel, (dialog, which) -> dialog.dismiss())
         .setPositiveButton(
             R.string.dialog_apply,
@@ -140,8 +137,8 @@ public class SettingsActivity extends AppCompatActivity {
               if (pref.getDynamicColor() != newSetting) {
                 pref.setDynamicColor(newSetting);
                 updateUi();
+                showRestartDialog();
               }
-              showRestartDialog();
             })
         .show();
   }
