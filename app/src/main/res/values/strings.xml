@@ -1,79 +1,75 @@
 <resources>
     <string name="app_name">Kupass</string>
 
-    <string name="title_home">Home</string>
-    <string name="title_accessibility">Accessibility</string>
-    <string name="title_settings">Settings</string>
+    <!-- General -->
+    <string name="enable">Enable</string>
+    <string name="disable">Disable</string>
+    <string name="not_supported">Not supported on this device</string>
 
-    <string name="add_password">Add Password</string>
-    <string name="edit_password">Edit Password</string>
-    <string name="search_password">Search Password</string>
-
-    <string name="fab_create">Create</string>
+    <!-- FAB -->
+    <string name="fab_open">Create</string>
     <string name="fab_close">Close</string>
 
+    <!-- Shortcut -->
     <string name="shortcut_feature_disabled">Shortcut feature disabled</string>
-    <string name="shortcut_add_password">Add Password</string>
+    <string name="shortcut_label">Add new password</string>
 
-    <string name="language">Language</string>
-    <string name="system_default">System Default</string>
-    <string name="english">English</string>
-    <string name="indonesia">Indonesia</string>
-    <!-- Contributor: You can add your language here.-->
+    <!-- Language -->
+    <string name="lang_default">System default</string>
+    <string name="lang_en">English</string>
+    <string name="lang_in">Indonesian</string>
 
-    <string name="theme">Theme</string>
-    <string name="system_default_theme">System Default</string>
-    <string name="light_theme">Light</string>
-    <string name="dark_theme">Dark</string>
+    <!-- Theme -->
+    <string name="theme_default">System default</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
 
+    <!-- Settings -->
     <string name="settings">Settings</string>
-    <string name="general">General</string>
-    <string name="appearance">Appearance</string>
-    <string name="about">About</string>
-    <string name="import_data">Import Data</string>
-    <string name="export_data">Export Data</string>
-    <string name="app_version">Kupass Version</string>
-    <string name="license">License</string>
-    <string name="developer">Developer</string>
-    <string name="contributor">Contributor</string>
-    <string name="license_summary">Third-party app licenses</string>
+    <string name="settings_category_appearance">Appearance</string>
+    <string name="settings_category_developer">About</string>
+    <string name="settings_language_title">Language</string>
+    <string name="settings_theme_title">Theme</string>
+    <string name="settings_dynamic_colors_title">Dynamic Colors</string>
+    <string name="settings_about_title">Developer</string>
+    <string name="settings_license_title">Open Source</string>
+    <string name="settings_license_summary">Third-party app licenses</string>
+    <string name="settings_version_title">Kupass Version</string>
 
-    <string name="no_passwords_to_save">There are no passwords to save</string>
-    <string name="password_created">Password created</string>
-    <string name="password_deleted">Password deleted</string>
-    <string name="password_updated">Password updated</string>
-    <string name="export_successful">Export successful</string>
-    <string name="import_successful">Import successful</string>
-    <string name="export_failed">Export failed</string>
-    <string name="import_failed">Error reading JSON file</string>
+    <!-- Toast -->
+    <string name="toast_no_data">There is no password to save</string>
+    <string name="toast_success">Password created</string>
+    <string name="toast_success_delete">Success delete</string>
+    <string name="toast_success_update">Success update</string>
+    <string name="toast_success_export">Success export</string>
+    <string name="toast_success_import">Success import</string>
+    <string name="toast_failed_export">Failed export</string>
+    <string name="toast_failed_import">Error reading JSON file</string>
 
-    <string name="required_field">This field is required</string>
+    <!-- Error -->
+    <string name="error_column_is_empty">This column is required</string>
 
-    <string name="export_as">Export password as</string>
-    <string name="import_from">Import password from</string>
-    <string name="delete_password">Delete password</string>
-    <string name="permission_required">Permission Required</string>
-    <string name="restart_required">App restart required to change language</string>
-    <string name="confirm_delete">Are you sure you want to delete this password?</string>
-    <string name="permission_request">We need permission to access write files</string>
-    <string name="cancel">Cancel</string>
-    <string name="delete">Delete</string>
-    <string name="export">Export</string>
-    <string name="import_file">Import</string>
-    <string name="restart">Restart</string>
-    <string name="save">Save</string>
-    <string name="request">Request</string>
+    <!-- Dialog -->
+    <string name="dialog_title_export">Export password as</string>
+    <string name="dialog_title_import">Import password from</string>
+    <string name="dialog_title_delete">Delete password</string>
+    <string name="dialog_title_permission">Permission</string>
+    <string name="dialog_message_language">We need to restart app for change language</string>
+    <string name="dialog_message_delete">Are you sure to delete this password?</string>
+    <string name="dialog_message_permission">We need permission to access write files</string>
+    <string name="dialog_cancel">CANCEL</string>
+    <string name="dialog_apply">APPLY</string>
+    <string name="dialog_delete">DELETE</string>
+    <string name="dialog_export">EXPORT</string>
+    <string name="dialog_import">IMPORT</string>
+    <string name="dialog_restart">RESTART</string>
+    <string name="dialog_save">SAVE</string>
+    <string name="dialog_request">REQUEST</string>
 
-    <string name="site_or_app">Enter site or app</string>
-    <string name="username">Enter username</string>
-    <string name="password">Enter password</string>
-    <string name="note">Enter note</string>
-
-    <string-array name="export_methods">
-        <item>JSON</item>
-        <item>TEXT</item>
-    </string-array>
-    <string-array name="import_methods">
-        <item>JSON</item>
-    </string-array>
+    <!-- Hint -->
+    <string name="search_hint">Search password</string>
+    <string name="site_or_app_hint">Enter site or app</string>
+    <string name="username_hint">Enter username</string>
+    <string name="password_hint">Enter password</string>
+    <string name="note_hint">Enter note</string>
 </resources>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -8,49 +8,46 @@
     tools:context=".ui.activities.HomeActivity">
 
     <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/topAppBar"
+        android:id="@+id/top_app_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="?attr/colorSurface"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <androidx.appcompat.widget.SearchView
+        <com.google.android.material.search.SearchBar
             android:id="@+id/search_password"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="@dimen/activity_horizontal_margin"
-            android:background="@drawable/search_view_background"
-            android:textColor="?attr/colorOnSurfaceVariant"
-            app:iconifiedByDefault="false"
-            app:queryBackground="@android:color/transparent"
-            app:queryHint="@string/search_password" />
-
+            android:hint="@string/search_hint"
+            app:menu="@menu/searchbar_menu" />
     </com.google.android.material.appbar.AppBarLayout>
 
-    <androidx.core.widget.NestedScrollView
+    <ListView
+        android:id="@+id/list_password"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        android:layout_height="0dp"
+        android:layout_marginHorizontal="@dimen/activity_horizontal_margin"
+        android:divider="@null"
+        android:dividerHeight="1dp"
+        android:scrollbars="none"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/top_app_bar" />
 
-        <ListView
-            android:id="@+id/list_password"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_margin="@dimen/activity_horizontal_margin"
-            android:layout_marginTop="12dp"
-            android:divider="@null"
-            android:dividerHeight="1dp"
-            android:scrollbars="none"
-            app:layout_constraintStart_toStartOf="parent" />
-    </androidx.core.widget.NestedScrollView>
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="16dp"
-        app:backgroundTint="?colorPrimaryContainer"
-        app:srcCompat="@drawable/ic_plus"
-        app:tint="?colorPrimary" />
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+        android:layout_margin="@dimen/fab_margin"
+        android:text="@string/fab_open"
+        android:textColor="?attr/colorOnPrimaryContainer"
+        app:backgroundTint="?attr/colorPrimaryContainer"
+        app:elevation="0dp"
+        app:hoveredFocusedTranslationZ="0dp"
+        app:icon="@drawable/ic_pencil"
+        app:iconTint="?attr/colorOnPrimaryContainer"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:pressedTranslationZ="0dp" />
+</androidx.constraintlayout.widget.ConstraintLayout>

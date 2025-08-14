@@ -11,7 +11,7 @@
         tools:ignore="ScopedStorage" />
 
     <application
-        android:name=".core.Application"
+        android:name=".core.KupassApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -20,7 +20,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/KupassTheme"
-        tools:targetApi="31">
+        tools:targetApi="36">
 
         <activity
             android:name=".ui.activities.HomeActivity"
@@ -37,5 +37,7 @@
                 android:resource="@xml/shortcuts" />
 
         </activity>
+
+        <activity android:name=".ui.activities.SettingsActivity" />
     </application>
 </manifest>

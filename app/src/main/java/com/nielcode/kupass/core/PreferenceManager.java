@@ -1,7 +1,8 @@
-package com.nielcode.kupass.utils;
+package com.nielcode.kupass.core;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import com.nielcode.kupass.utils.Config;
 
 public class PreferenceManager {
 
@@ -45,5 +46,13 @@ public class PreferenceManager {
 
   public void setTheme(int theme) {
     editor.putInt("theme", theme).apply();
+  }
+
+  public int getDynamicColor() {
+    return sharedPreferences.getInt("dynamic_color", Config.DynamicColors.Code.DISABLE);
+  }
+
+  public void setDynamicColor(int dynamicColor) {
+    editor.putInt("dynamic_color", dynamicColor).apply();
   }
 }

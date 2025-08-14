@@ -1,20 +1,33 @@
 package com.nielcode.kupass.core;
 
+import android.app.Application;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import androidx.appcompat.app.AppCompatDelegate;
 import com.google.android.material.color.DynamicColors;
 import com.nielcode.kupass.utils.Config;
-import com.nielcode.kupass.utils.PreferenceManager;
 import java.util.Locale;
 
-public class Application extends android.app.Application {
+public class KupassApplication extends Application {
 
-  public static void initialise(Context context) {
+  public static void updateUi(Application application, Context context) {
+
+    // Initialize preferences
     PreferenceManager pref = new PreferenceManager(context);
+
+    // Apply preferences
     setLanguage(pref.getLanguage(), context);
     setAppTheme(pref.getTheme());
+
+    // Dynamic colors
+    if (DynamicColors.isDynamicColorAvailable()) {
+      if (pref.getDynamicColor() == Config.DynamicColors.Code.ENABLE) {
+        DynamicColors.applyToActivitiesIfAvailable(application);
+      }
+    } else {
+      pref.setDynamicColor(Config.DynamicColors.Code.NOT_SUPPORTED);
+    }
   }
 
   private static void setLanguage(int languageCode, Context context) {
@@ -26,7 +39,7 @@ public class Application extends android.app.Application {
         config.setLocale(Locale.getDefault());
         break;
       case Config.Language.Code.INDONESIA:
-        config.setLocale(new Locale("in"));
+        config.setLocale(new Locale(Config.Language.INDONESIA));
         break;
     }
     res.updateConfiguration(config, res.getDisplayMetrics());
@@ -49,9 +62,6 @@ public class Application extends android.app.Application {
   @Override
   public void onCreate() {
     super.onCreate();
-    if (DynamicColors.isDynamicColorAvailable()) {
-      DynamicColors.applyToActivitiesIfAvailable(this);
-    }
-    initialise(this);
+    updateUi(this, this);
   }
 }

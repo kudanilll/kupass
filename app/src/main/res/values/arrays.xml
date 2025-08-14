@@ -1,25 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<string-array name="language_values">
-	<item>default</item>
-	<item>en</item>
-	<item>in</item>
-<!-- Contributor: You can add your language values here.-->
-</string-array>
-	<string-array name="language_list">
-		<item>@string/system_default</item>
-		<item>@string/english</item>
-		<item>@string/indonesia</item>
-<!--	Contributor: You can add your language list here.-->
-	</string-array>
-	<string-array name="theme_values">
-		<item>default</item>
-		<item>light</item>
-		<item>dark</item>
-	</string-array>
-	<string-array name="theme_list">
-		<item>@string/system_default_theme</item>
-		<item>@string/light_theme</item>
-		<item>@string/dark_theme</item>
-	</string-array>
+    <string-array name="language_values">
+        <item>default</item>
+        <item>en</item>
+        <item>in</item>
+    </string-array>
+    <string-array name="language_list">
+        <item>@string/lang_default</item>
+        <item>@string/lang_en</item>
+        <item>@string/lang_in</item>
+    </string-array>
+    <string-array name="theme_values">
+        <item>default</item>
+        <item>light</item>
+        <item>dark</item>
+    </string-array>
+    <string-array name="theme_list">
+        <item>@string/theme_default</item>
+        <item>@string/theme_light</item>
+        <item>@string/theme_dark</item>
+    </string-array>
+    <string-array name="export_methods">
+        <item>JSON</item>
+        <item>TEXT</item>
+    </string-array>
+    <string-array name="import_methods">
+        <item>JSON</item>
+    </string-array>
 </resources>

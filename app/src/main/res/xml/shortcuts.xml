@@ -5,11 +5,11 @@
         android:icon="@drawable/ic_plus"
         android:shortcutDisabledMessage="@string/shortcut_feature_disabled"
         android:shortcutId="add_password"
-        android:shortcutLongLabel="@string/shortcut_add_password"
-        android:shortcutShortLabel="@string/shortcut_add_password">
+        android:shortcutLongLabel="@string/shortcut_label"
+        android:shortcutShortLabel="@string/shortcut_label">
         <intent
             android:action="android.intent.action.ACTION_RUN"
-            android:targetClass="com.achmaddaniel.kupass.ui.activities.HomeActivity"
-            android:targetPackage="com.achmaddaniel.kupass" />
+            android:targetClass="com.nielcode.kupass.ui.activities.HomeActivity"
+            android:targetPackage="com.nielcode.kupass" />
     </shortcut>
 </shortcuts>
