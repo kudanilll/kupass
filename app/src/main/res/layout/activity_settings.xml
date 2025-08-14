@@ -69,7 +69,7 @@
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:layout_marginEnd="16dp"
-                        android:src="@drawable/ic_languages"
+                        android:src="@drawable/ic_translate"
                         app:tint="?attr/colorOnSurface" />
 
                     <LinearLayout
@@ -136,7 +136,7 @@
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:layout_marginEnd="16dp"
-                        android:src="@drawable/ic_sunmoon"
+                        android:src="@drawable/ic_contrast"
                         app:tint="?attr/colorOnSurface" />
 
                     <LinearLayout
@@ -264,7 +264,7 @@
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:layout_marginEnd="16dp"
-                        android:src="@drawable/ic_user"
+                        android:src="@drawable/ic_account_circle"
                         app:tint="?attr/colorOnSurface" />
 
                     <LinearLayout
@@ -325,7 +325,7 @@
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:layout_marginEnd="16dp"
-                        android:src="@drawable/ic_scale"
+                        android:src="@drawable/ic_balance"
                         app:tint="?attr/colorOnSurface" />
 
                     <LinearLayout

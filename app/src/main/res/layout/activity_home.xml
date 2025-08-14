@@ -44,7 +44,7 @@
         app:backgroundTint="?attr/colorPrimaryContainer"
         app:elevation="0dp"
         app:hoveredFocusedTranslationZ="0dp"
-        app:icon="@drawable/ic_pencil"
+        app:icon="@drawable/ic_edit"
         app:iconTint="?attr/colorOnPrimaryContainer"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

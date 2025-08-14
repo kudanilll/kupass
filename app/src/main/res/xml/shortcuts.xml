@@ -2,7 +2,7 @@
 <shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
     <shortcut
         android:enabled="true"
-        android:icon="@drawable/ic_plus"
+        android:icon="@drawable/ic_add"
         android:shortcutDisabledMessage="@string/shortcut_feature_disabled"
         android:shortcutId="add_password"
         android:shortcutLongLabel="@string/shortcut_label"
