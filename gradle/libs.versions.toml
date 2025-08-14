@@ -7,7 +7,7 @@ espressoCore = "3.7.0"
 appcompat = "1.7.1"
 material = "1.14.0-alpha03"
 gson = "2.13.1"
-playServicesOssLicenses = "17.2.1"
+playServicesOssLicenses = "17.2.2"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
