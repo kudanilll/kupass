@@ -1,63 +1,67 @@
-# KuPass
-
-KuPass is an open source password manager application.
+# Kupass: An Open-Source Password Manager
 
 <p align="center">
-	<img src="https://github.com/achmaddaniel24/kupass/blob/master/image/play_store_512.png?raw=true" alt="kupass">
-</p>
+	<img src="/image/banner.png" alt="Kupass Banner">
+</p\>
 
-# Why KuPass?
+---
 
-## Design
+## Why Choose Kupass?
 
-* Designed with a focus on security and convenience.
-* KuPass allows users to store, manage, and secure their passwords with ease.
+Kupass is an open-source password manager designed with a focus on both **security** and **convenience**. It provides a simple yet powerful way to manage your passwords, so you can forget the frustration of forgotten login details and focus on what's important.
 
-## Open Source
+### Security and Open Source
 
-* Its main advantage is its open source nature.
-* Anyone can audit and contribute to its source code.
+Unlike many closed-source applications, Kupass is completely **open source**. This means anyone can **audit and contribute** to its source code, ensuring that its security protocols are transparent and trustworthy. Your personal data is kept secure and well-encrypted, giving you peace of mind.
 
-## Secure
+---
 
-* With KuPass, you can forget about the problem of forgotten passwords.
-* Your personal data is secure and well encrypted.
+## Screenshots
 
-# Screenshot
+Explore Kupass's user-friendly interface in both light and dark modes.
 
-### Light mode
+### Light Mode
 
 <p align="center">
-	<img src="https://github.com/achmaddaniel24/kupass/blob/master/image/light_home.jpg?raw=true" width="30%" alt="home light mode">
-	<img src="https://github.com/achmaddaniel24/kupass/blob/master/image/light_accessibility.jpg?raw=true" width="30%" alt="accessibility light mode">
-	<img src="https://github.com/achmaddaniel24/kupass/blob/master/image/light_password.jpg?raw=true" width="30%" alt="password light mode">
+	<img src="/image/light_home.jpg?raw=true" width="30%" alt="Light mode home screen">
+	<img src="/image/light_accessibility.jpg?raw=true" width="30%" alt="Light mode accessibility screen">
+	<img src="/image/light_password.jpg?raw=true" width="30%" alt="Light mode password screen">
 </p>
 
-### Dark mode
+### Dark Mode
 
 <p align="center">
-	<img src="https://github.com/achmaddaniel24/kupass/blob/master/image/dark_home.jpg?raw=true" width="30%" alt="home dark mode">
-	<img src="https://github.com/achmaddaniel24/kupass/blob/master/image/dark_accessibility.jpg?raw=true" width="30%" alt="accessibility dark mode">
-	<img src="https://github.com/achmaddaniel24/kupass/blob/master/image/dark_password.jpg?raw=true" width="30%" alt="password dark mode">
+	<img src="/image/dark_home.jpg?raw=true" width="30%" alt="Dark mode home screen">
+	<img src="/image/dark_accessibility.jpg?raw=true" width="30%" alt="Dark mode accessibility screen">
+	<img src="/image/dark_password.jpg?raw=true" width="30%" alt="Dark mode password screen">
 </p>
 
-## What's new?
+---
 
-- Update UI/UX
-- Import feature
+## What's New?
+
+- **Updated UI/UX**: Enjoy a more streamlined and modern user experience.
+- **Import Feature**: Easily import your passwords from other sources.
+
+---
 
 ## Download
 
-[Release Version 2.1](https://github.com/achmaddaniel24/kupass/releases/download/v2.0.0/app-release-sign.apk)
+Get the latest version of Kupass here:
 
-## Support
+[**Github Release Page**](https://github.com/kudanilll/kupass/releases)
 
-If you like my work, you can [buy me a coffee](https://www.buymeacoffee.com/kudanil) and share your
-thoughts 🎉 ☕
+---
+
+## Support and Contribute
+
+If you appreciate my work, you can [**buy me a coffee**](https://www.buymeacoffee.com/kudanil) and share your feedback! Your support helps me continue to improve Kupass.
+
+---
 
 ## License
 
-```License
+```
 MIT License
 
 Copyright (c) 2024 kudanill.
