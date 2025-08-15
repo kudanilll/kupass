@@ -19,7 +19,8 @@ import com.nielcode.kupass.utils.AppConfig
 
 class SettingsActivity : AppCompatActivity() {
 
-    private val TAG = "SettingsActivity"
+    // Debug tag
+    private val tag = "SettingsActivity"
 
     // Using lazy initialization for binding and preferences.
     private val binding by lazy { ActivitySettingsBinding.inflate(layoutInflater) }
@@ -29,7 +30,7 @@ class SettingsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         // This must be called before setContentView to apply dynamic colors correctly on recreation.
         if (prefs.dynamicColor == AppConfig.DynamicColors.Code.ENABLE && DynamicColors.isDynamicColorAvailable()) {
-            Log.d(TAG, "Applying dynamic colors")
+            Log.d(tag, "Applying dynamic colors")
             DynamicColors.applyToActivityIfAvailable(this)
         }
         setContentView(binding.root)
@@ -157,7 +158,7 @@ class SettingsActivity : AppCompatActivity() {
 
                 if (prefs.dynamicColor != newSetting) {
                     prefs.dynamicColor = newSetting
-                    Log.d(TAG, "Dynamic colors state: $newSetting")
+                    Log.d(tag, "Dynamic colors state: $newSetting")
 
                     // Restart the app to apply dynamic colors.
                     showRestartDialog()
