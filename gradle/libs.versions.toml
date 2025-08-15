@@ -11,6 +11,7 @@ appcompat = "1.7.1"
 material = "1.14.0-alpha03"
 gson = "2.13.1"
 playServicesOssLicenses = "17.2.2"
+coil = "2.7.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -20,8 +21,9 @@ espresso-core = { group = "androidx.test.espresso", name = "espresso-core", vers
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 google-android-material = { group = "com.google.android.material", name = "material", version.ref = "material" }
-gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
-gms-play-services-oss-licenses = { group = "com.google.android.gms", name = "play-services-oss-licenses", version.ref = "playServicesOssLicenses" }
+google-gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
+play-services-oss-licenses = { group = "com.google.android.gms", name = "play-services-oss-licenses", version.ref = "playServicesOssLicenses" }
+io-coil-kt = { group = "io.coil-kt", name = "coil", version.ref = "coil" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
