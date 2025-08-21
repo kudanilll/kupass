@@ -23,6 +23,11 @@
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
 
+    <!-- Navigation Drawer -->
+    <string name="nav_export">Export Password</string>
+    <string name="nav_import">Import Password</string>
+    <string name="nav_settings">Settings</string>
+
     <!-- Settings -->
     <string name="settings">Settings</string>
     <string name="settings_category_appearance">Appearance</string>

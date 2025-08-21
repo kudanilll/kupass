@@ -1,51 +1,79 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
+    android:fitsSystemWindows="false"
     tools:context=".ui.activities.HomeActivity">
 
-    <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/top_app_bar"
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:id="@+id/main_content"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?attr/colorSurface"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        android:layout_height="match_parent"
+        android:fitsSystemWindows="false">
 
-        <com.google.android.material.search.SearchBar
-            android:id="@+id/search_password"
+        <com.google.android.material.appbar.AppBarLayout
+            android:id="@+id/top_app_bar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/search_hint"
-            app:menu="@menu/searchbar_menu" />
-    </com.google.android.material.appbar.AppBarLayout>
+            android:background="?attr/colorSurface"
+            app:liftOnScroll="false">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/list_password"
+            <com.google.android.material.search.SearchBar
+                android:id="@+id/search_password"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/search_hint"
+                app:backgroundTint="?attr/colorSurface"
+                app:menu="@menu/searchbar_menu"
+                app:navigationIcon="@drawable/ic_menu"
+                app:tint="?attr/colorOnSurface" />
+        </com.google.android.material.appbar.AppBarLayout>
+
+        <!-- List scroll -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/list_password"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="true"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior"
+            tools:listitem="@layout/item_account" />
+
+        <!-- FAB -->
+        <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+            android:id="@+id/fab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_marginEnd="@dimen/fab_margin"
+            android:layout_marginBottom="32dp"
+            android:text="@string/fab_open"
+            android:textColor="?attr/colorOnPrimaryContainer"
+            app:backgroundTint="?attr/colorPrimaryContainer"
+            app:elevation="0dp"
+            app:hoveredFocusedTranslationZ="0dp"
+            app:icon="@drawable/ic_edit"
+            app:iconTint="?attr/colorOnPrimaryContainer"
+            app:pressedTranslationZ="0dp" />
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+    
+    <!-- Fullscreen SearchView -->
+    <com.google.android.material.search.SearchView
+        android:id="@+id/search_view"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:clipToPadding="false"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/top_app_bar"
-        tools:listitem="@layout/item_account" />
+        android:layout_height="match_parent"
+        android:hint="@string/search_hint"
+        app:backgroundTint="?attr/colorSurface"
+        app:layout_anchor="@id/search_password" />
 
-    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-        android:id="@+id/fab"
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/navigation_view"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/fab_margin"
-        android:text="@string/fab_open"
-        android:textColor="?attr/colorOnPrimaryContainer"
-        app:backgroundTint="?attr/colorPrimaryContainer"
-        app:elevation="0dp"
-        app:hoveredFocusedTranslationZ="0dp"
-        app:icon="@drawable/ic_edit"
-        app:iconTint="?attr/colorOnPrimaryContainer"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:pressedTranslationZ="0dp" />
-</androidx.constraintlayout.widget.ConstraintLayout>
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:fitsSystemWindows="true"
+        app:menu="@menu/nav_drawer_menu" />
+</androidx.drawerlayout.widget.DrawerLayout>

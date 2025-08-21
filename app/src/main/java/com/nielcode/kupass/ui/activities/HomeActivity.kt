@@ -8,9 +8,11 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.widget.doOnTextChanged
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.color.DynamicColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.search.SearchView
 import com.nielcode.kupass.R
 import com.nielcode.kupass.core.PermissionManager
 import com.nielcode.kupass.core.PreferenceManager
@@ -21,23 +23,23 @@ import com.nielcode.kupass.ui.adapters.AccountListAdapter
 import com.nielcode.kupass.utils.AppConfig
 import com.nielcode.kupass.utils.FileHandler
 import java.util.Date
+import java.util.Locale
 
 class HomeActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityHomeBinding
     private lateinit var permissionManager: PermissionManager
-
     private lateinit var accountAdapter: AccountListAdapter
-    private var siteAccounts = mutableListOf<SiteAccount>()
+
+    private val siteAccounts = mutableListOf<SiteAccount>()       // source of truth
+    private var filtered = listOf<SiteAccount>()                  // last filtered list
 
     private val requiredPermissions = if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) {
         listOf(
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE
         )
-    } else {
-        emptyList()
-    }
+    } else emptyList()
 
     private val exportFileLauncher = registerForActivityResult(
         ActivityResultContracts.CreateDocument("application/json")
@@ -75,9 +77,10 @@ class HomeActivity : AppCompatActivity() {
 
         setupPermissionManager()
         checkAndRequestPermissions()
-        setupButtonListeners()
-
         setupRecyclerView()
+        setupTopBarAndDrawer()
+        setupSearch()
+        setupNavigationView()
         loadAndDisplayData()
     }
 
@@ -107,9 +110,7 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun checkAndRequestPermissions() {
-        if (requiredPermissions.isEmpty() || permissionManager.arePermissionsGranted()) {
-            return
-        }
+        if (requiredPermissions.isEmpty() || permissionManager.arePermissionsGranted()) return
         MaterialAlertDialogBuilder(this)
             .setTitle(getString(R.string.dialog_title_permission))
             .setMessage(getString(R.string.dialog_message_permission))
@@ -121,11 +122,60 @@ class HomeActivity : AppCompatActivity() {
             .show()
     }
 
-    private fun setupButtonListeners() {
+    private fun setupRecyclerView() {
+        accountAdapter = AccountListAdapter(
+            onLongClick = { account -> showDeleteConfirmationDialog(account) },
+            onClick = { account ->
+                // TODO: Navigate to DetailActivity
+            },
+        )
+        binding.listPassword.apply {
+            adapter = accountAdapter
+            layoutManager = LinearLayoutManager(this@HomeActivity)
+        }
+    }
+
+    private fun setupTopBarAndDrawer() {
+        // Set layout padding top
+        binding.mainContent.setOnApplyWindowInsetsListener { view, insets ->
+            val statusBarHeight = insets.systemWindowInsetTop
+            binding.mainContent.setPadding(0, statusBarHeight, 0, 0)
+            insets
+        }
+
+        // Hamburger opens the left drawer
+        binding.searchPassword.setNavigationOnClickListener {
+            binding.drawerLayout.open()
+        }
+
+        // Right search icon opens the SearchView
         binding.searchPassword.setOnMenuItemClickListener { item ->
-            when (item.itemId) {
-                R.id.menu_settings -> {
+            if (item.itemId == R.id.menu_search) {
+                binding.searchView.show()
+                true
+            } else false
+        }
+
+        // Link SearchView with SearchBar (handles motion + insets)
+        binding.searchView.setupWithSearchBar(binding.searchPassword)
+    }
+
+    private fun setupNavigationView() {
+        binding.navigationView.setNavigationItemSelectedListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.nav_settings -> {
+                    binding.drawerLayout.closeDrawers()
                     startActivity(Intent(this, SettingsActivity::class.java))
+                    true
+                }
+
+                R.id.nav_export -> {
+                    // TODO: Handle export
+                    true
+                }
+
+                R.id.nav_import -> {
+                    // TODO: Handle import
                     true
                 }
 
@@ -134,24 +184,49 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupRecyclerView() {
-        accountAdapter = AccountListAdapter(
-            onLongClick = { account: SiteAccount -> showDeleteConfirmationDialog(account) },
-            onClick = { account: SiteAccount ->
-                Toast.makeText(this, "${account.site} clicked", Toast.LENGTH_SHORT).show()
-                // TODO: Navigate to DetailActivity
-            },
-        )
+    private fun setupSearch() {
+        // Real-time filtering
+        val editText = binding.searchView.editText
+        editText.doOnTextChanged { text, _, _, _ ->
+            filterAndSubmit(text?.toString().orEmpty())
+        }
 
-        binding.listPassword.apply {
-            adapter = accountAdapter
-            layoutManager = LinearLayoutManager(this@HomeActivity)
+        // Submit from keyboard IME
+        editText.setOnEditorActionListener { v, _, _ ->
+            filterAndSubmit(v.text.toString())
+            binding.searchView.hide()
+            true
+        }
+
+        // Reset list when SearchView is closed
+        binding.searchView.addTransitionListener { _, _, newState ->
+            if (newState == SearchView.TransitionState.HIDDEN) {
+                accountAdapter.submitList(siteAccounts.toList())
+                filtered = siteAccounts
+            }
         }
     }
 
+    private fun filterAndSubmit(query: String) {
+        val q = query.trim().lowercase(Locale.getDefault())
+        filtered = if (q.isEmpty()) {
+            siteAccounts
+        } else {
+            siteAccounts.filter { account ->
+                val inSite = account.site.lowercase().contains(q)
+                val inNote = account.note?.lowercase()?.contains(q) == true
+                val inCreds = account.credentials.any { cred ->
+                    (cred.username.lowercase().contains(q))
+                }
+                inSite || inNote || inCreds
+            }
+        }
+        accountAdapter.submitList(filtered.toList())
+    }
+
     private fun loadAndDisplayData() {
-        // Dummy data
-        siteAccounts = mutableListOf(
+        siteAccounts.clear()
+        siteAccounts += listOf(
             SiteAccount(
                 id = 1, site = "Google", note = "Akun utama", credentials = listOf(
                     UserCredential("johndoe@gmail.com", "password123", Date()),
@@ -172,16 +247,15 @@ class HomeActivity : AppCompatActivity() {
             )
         )
         for (i in 4..20) {
-            siteAccounts.add(
-                SiteAccount(
-                    id = i.toLong(), site = "Website $i", note = "Catatan $i", credentials = listOf(
-                        UserCredential("user$i@web.com", "pass$i", Date())
-                    )
-                )
+            siteAccounts += SiteAccount(
+                id = i.toLong(),
+                site = "Website $i",
+                note = "Catatan $i",
+                credentials = listOf(UserCredential("user$i@web.com", "pass$i", Date()))
             )
         }
-
-        accountAdapter.submitList(siteAccounts)
+        accountAdapter.submitList(siteAccounts.toList())
+        filtered = siteAccounts
     }
 
     private fun showDeleteConfirmationDialog(accountToDelete: SiteAccount) {
@@ -190,12 +264,8 @@ class HomeActivity : AppCompatActivity() {
             .setMessage("${getString(R.string.dialog_message_delete)} ${accountToDelete.site}?")
             .setNegativeButton(getString(R.string.dialog_cancel), null)
             .setPositiveButton(getString(R.string.dialog_delete)) { _, _ ->
-                // Logic for removing items from the source list
                 siteAccounts.remove(accountToDelete)
-                // Send the updated list to the adapter
-                // Important: send a copy of the new list for DiffUtil to work
                 accountAdapter.submitList(siteAccounts.toList())
-
                 Toast.makeText(this, getString(R.string.toast_success_delete), Toast.LENGTH_SHORT)
                     .show()
             }

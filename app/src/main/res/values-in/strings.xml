@@ -23,6 +23,11 @@
     <string name="theme_light">Terang</string>
     <string name="theme_dark">Gelap</string>
 
+    <!-- Navigation Drawer -->
+    <string name="nav_export">Ekspor Kata Sandi</string>
+    <string name="nav_import">Impor Kata Sandi</string>
+    <string name="nav_settings">Pengaturan</string>
+
     <!-- Settings -->
     <string name="settings">Pengaturan</string>
     <string name="settings_category_appearance">Tampilan</string>
