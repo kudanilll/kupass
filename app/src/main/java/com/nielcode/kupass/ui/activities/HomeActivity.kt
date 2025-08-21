@@ -8,27 +8,28 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.color.DynamicColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.nielcode.kupass.R
 import com.nielcode.kupass.core.PermissionManager
 import com.nielcode.kupass.core.PreferenceManager
 import com.nielcode.kupass.databinding.ActivityHomeBinding
-import com.nielcode.kupass.ui.adapters.ListPasswordAdapter
-import com.nielcode.kupass.ui.adapters.ListPasswordItem
+import com.nielcode.kupass.model.SiteAccount
+import com.nielcode.kupass.model.UserCredential
+import com.nielcode.kupass.ui.adapters.AccountListAdapter
 import com.nielcode.kupass.utils.AppConfig
 import com.nielcode.kupass.utils.FileHandler
+import java.util.Date
 
 class HomeActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityHomeBinding
     private lateinit var permissionManager: PermissionManager
-    private lateinit var adapter: ListPasswordAdapter
-    private var listPasswordItems = ArrayList<ListPasswordItem>()
 
-    // Daftar permission yang dibutuhkan.
-    // Untuk Android 13 (API 33) ke atas, izin ini tidak lagi diperlukan untuk
-    // mengakses file melalui Storage Access Framework (SAF).
+    private lateinit var accountAdapter: AccountListAdapter
+    private var siteAccounts = mutableListOf<SiteAccount>()
+
     private val requiredPermissions = if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) {
         listOf(
             Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -38,9 +39,6 @@ class HomeActivity : AppCompatActivity() {
         emptyList()
     }
 
-    /**
-     * Launcher untuk membuat file (Export). Menggantikan onActivityResult.
-     */
     private val exportFileLauncher = registerForActivityResult(
         ActivityResultContracts.CreateDocument("application/json")
     ) { uri: Uri? ->
@@ -53,19 +51,14 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * Launcher untuk memilih file (Import). Menggantikan onActivityResult.
-     */
     private val importFileLauncher = registerForActivityResult(
         ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         uri?.let {
             val content = FileHandler.readFileContent(this, it)
             if (content != null) {
-                // TODO: Lakukan sesuatu dengan konten yang diimpor, misal parsing JSON
                 Toast.makeText(this, getString(R.string.toast_success_import), Toast.LENGTH_SHORT)
                     .show()
-                // Contoh: new MaterialAlertDialogBuilder(this).setMessage(content).show()
             } else {
                 Toast.makeText(this, getString(R.string.toast_failed_import), Toast.LENGTH_SHORT)
                     .show()
@@ -82,10 +75,10 @@ class HomeActivity : AppCompatActivity() {
 
         setupPermissionManager()
         checkAndRequestPermissions()
-
         setupButtonListeners()
-        loadDummyData()
-        updateListView()
+
+        setupRecyclerView()
+        loadAndDisplayData()
     }
 
     private fun applyDynamicColors() {
@@ -100,14 +93,13 @@ class HomeActivity : AppCompatActivity() {
             activity = this,
             permissions = requiredPermissions,
             onGranted = {
-                // Semua izin diberikan, aplikasi bisa berjalan normal
-                Toast.makeText(this, "Permissions Granted", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.permission_granted), Toast.LENGTH_SHORT)
+                    .show()
             },
             onDenied = { deniedPermissions ->
-                // Ada izin yang ditolak, beri tahu pengguna
                 Toast.makeText(
                     this,
-                    "Permissions Denied: ${deniedPermissions.joinToString()}",
+                    "${getString(R.string.permission_denied)}: ${deniedPermissions.joinToString()}",
                     Toast.LENGTH_LONG
                 ).show()
             }
@@ -115,12 +107,9 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun checkAndRequestPermissions() {
-        if (permissionManager.arePermissionsGranted()) {
-            // Izin sudah ada, tidak perlu melakukan apa-apa
+        if (requiredPermissions.isEmpty() || permissionManager.arePermissionsGranted()) {
             return
         }
-
-        // Tampilkan dialog penjelasan sebelum meminta izin
         MaterialAlertDialogBuilder(this)
             .setTitle(getString(R.string.dialog_title_permission))
             .setMessage(getString(R.string.dialog_message_permission))
@@ -139,64 +128,76 @@ class HomeActivity : AppCompatActivity() {
                     startActivity(Intent(this, SettingsActivity::class.java))
                     true
                 }
-                // TODO: Tambahkan listener untuk menu import/export
-                // R.id.menu_export -> {
-                //    exportFileLauncher.launch("kupass_backup.json")
-                //    true
-                // }
-                // R.id.menu_import -> {
-                //    importFileLauncher.launch("*/*")
-                //    true
-                // }
+
                 else -> false
             }
         }
     }
 
-    private fun loadDummyData() {
-        // Hapus data lama untuk menghindari duplikasi
-        listPasswordItems.clear()
-        // Tambah dummy data
-        for (i in 0 until 20) {
-            listPasswordItems.add(
-                ListPasswordItem(
-                    i.toLong(),
-                    "Password $i",
-                    "Username",
-                    "Password",
-                    "Note"
+    private fun setupRecyclerView() {
+        accountAdapter = AccountListAdapter(
+            onLongClick = { account: SiteAccount -> showDeleteConfirmationDialog(account) },
+            onClick = { account: SiteAccount ->
+                Toast.makeText(this, "${account.site} clicked", Toast.LENGTH_SHORT).show()
+                // TODO: Navigate to DetailActivity
+            },
+        )
+
+        binding.listPassword.apply {
+            adapter = accountAdapter
+            layoutManager = LinearLayoutManager(this@HomeActivity)
+        }
+    }
+
+    private fun loadAndDisplayData() {
+        // Dummy data
+        siteAccounts = mutableListOf(
+            SiteAccount(
+                id = 1, site = "Google", note = "Akun utama", credentials = listOf(
+                    UserCredential("johndoe@gmail.com", "password123", Date()),
+                    UserCredential("secondary.acc@gmail.com", "password456", Date())
+                )
+            ),
+            SiteAccount(
+                id = 2, site = "Facebook", note = "", credentials = listOf(
+                    UserCredential("john_doe", "fb_pass", Date())
+                )
+            ),
+            SiteAccount(
+                id = 3, site = "Github", note = "Akun kerja", credentials = listOf(
+                    UserCredential("johndoe_dev", "git_secret", Date()),
+                    UserCredential("johndoe_dev", "git_secret", Date()),
+                    UserCredential("johndoe_dev", "git_secret", Date()),
+                )
+            )
+        )
+        for (i in 4..20) {
+            siteAccounts.add(
+                SiteAccount(
+                    id = i.toLong(), site = "Website $i", note = "Catatan $i", credentials = listOf(
+                        UserCredential("user$i@web.com", "pass$i", Date())
+                    )
                 )
             )
         }
+
+        accountAdapter.submitList(siteAccounts)
     }
 
-    private fun updateListView() {
-        adapter = ListPasswordAdapter(this, listPasswordItems)
-        binding.listPassword.adapter = adapter
-
-        binding.listPassword.setOnItemClickListener { _, _, position, _ ->
-            // Handle item click
-            val item = listPasswordItems[position]
-            Toast.makeText(this, "Clicked on ${item.passwordName}", Toast.LENGTH_SHORT).show()
-        }
-
-        binding.listPassword.setOnItemLongClickListener { _, _, position, _ ->
-            showDeleteConfirmationDialog(position)
-            true // Mengindikasikan bahwa event telah di-handle
-        }
-    }
-
-    private fun showDeleteConfirmationDialog(position: Int) {
+    private fun showDeleteConfirmationDialog(accountToDelete: SiteAccount) {
         MaterialAlertDialogBuilder(this)
             .setTitle(getString(R.string.dialog_title_delete))
-            .setMessage(getString(R.string.dialog_message_delete))
+            .setMessage("${getString(R.string.dialog_message_delete)} ${accountToDelete.site}?")
             .setNegativeButton(getString(R.string.dialog_cancel), null)
             .setPositiveButton(getString(R.string.dialog_delete)) { _, _ ->
-                // Logika untuk menghapus item
-                listPasswordItems.removeAt(position)
+                // Logic for removing items from the source list
+                siteAccounts.remove(accountToDelete)
+                // Send the updated list to the adapter
+                // Important: send a copy of the new list for DiffUtil to work
+                accountAdapter.submitList(siteAccounts.toList())
+
                 Toast.makeText(this, getString(R.string.toast_success_delete), Toast.LENGTH_SHORT)
                     .show()
-                adapter.notifyDataSetChanged() // Beri tahu adapter bahwa data telah berubah
             }
             .show()
     }

@@ -54,7 +54,7 @@
     <string name="dialog_title_delete">Delete password</string>
     <string name="dialog_title_permission">Permission</string>
     <string name="dialog_message_language">We need to restart app for change language</string>
-    <string name="dialog_message_delete">Are you sure to delete this password?</string>
+    <string name="dialog_message_delete">Are you sure you want to delete</string>
     <string name="dialog_message_permission">We need permission to access write files</string>
     <string name="dialog_cancel">CANCEL</string>
     <string name="dialog_apply">APPLY</string>
@@ -71,4 +71,8 @@
     <string name="username_hint">Enter username</string>
     <string name="password_hint">Enter password</string>
     <string name="note_hint">Enter note</string>
+
+    <!-- Permission -->
+    <string name="permission_granted">Permission granted</string>
+    <string name="permission_denied">Permission denied</string>
 </resources>

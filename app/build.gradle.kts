@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
+    alias(libs.plugins.navigation.safe.args)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.parcelize)
     alias(libs.plugins.oss.licenses)
 }
 
@@ -10,7 +12,7 @@ android {
 
     defaultConfig {
         applicationId = "com.nielcode.kupass"
-        minSdk = 26
+        minSdk = 27
         targetSdk = 36
         versionCode = 4
         versionName = "3.0.0"

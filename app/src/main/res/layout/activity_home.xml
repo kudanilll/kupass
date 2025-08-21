@@ -24,15 +24,14 @@
             app:menu="@menu/searchbar_menu" />
     </com.google.android.material.appbar.AppBarLayout>
 
-    <ListView
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/list_password"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:divider="@null"
-        android:dividerHeight="4dp"
-        android:scrollbars="none"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/top_app_bar" />
+        android:clipToPadding="false"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/top_app_bar"
+        tools:listitem="@layout/item_account" />
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/fab"

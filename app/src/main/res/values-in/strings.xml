@@ -54,7 +54,7 @@
     <string name="dialog_title_delete">Hapus kata sandi</string>
     <string name="dialog_title_permission">Izin aplikasi</string>
     <string name="dialog_message_language">Kita butuh memulai ulang aplikasi untuk mengganti bahasa</string>
-    <string name="dialog_message_delete">Apakah anda yakin untuk menghapus kata sandi ini?</string>
+    <string name="dialog_message_delete">Apakah Anda yakin ingin menghapus</string>
     <string name="dialog_message_permission">Kita memerlukan akses untuk menulis files</string>
     <string name="dialog_cancel">BATAL</string>
     <string name="dialog_apply">TERAPKAN</string>
@@ -71,4 +71,8 @@
     <string name="username_hint">Masukan username</string>
     <string name="password_hint">Masukan password</string>
     <string name="note_hint">Masukan catatan</string>
+
+    <!-- Permission -->
+    <string name="permission_granted">Izin diberikan</string>
+    <string name="permission_denied">Izin ditolak</string>
 </resources>
