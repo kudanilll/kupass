@@ -6,6 +6,9 @@
     <string name="disable">Disable</string>
     <string name="not_supported">Not supported on this device</string>
     <string name="github">Github</string>
+    <string name="create_new_password">Create new password</string>
+
+    <!-- Create Password -->
 
     <!-- FAB -->
     <string name="fab_open">Create</string>
@@ -52,7 +55,14 @@
     <string name="toast_failed_import">Error reading JSON file</string>
 
     <!-- Error -->
-    <string name="error_column_is_empty">This column is required</string>
+    <string name="error_required">This field is required</string>
+    <string name="error_min_password">Minimum 8 characters</string>
+    <string name="error_invalid_email">Invalid email format</string>
+
+    <!-- Strength -->
+    <string name="strength_weak">Weak</string>
+    <string name="strength_medium">Medium</string>
+    <string name="strength_strong">Strong</string>
 
     <!-- Dialog -->
     <string name="dialog_title_export">Export password as</string>
@@ -70,13 +80,14 @@
     <string name="dialog_restart">RESTART</string>
     <string name="dialog_save">SAVE</string>
     <string name="dialog_request">REQUEST</string>
+    <string name="dialog_generate">GENERATE</string>
 
     <!-- Hint -->
     <string name="search_hint">Search password</string>
     <string name="site_or_app_hint">Enter site or app</string>
     <string name="username_hint">Enter username</string>
     <string name="password_hint">Enter password</string>
-    <string name="note_hint">Enter note</string>
+    <string name="note_hint">Notes (optional)</string>
 
     <!-- Permission -->
     <string name="permission_granted">Permission granted</string>

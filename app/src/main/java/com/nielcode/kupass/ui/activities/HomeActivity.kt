@@ -84,6 +84,10 @@ class HomeActivity : AppCompatActivity() {
         setupSearch()
         setupNavigationView()
         loadAndDisplayData()
+
+        binding.fab.setOnClickListener {
+            startActivity(Intent(this, CreatePasswordActivity::class.java))
+        }
     }
 
     private fun applyDynamicColors() {
