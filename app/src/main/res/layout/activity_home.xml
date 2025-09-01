@@ -14,31 +14,25 @@
         android:layout_height="match_parent"
         android:fitsSystemWindows="false">
 
-        <com.google.android.material.appbar.AppBarLayout
-            android:id="@+id/top_app_bar"
+        <!-- Fixed SearchBar -->
+        <com.google.android.material.search.SearchBar
+            android:id="@+id/search_password"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="?attr/colorSurface"
-            app:liftOnScroll="false">
-
-            <com.google.android.material.search.SearchBar
-                android:id="@+id/search_password"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="@string/search_hint"
-                app:backgroundTint="?attr/colorSurface"
-                app:menu="@menu/searchbar_menu"
-                app:navigationIcon="@drawable/ic_menu"
-                app:tint="?attr/colorOnSurface" />
-        </com.google.android.material.appbar.AppBarLayout>
+            android:layout_gravity="top"
+            android:hint="@string/search_hint"
+            app:backgroundTint="?attr/colorSurface"
+            app:menu="@menu/searchbar_menu"
+            app:navigationIcon="@drawable/ic_menu"
+            app:tint="?attr/colorOnSurface" />
 
         <!-- List scroll -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/list_password"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_marginTop="76dp"
             android:clipToPadding="true"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior"
             tools:listitem="@layout/item_account" />
 
         <!-- FAB -->
@@ -59,7 +53,7 @@
             app:pressedTranslationZ="0dp" />
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
-    
+
     <!-- Fullscreen SearchView -->
     <com.google.android.material.search.SearchView
         android:id="@+id/search_view"
@@ -75,5 +69,7 @@
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:fitsSystemWindows="true"
+        app:headerLayout="@layout/nav_header"
         app:menu="@menu/nav_drawer_menu" />
+
 </androidx.drawerlayout.widget.DrawerLayout>

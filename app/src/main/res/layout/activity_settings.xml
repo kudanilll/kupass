@@ -3,22 +3,19 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorSurface"
     android:fitsSystemWindows="true"
     tools:context=".ui.activities.SettingsActivity">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/top_app_bar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?attr/colorSurface">
+        android:layout_height="wrap_content">
 
         <com.google.android.material.appbar.CollapsingToolbarLayout
             style="?attr/collapsingToolbarLayoutLargeSize"
             android:layout_width="match_parent"
             android:layout_height="?attr/collapsingToolbarLayoutLargeSize"
             app:collapsedTitleGravity="start"
-            app:contentScrim="?colorSurface"
             app:expandedTitleTextAppearance="@style/TextAppearance.Material3.HeadlineMedium.Emphasized"
             app:layout_scrollFlags="scroll|exitUntilCollapsed"
             app:titleCollapseMode="scale">
@@ -30,7 +27,7 @@
                 app:layout_collapseMode="pin"
                 app:navigationIcon="?attr/homeAsUpIndicator"
                 app:title="@string/settings"
-                app:titleTextColor="?attr/colorOnSurface" />
+                app:titleTextColor="?attr/colorOnBackground" />
 
         </com.google.android.material.appbar.CollapsingToolbarLayout>
     </com.google.android.material.appbar.AppBarLayout>
@@ -53,7 +50,7 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:foreground="?attr/selectableItemBackground"
-                app:cardBackgroundColor="?attr/colorSurfaceContainer"
+                app:cardBackgroundColor="?attr/colorSurfaceVariant"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="0dp"
                 app:strokeWidth="0dp">
@@ -120,7 +117,7 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:foreground="?attr/selectableItemBackground"
-                app:cardBackgroundColor="?attr/colorSurfaceContainer"
+                app:cardBackgroundColor="?attr/colorSurfaceVariant"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="0dp"
                 app:strokeWidth="0dp">
@@ -181,7 +178,7 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:foreground="?attr/selectableItemBackground"
-                app:cardBackgroundColor="?attr/colorSurfaceContainer"
+                app:cardBackgroundColor="?attr/colorSurfaceVariant"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="0dp"
                 app:strokeWidth="0dp">
@@ -248,7 +245,7 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:foreground="?attr/selectableItemBackground"
-                app:cardBackgroundColor="?attr/colorSurfaceContainer"
+                app:cardBackgroundColor="?attr/colorSurfaceVariant"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="0dp"
                 app:strokeWidth="0dp">
@@ -309,7 +306,7 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:foreground="?attr/selectableItemBackground"
-                app:cardBackgroundColor="?attr/colorSurfaceContainer"
+                app:cardBackgroundColor="?attr/colorSurfaceVariant"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="0dp"
                 app:strokeWidth="0dp">
@@ -369,7 +366,7 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:foreground="?attr/selectableItemBackground"
-                app:cardBackgroundColor="?attr/colorSurfaceContainer"
+                app:cardBackgroundColor="?attr/colorSurfaceVariant"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="0dp"
                 app:strokeWidth="0dp">

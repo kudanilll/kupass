@@ -5,6 +5,7 @@
     <string name="enable">Enable</string>
     <string name="disable">Disable</string>
     <string name="not_supported">Not supported on this device</string>
+    <string name="github">Github</string>
 
     <!-- FAB -->
     <string name="fab_open">Create</string>

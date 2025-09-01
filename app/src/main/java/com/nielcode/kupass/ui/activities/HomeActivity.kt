@@ -13,10 +13,12 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.color.DynamicColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.search.SearchView
+import com.nielcode.kupass.BuildConfig
 import com.nielcode.kupass.R
 import com.nielcode.kupass.core.PermissionManager
 import com.nielcode.kupass.core.PreferenceManager
 import com.nielcode.kupass.databinding.ActivityHomeBinding
+import com.nielcode.kupass.databinding.NavHeaderBinding
 import com.nielcode.kupass.model.SiteAccount
 import com.nielcode.kupass.model.UserCredential
 import com.nielcode.kupass.ui.adapters.AccountListAdapter
@@ -161,7 +163,31 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun setupNavigationView() {
-        binding.navigationView.setNavigationItemSelectedListener { menuItem ->
+        val navigationView = binding.navigationView
+
+        // Set Version Text
+        val headerView = navigationView.getHeaderView(0)
+        val headerBinding = NavHeaderBinding.bind(headerView)
+        headerBinding.appVersion.text = BuildConfig.VERSION_NAME
+
+        /*
+        // Set Footer View
+        layoutInflater.inflate(R.layout.nav_header, navigationView, false)
+        val footerView = layoutInflater.inflate(R.layout.nav_footer, navigationView, false)
+        navigationView.addView(footerView)
+        val params = footerView.layoutParams
+        footerView.layoutParams = params
+
+        // Footer Button Click Listener
+        val footerBinding = NavFooterBinding.bind(footerView)
+        footerBinding.githubButton.setOnClickListener {
+            val intent = Intent(Intent.ACTION_VIEW, BuildConfig.GIT_URL.toUri())
+            startActivity(intent)
+        }
+        */
+
+        // Set Navigation View Item Click Listener
+        navigationView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.nav_settings -> {
                     binding.drawerLayout.closeDrawers()

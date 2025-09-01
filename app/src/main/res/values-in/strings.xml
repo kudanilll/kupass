@@ -5,6 +5,7 @@
     <string name="enable">Aktif</string>
     <string name="disable">Nonaktif</string>
     <string name="not_supported">Tidak didukung pada perangkat ini</string>
+    <string name="github">Github</string>
 
     <!-- FAB -->
     <string name="fab_open">Tambah</string>
