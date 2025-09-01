@@ -13,6 +13,9 @@ material = "1.14.0-alpha03"
 navigationSafeArgsGradlePlugin = "2.9.3"
 ossLicenses = "0.10.7"
 playServicesOssLicenses = "17.2.2"
+sqlcipher = "4.5.6"
+sqlite = "2.3.1"
+tink = "1.8.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -25,6 +28,9 @@ google-android-material = { group = "com.google.android.material", name = "mater
 google-gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 play-services-oss-licenses = { group = "com.google.android.gms", name = "play-services-oss-licenses", version.ref = "playServicesOssLicenses" }
 io-coil-kt = { group = "io.coil-kt", name = "coil", version.ref = "coil" }
+android-database-sqlcipher = { group = "net.zetetic", name = "android-database-sqlcipher", version.ref = "sqlcipher" }
+androidx-sqlite = { group = "androidx.sqlite", name = "sqlite", version.ref = "sqlite" }
+tink-android = { group = "com.google.crypto.tink", name = "tink-android", version.ref = "tink" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -61,6 +61,14 @@ dependencies {
     implementation(libs.google.gson)
     implementation(libs.io.coil.kt)
     implementation(libs.play.services.oss.licenses)
+
+    // SQLCipher for Android (DB full-disk encryption)
+    implementation(libs.android.database.sqlcipher)
+    implementation(libs.androidx.sqlite)
+
+    // Tink (field-level encryption AES-GCM)
+    implementation(libs.tink.android)
+    
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
