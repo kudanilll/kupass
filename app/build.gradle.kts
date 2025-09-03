@@ -1,10 +1,10 @@
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.navigation.safe.args)
+    alias(libs.plugins.ksp)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.parcelize)
+    alias(libs.plugins.navigation.safe.args)
     alias(libs.plugins.oss.licenses)
-    alias(libs.plugins.ksp)
 }
 
 android {
@@ -61,29 +61,24 @@ ksp {
 }
 
 dependencies {
+    androidTestImplementation(libs.espresso.core)
+    androidTestImplementation(libs.ext.junit)
+
+    implementation(libs.android.database.sqlcipher)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.security.crypto)
+    implementation(libs.androidx.sqlite)
     implementation(libs.google.android.material)
     implementation(libs.google.gson)
     implementation(libs.io.coil.kt)
     implementation(libs.play.services.oss.licenses)
-
-    // SQLCipher for Android (DB full-disk encryption)
-    implementation(libs.android.database.sqlcipher)
-    implementation(libs.androidx.sqlite)
-
-    // Tink (field-level encryption AES-GCM)
-    implementation(libs.tink.android)
-
     implementation(libs.room.ktx)
     implementation(libs.room.runtime)
+    implementation(libs.tink.android)
+
     ksp(libs.room.compiler)
 
-    // runtimeOnly(libs.androidx.security.crypto)
-    implementation(libs.androidx.security.crypto)
-
     testImplementation(libs.junit)
-    androidTestImplementation(libs.ext.junit)
-    androidTestImplementation(libs.espresso.core)
 }
