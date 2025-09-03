@@ -1,5 +1,6 @@
 [versions]
 agp = "8.11.1"
+androidDatabaseSqlcipher = "4.5.4"
 appcompat = "1.7.1"
 coil = "2.7.0"
 coreKtx = "1.17.0"
@@ -13,12 +14,16 @@ material = "1.14.0-alpha03"
 navigationSafeArgsGradlePlugin = "2.9.3"
 ossLicenses = "0.10.7"
 playServicesOssLicenses = "17.2.2"
-sqlcipher = "4.5.6"
+securityCrypto = "1.1.0"
 sqlite = "2.3.1"
 tink = "1.8.0"
+room = "2.7.2"
+ksp = "2.2.10-2.0.2"
 
 [libraries]
+android-database-sqlcipher = { group = "net.zetetic", name = "android-database-sqlcipher", version.ref = "androidDatabaseSqlcipher" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "securityCrypto" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
@@ -28,9 +33,11 @@ google-android-material = { group = "com.google.android.material", name = "mater
 google-gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 play-services-oss-licenses = { group = "com.google.android.gms", name = "play-services-oss-licenses", version.ref = "playServicesOssLicenses" }
 io-coil-kt = { group = "io.coil-kt", name = "coil", version.ref = "coil" }
-android-database-sqlcipher = { group = "net.zetetic", name = "android-database-sqlcipher", version.ref = "sqlcipher" }
 androidx-sqlite = { group = "androidx.sqlite", name = "sqlite", version.ref = "sqlite" }
 tink-android = { group = "com.google.crypto.tink", name = "tink-android", version.ref = "tink" }
+room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
+room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
+room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -38,3 +45,4 @@ navigation-safe-args = { id = "androidx.navigation.safeargs.kotlin", version.ref
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }
 oss-licenses = { id = "com.google.android.gms.oss-licenses-plugin", version.ref = "ossLicenses" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

@@ -9,6 +9,7 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doOnTextChanged
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.color.DynamicColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -17,14 +18,17 @@ import com.nielcode.kupass.BuildConfig
 import com.nielcode.kupass.R
 import com.nielcode.kupass.core.PermissionManager
 import com.nielcode.kupass.core.PreferenceManager
+import com.nielcode.kupass.core.crypto.CryptoManager
+import com.nielcode.kupass.core.crypto.SqlCipherKey
+import com.nielcode.kupass.data.local.AppDatabase
+import com.nielcode.kupass.data.repository.PasswordRepositoryImpl
 import com.nielcode.kupass.databinding.ActivityHomeBinding
 import com.nielcode.kupass.databinding.NavHeaderBinding
 import com.nielcode.kupass.model.SiteAccount
-import com.nielcode.kupass.model.UserCredential
 import com.nielcode.kupass.ui.adapters.AccountListAdapter
 import com.nielcode.kupass.utils.AppConfig
 import com.nielcode.kupass.utils.FileHandler
-import java.util.Date
+import kotlinx.coroutines.launch
 import java.util.Locale
 
 class HomeActivity : AppCompatActivity() {
@@ -68,6 +72,13 @@ class HomeActivity : AppCompatActivity() {
                     .show()
             }
         }
+    }
+
+    private val repo by lazy {
+        val passphrase = SqlCipherKey.getOrCreate(this)
+        val db = AppDatabase.get(this, passphrase)
+        val crypto = CryptoManager(this)
+        PasswordRepositoryImpl(db.siteDao(), crypto)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -255,37 +266,50 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun loadAndDisplayData() {
-        siteAccounts.clear()
-        siteAccounts += listOf(
-            SiteAccount(
-                id = 1, site = "Google", note = "Akun utama", credentials = listOf(
-                    UserCredential("johndoe@gmail.com", "password123", Date()),
-                    UserCredential("secondary.acc@gmail.com", "password456", Date())
-                )
-            ),
-            SiteAccount(
-                id = 2, site = "Facebook", note = "", credentials = listOf(
-                    UserCredential("john_doe", "fb_pass", Date())
-                )
-            ),
-            SiteAccount(
-                id = 3, site = "Github", note = "Akun kerja", credentials = listOf(
-                    UserCredential("johndoe_dev", "git_secret", Date()),
-                    UserCredential("johndoe_dev", "git_secret", Date()),
-                    UserCredential("johndoe_dev", "git_secret", Date()),
-                )
-            )
-        )
-        for (i in 4..20) {
-            siteAccounts += SiteAccount(
-                id = i.toLong(),
-                site = "Website $i",
-                note = "Catatan $i",
-                credentials = listOf(UserCredential("user$i@web.com", "pass$i", Date()))
-            )
-        }
-        accountAdapter.submitList(siteAccounts.toList())
-        filtered = siteAccounts
+        lifecycle.addObserver(object : androidx.lifecycle.DefaultLifecycleObserver {
+            override fun onStart(owner: androidx.lifecycle.LifecycleOwner) {
+                super.onStart(owner)
+                lifecycleScope.launch {
+                    repo.observeAll().collect { list ->
+                        siteAccounts.clear()
+                        siteAccounts += list
+                        accountAdapter.submitList(list.toList())
+                        filtered = list
+                    }
+                }
+            }
+        })
+//        siteAccounts.clear()
+//        siteAccounts += listOf(
+//            SiteAccount(
+//                id = 1, site = "Google", note = "Akun utama", credentials = listOf(
+//                    UserCredential("johndoe@gmail.com", "password123", Date()),
+//                    UserCredential("secondary.acc@gmail.com", "password456", Date())
+//                )
+//            ),
+//            SiteAccount(
+//                id = 2, site = "Facebook", note = "", credentials = listOf(
+//                    UserCredential("john_doe", "fb_pass", Date())
+//                )
+//            ),
+//            SiteAccount(
+//                id = 3, site = "Github", note = "Akun kerja", credentials = listOf(
+//                    UserCredential("johndoe_dev", "git_secret", Date()),
+//                    UserCredential("johndoe_dev", "git_secret", Date()),
+//                    UserCredential("johndoe_dev", "git_secret", Date()),
+//                )
+//            )
+//        )
+//        for (i in 4..20) {
+//            siteAccounts += SiteAccount(
+//                id = i.toLong(),
+//                site = "Website $i",
+//                note = "Catatan $i",
+//                credentials = listOf(UserCredential("user$i@web.com", "pass$i", Date()))
+//            )
+//        }
+//        accountAdapter.submitList(siteAccounts.toList())
+//        filtered = siteAccounts
     }
 
     private fun showDeleteConfirmationDialog(accountToDelete: SiteAccount) {

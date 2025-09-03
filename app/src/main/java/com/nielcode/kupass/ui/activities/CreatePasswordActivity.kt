@@ -9,11 +9,17 @@ import android.view.inputmethod.EditorInfo
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.widget.doOnTextChanged
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.color.DynamicColors
 import com.nielcode.kupass.R
 import com.nielcode.kupass.core.PreferenceManager
+import com.nielcode.kupass.core.crypto.CryptoManager
+import com.nielcode.kupass.core.crypto.SqlCipherKey
+import com.nielcode.kupass.data.local.AppDatabase
+import com.nielcode.kupass.data.repository.PasswordRepositoryImpl
 import com.nielcode.kupass.databinding.ActivityCreatePasswordBinding
 import com.nielcode.kupass.utils.AppConfig
+import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
 import kotlin.math.min
 import kotlin.random.Random
@@ -26,6 +32,13 @@ class CreatePasswordActivity : AppCompatActivity() {
     // Using lazy initialization for binding and preferences.
     private val binding by lazy { ActivityCreatePasswordBinding.inflate(layoutInflater) }
     private val prefs by lazy { PreferenceManager(this) }
+
+    private val repo by lazy {
+        val passphrase = SqlCipherKey.getOrCreate(this)
+        val db = AppDatabase.get(this, passphrase)
+        val crypto = CryptoManager(this)
+        PasswordRepositoryImpl(db.siteDao(), crypto)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -91,30 +104,54 @@ class CreatePasswordActivity : AppCompatActivity() {
         val password = binding.etPassword.text?.toString()?.trim().orEmpty()
         val notes = binding.etNotes.text?.toString()?.trim().orEmpty()
 
-        // Validate
         if (account.isBlank()) {
-            binding.tilAccount.error = getString(R.string.error_required)
-            return
-        } else binding.tilAccount.error = null
-
-        if (password.length < 8) {
-            binding.tilPassword.error = getString(R.string.error_min_password)
-            return
-        } else binding.tilPassword.error = null
-
-        // Return the entry (or save via repository)
-        val entry = PasswordEntry(
-            account = account,
-            username = username,
-            password = password, // NOTE: for production, encrypt this before saving!
-            notes = notes
-        )
-
-        val data = Intent().apply {
-            putExtra(EXTRA_RESULT_ENTRY, entry)
+            binding.tilAccount.error = getString(R.string.error_required); return
         }
-        setResult(RESULT_OK, data)
-        finish()
+        binding.tilAccount.error = null
+        if (password.length < 8) {
+            binding.tilPassword.error = getString(R.string.error_min_password); return
+        }
+        binding.tilPassword.error = null
+
+        lifecycleScope.launch {
+            // 1) Insert / upsert site (contoh ini selalu insert baru, bisa kamu modifikasi jadi upsert jika site exist)
+            val siteId = repo.addOrUpdateSite(site = account, note = notes.ifBlank { null })
+
+            // 2) Insert credential terenkripsi (AES-GCM via Tink)
+            repo.addCredential(siteId, username, password)
+
+            setResult(RESULT_OK, Intent()) // optional
+            finish()
+        }
+//        val account = binding.etAccount.text?.toString()?.trim().orEmpty()
+//        val username = binding.etUsername.text?.toString()?.trim().orEmpty()
+//        val password = binding.etPassword.text?.toString()?.trim().orEmpty()
+//        val notes = binding.etNotes.text?.toString()?.trim().orEmpty()
+//
+//        // Validate
+//        if (account.isBlank()) {
+//            binding.tilAccount.error = getString(R.string.error_required)
+//            return
+//        } else binding.tilAccount.error = null
+//
+//        if (password.length < 8) {
+//            binding.tilPassword.error = getString(R.string.error_min_password)
+//            return
+//        } else binding.tilPassword.error = null
+//
+//        // Return the entry (or save via repository)
+//        val entry = PasswordEntry(
+//            account = account,
+//            username = username,
+//            password = password, // NOTE: for production, encrypt this before saving!
+//            notes = notes
+//        )
+//
+//        val data = Intent().apply {
+//            putExtra(EXTRA_RESULT_ENTRY, entry)
+//        }
+//        setResult(RESULT_OK, data)
+//        finish()
     }
 
     private fun updateSaveEnabled() {
