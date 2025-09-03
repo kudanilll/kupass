@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
 import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -154,7 +155,7 @@ class HomeActivity : AppCompatActivity() {
 
     private fun setupTopBarAndDrawer() {
         // Set layout padding top
-        binding.mainContent.setOnApplyWindowInsetsListener { view, insets ->
+        binding.mainContent.setOnApplyWindowInsetsListener { _, insets ->
             val statusBarHeight = insets.systemWindowInsetTop
             binding.mainContent.setPadding(0, statusBarHeight, 0, 0)
             insets
@@ -185,23 +186,7 @@ class HomeActivity : AppCompatActivity() {
         val headerBinding = NavHeaderBinding.bind(headerView)
         headerBinding.appVersion.text = BuildConfig.VERSION_NAME
 
-        /*
-        // Set Footer View
-        layoutInflater.inflate(R.layout.nav_header, navigationView, false)
-        val footerView = layoutInflater.inflate(R.layout.nav_footer, navigationView, false)
-        navigationView.addView(footerView)
-        val params = footerView.layoutParams
-        footerView.layoutParams = params
-
-        // Footer Button Click Listener
-        val footerBinding = NavFooterBinding.bind(footerView)
-        footerBinding.githubButton.setOnClickListener {
-            val intent = Intent(Intent.ACTION_VIEW, BuildConfig.GIT_URL.toUri())
-            startActivity(intent)
-        }
-        */
-
-        // Set Navigation View Item Click Listener
+        // Navigation items
         navigationView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.nav_settings -> {
@@ -244,6 +229,7 @@ class HomeActivity : AppCompatActivity() {
             if (newState == SearchView.TransitionState.HIDDEN) {
                 accountAdapter.submitList(siteAccounts.toList())
                 filtered = siteAccounts
+                updateEmptyState()
             }
         }
     }
@@ -257,12 +243,14 @@ class HomeActivity : AppCompatActivity() {
                 val inSite = account.site.lowercase().contains(q)
                 val inNote = account.note?.lowercase()?.contains(q) == true
                 val inCreds = account.credentials.any { cred ->
-                    (cred.username.lowercase().contains(q))
+                    cred.username.lowercase().contains(q)
                 }
                 inSite || inNote || inCreds
             }
         }
         accountAdapter.submitList(filtered.toList())
+        binding.emptyState.isVisible = filtered.isEmpty()
+        binding.listPassword.isVisible = filtered.isNotEmpty()
     }
 
     private fun loadAndDisplayData() {
@@ -275,41 +263,17 @@ class HomeActivity : AppCompatActivity() {
                         siteAccounts += list
                         accountAdapter.submitList(list.toList())
                         filtered = list
+                        updateEmptyState()
                     }
                 }
             }
         })
-//        siteAccounts.clear()
-//        siteAccounts += listOf(
-//            SiteAccount(
-//                id = 1, site = "Google", note = "Akun utama", credentials = listOf(
-//                    UserCredential("johndoe@gmail.com", "password123", Date()),
-//                    UserCredential("secondary.acc@gmail.com", "password456", Date())
-//                )
-//            ),
-//            SiteAccount(
-//                id = 2, site = "Facebook", note = "", credentials = listOf(
-//                    UserCredential("john_doe", "fb_pass", Date())
-//                )
-//            ),
-//            SiteAccount(
-//                id = 3, site = "Github", note = "Akun kerja", credentials = listOf(
-//                    UserCredential("johndoe_dev", "git_secret", Date()),
-//                    UserCredential("johndoe_dev", "git_secret", Date()),
-//                    UserCredential("johndoe_dev", "git_secret", Date()),
-//                )
-//            )
-//        )
-//        for (i in 4..20) {
-//            siteAccounts += SiteAccount(
-//                id = i.toLong(),
-//                site = "Website $i",
-//                note = "Catatan $i",
-//                credentials = listOf(UserCredential("user$i@web.com", "pass$i", Date()))
-//            )
-//        }
-//        accountAdapter.submitList(siteAccounts.toList())
-//        filtered = siteAccounts
+    }
+
+    private fun updateEmptyState() {
+        val isEmpty = siteAccounts.isEmpty()
+        binding.emptyState.isVisible = isEmpty
+        binding.listPassword.isVisible = !isEmpty
     }
 
     private fun showDeleteConfirmationDialog(accountToDelete: SiteAccount) {
@@ -318,10 +282,15 @@ class HomeActivity : AppCompatActivity() {
             .setMessage("${getString(R.string.dialog_message_delete)} ${accountToDelete.site}?")
             .setNegativeButton(getString(R.string.dialog_cancel), null)
             .setPositiveButton(getString(R.string.dialog_delete)) { _, _ ->
-                siteAccounts.remove(accountToDelete)
-                accountAdapter.submitList(siteAccounts.toList())
-                Toast.makeText(this, getString(R.string.toast_success_delete), Toast.LENGTH_SHORT)
-                    .show()
+                // Delete from the database (will be automatically reflected via Flow observeAll)
+                lifecycleScope.launch {
+                    repo.deleteSite(accountToDelete.id)
+                    Toast.makeText(
+                        this@HomeActivity,
+                        getString(R.string.toast_success_delete),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
             .show()
     }

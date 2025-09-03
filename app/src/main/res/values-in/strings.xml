@@ -7,6 +7,7 @@
     <string name="not_supported">Tidak didukung pada perangkat ini</string>
     <string name="github">Github</string>
     <string name="create_new_password">Tambah sandi baru</string>
+    <string name="empty_vault">Tidak ada sandi yang disimpan</string>
 
     <!-- FAB -->
     <string name="fab_open">Tambah</string>
