@@ -70,6 +70,8 @@
             android:layout_gravity="bottom|end"
             android:layout_marginEnd="@dimen/fab_margin"
             android:layout_marginBottom="32dp"
+            android:elevation="0dp"
+            android:stateListAnimator="@null"
             android:text="@string/fab_open"
             android:textColor="?attr/colorOnPrimaryContainer"
             app:backgroundTint="?attr/colorPrimaryContainer"
