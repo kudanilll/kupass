@@ -102,11 +102,8 @@ class CreatePasswordActivity : AppCompatActivity() {
         if (account.isBlank()) {
             binding.tilAccount.error = getString(R.string.error_required); return
         }
-        binding.tilAccount.error = null
 
-        if (password.length < 8) {
-            binding.tilPassword.error = getString(R.string.error_min_password); return
-        }
+        binding.tilAccount.error = null
         binding.tilPassword.error = null
 
         lifecycleScope.launch {
@@ -119,10 +116,9 @@ class CreatePasswordActivity : AppCompatActivity() {
 
     private fun updateSaveEnabled() {
         val accountOk = !binding.etAccount.text.isNullOrBlank()
-        val passOk = (binding.etPassword.text?.length ?: 0) >= 8
         val emailTxt = binding.etUsername.text?.toString().orEmpty()
         val emailOk = !emailTxt.contains("@") || Patterns.EMAIL_ADDRESS.matcher(emailTxt).matches()
-        binding.btnSave.isEnabled = accountOk && passOk && emailOk
+        binding.btnSave.isEnabled = accountOk && emailOk
     }
 
     /** Simple secure generator */
