@@ -86,11 +86,9 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
     androidTestImplementation(libs.ext.junit)
 
-    implementation(libs.sqlcipher.android)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.security.crypto)
     implementation(libs.androidx.sqlite)
     implementation(libs.google.android.material)
     implementation(libs.google.gson)
@@ -98,9 +96,12 @@ dependencies {
     implementation(libs.play.services.oss.licenses)
     implementation(libs.room.ktx)
     implementation(libs.room.runtime)
+    implementation(libs.safebox)
+    implementation(libs.sqlcipher.android)
     implementation(libs.tink.android)
 
     ksp(libs.room.compiler)
 
     testImplementation(libs.junit)
 }
+
