@@ -60,11 +60,6 @@
     <string name="error_min_password">Minimum 8 characters</string>
     <string name="error_invalid_email">Invalid email format</string>
 
-    <!-- Strength -->
-    <string name="strength_weak">Weak</string>
-    <string name="strength_medium">Medium</string>
-    <string name="strength_strong">Strong</string>
-
     <!-- Dialog -->
     <string name="dialog_title_export">Export password as</string>
     <string name="dialog_title_import">Import password from</string>
@@ -85,9 +80,9 @@
 
     <!-- Hint -->
     <string name="search_hint">Search password</string>
-    <string name="site_or_app_hint">Enter site or app</string>
-    <string name="username_hint">Enter username</string>
-    <string name="password_hint">Enter password</string>
+    <string name="site_or_app_hint">Site or app</string>
+    <string name="username_hint">Email or username</string>
+    <string name="password_hint">Password</string>
     <string name="note_hint">Notes (optional)</string>
 
     <!-- Permission -->
