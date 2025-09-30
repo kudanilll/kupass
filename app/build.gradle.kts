@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.ksp)
@@ -21,16 +23,36 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    val properties = Properties()
+    val secretsFile = rootProject.file("secrets.properties")
+    if (secretsFile.exists() && secretsFile.isFile) {
+        secretsFile.inputStream().use { properties.load(it) }
+    }
+
     buildTypes {
         debug {
             buildConfigField("String", "GIT_URL", "\"https://github.com/kudanilll/kupass\"")
             buildConfigField("String", "DEV_URL", "\"https://www.kudaniel.my.id\"")
             buildConfigField("String", "DEV_NAME", "\"Achmad Daniel Syahputra\"")
+
+            // Favget API Key
+            buildConfigField(
+                "String",
+                "FAVGET_API_KEY",
+                properties.getProperty("FAVGET_API_KEY")
+            )
         }
         release {
             buildConfigField("String", "GIT_URL", "\"https://github.com/kudanilll/kupass\"")
             buildConfigField("String", "DEV_URL", "\"https://www.kudaniel.my.id\"")
             buildConfigField("String", "DEV_NAME", "\"Achmad Daniel Syahputra\"")
+
+            // Favget API Key
+            buildConfigField(
+                "String",
+                "FAVGET_API_KEY",
+                properties.getProperty("FAVGET_API_KEY")
+            )
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -41,12 +63,12 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "17"
     }
 
     buildFeatures {

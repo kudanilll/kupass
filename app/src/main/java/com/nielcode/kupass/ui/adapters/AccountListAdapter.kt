@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import coil.transform.CircleCropTransformation
+import com.nielcode.kupass.BuildConfig
 import com.nielcode.kupass.databinding.ItemAccountBinding
 import com.nielcode.kupass.model.SiteAccount
 
@@ -47,6 +48,12 @@ class AccountListAdapter(
             binding.itemIcon.load(account.logoUrl) {
                 crossfade(true)
                 transformations(CircleCropTransformation())
+                // addHeader("x-api-key", "9b2DzbbB5O6LQzMdO7sVOFmlgJBcL4TOlECozO6i46rRoGgvYy")
+
+                if (BuildConfig.FAVGET_API_KEY.isNotBlank()) {
+                    addHeader("x-api-key", BuildConfig.FAVGET_API_KEY)
+                }
+
                 listener(
                     onStart = {
                         Log.i(tag, "start load image: $account")
@@ -65,6 +72,7 @@ class AccountListAdapter(
                     }
                 )
             }
+
 
             // Set on-click listener
             itemView.setOnClickListener {

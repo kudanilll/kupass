@@ -19,13 +19,12 @@ data class SiteAccount(
     val note: String?,
     val credentials: List<UserCredential>
 ) : Parcelable {
-    /**
-     * Properties for dynamically generating logo URLs.
-     * Use free services such as Clearbit to obtain company logos..
-     * Example: "Google" -> "https://logo.clearbit.com/google.com"
-     */
+    /** Favget endpoint (domain required; fallback guesses "<site>.com"). */
     val logoUrl: String
-        get() = "https://logo.clearbit.com/${site.lowercase().replace(" ", "")}.com"
+        get() {
+            val d = site.trim().lowercase().replace("\\s+".toRegex(), "") + ".com"
+            return "https://favget-api.vercel.app/v1/icon?domain=$d"
+        }
 }
 
 /**
