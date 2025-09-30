@@ -8,10 +8,15 @@ import androidx.room.TypeConverters
 import com.nielcode.kupass.data.local.dao.SiteDao
 import com.nielcode.kupass.data.local.entity.CredentialEntity
 import com.nielcode.kupass.data.local.entity.SiteEntity
-import net.sqlcipher.database.SQLiteDatabase
-import net.sqlcipher.database.SupportFactory
+import net.zetetic.database.sqlcipher.SQLiteConnection
+import net.zetetic.database.sqlcipher.SQLiteDatabaseHook
+import net.zetetic.database.sqlcipher.SupportOpenHelperFactory
 
-@Database(entities = [SiteEntity::class, CredentialEntity::class], version = 1, exportSchema = true)
+@Database(
+    entities = [SiteEntity::class, CredentialEntity::class],
+    version = 1,
+    exportSchema = true
+)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun siteDao(): SiteDao
@@ -22,12 +27,30 @@ abstract class AppDatabase : RoomDatabase() {
 
         fun get(context: Context, passphrase: ByteArray): AppDatabase {
             return INSTANCE ?: synchronized(this) {
-                SQLiteDatabase.loadLibs(context)
-                val factory = SupportFactory(passphrase)
+                System.loadLibrary("sqlcipher")
 
-                Room.databaseBuilder(context, AppDatabase::class.java, "kupass.db")
+                // Hook for license/PRAGMA
+                val hook = object : SQLiteDatabaseHook {
+                    override fun preKey(connection: SQLiteConnection) {
+                    }
+
+                    override fun postKey(connection: SQLiteConnection) {
+                    }
+                }
+
+                val factory = SupportOpenHelperFactory( // Zetetic factory for Room
+                    passphrase,
+                    hook,      // CursorFactory
+                    false
+                )
+
+                Room.databaseBuilder(
+                    context.applicationContext,
+                    AppDatabase::class.java,
+                    "kupass.db"
+                )
                     .openHelperFactory(factory)
-                    .fallbackToDestructiveMigration() // replace with migration once it is stable
+                    .addMigrations()
                     .build()
                     .also { INSTANCE = it }
             }
