@@ -162,7 +162,7 @@ class HomeActivity : AppCompatActivity() {
         MaterialAlertDialogBuilder(this)
             .setTitle(getString(R.string.dialog_title_permission))
             .setMessage(getString(R.string.dialog_message_permission))
-            .setPositiveButton(getString(R.string.dialog_request)) { dialog, _ ->
+            .setPositiveButton(getString(R.string.button_request)) { dialog, _ ->
                 permissionManager.requestPermissions()
                 dialog.dismiss()
             }
@@ -173,8 +173,13 @@ class HomeActivity : AppCompatActivity() {
     private fun setupRecyclerView() {
         accountAdapter = AccountListAdapter(
             onLongClick = { account -> showDeleteConfirmationDialog(account) },
-            onClick = { account -> /* TODO: Navigate to DetailActivity */ },
+            onClick = { account ->
+                val intent = Intent(this@HomeActivity, ShowPasswordActivity::class.java)
+                intent.putExtra(ShowPasswordActivity.EXTRA_SITE_ACCOUNT, account)
+                startActivity(intent)
+            },
         )
+
         binding.listPassword.apply {
             adapter = accountAdapter
             layoutManager = LinearLayoutManager(this@HomeActivity)
@@ -183,8 +188,13 @@ class HomeActivity : AppCompatActivity() {
         // Adapter inside SearchView (fullscreen)
         searchAdapter = AccountListAdapter(
             onLongClick = { account -> showDeleteConfirmationDialog(account) },
-            onClick = { account -> /* TODO: Navigate to DetailActivity */ },
+            onClick = { account ->
+                val intent = Intent(this@HomeActivity, ShowPasswordActivity::class.java)
+                intent.putExtra(ShowPasswordActivity.EXTRA_SITE_ACCOUNT, account)
+                startActivity(intent)
+            },
         )
+
         binding.searchResults.apply {
             adapter = searchAdapter
             layoutManager = LinearLayoutManager(this@HomeActivity)
@@ -358,8 +368,8 @@ class HomeActivity : AppCompatActivity() {
         MaterialAlertDialogBuilder(this)
             .setTitle(getString(R.string.dialog_title_delete))
             .setMessage("${getString(R.string.dialog_message_delete)} ${accountToDelete.site}?")
-            .setNegativeButton(getString(R.string.dialog_cancel), null)
-            .setPositiveButton(getString(R.string.dialog_delete)) { _, _ ->
+            .setNegativeButton(getString(R.string.button_cancel), null)
+            .setPositiveButton(getString(R.string.button_delete)) { _, _ ->
                 // Delete from the database (will be automatically reflected via Flow observeAll)
                 lifecycleScope.launch {
                     repo.deleteSite(accountToDelete.id)

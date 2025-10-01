@@ -7,6 +7,7 @@
     <string name="not_supported">Tidak didukung pada perangkat ini</string>
     <string name="github">Github</string>
     <string name="create_new_password">Tambah sandi baru</string>
+    <string name="show_password">Tampilkan kata sandi</string>
     <string name="empty_vault">Tidak ada sandi yang disimpan</string>
 
     <!-- FAB -->
@@ -66,15 +67,17 @@
     <string name="dialog_message_language">Kita butuh memulai ulang aplikasi untuk mengganti bahasa</string>
     <string name="dialog_message_delete">Apakah Anda yakin ingin menghapus</string>
     <string name="dialog_message_permission">Kita memerlukan akses untuk menulis files</string>
-    <string name="dialog_cancel">BATAL</string>
-    <string name="dialog_apply">TERAPKAN</string>
-    <string name="dialog_delete">HAPUS</string>
-    <string name="dialog_export">EKSPOR</string>
-    <string name="dialog_import">IMPOR</string>
-    <string name="dialog_restart">MULAI ULANG</string>
-    <string name="dialog_save">SIMPAN</string>
-    <string name="dialog_request">MINTA</string>
-    <string name="dialog_generate">GENERATE</string>
+
+    <!-- Button -->
+    <string name="button_cancel">BATAL</string>
+    <string name="button_apply">TERAPKAN</string>
+    <string name="button_delete">HAPUS</string>
+    <string name="button_export">EKSPOR</string>
+    <string name="button_import">IMPOR</string>
+    <string name="button_restart">MULAI ULANG</string>
+    <string name="button_save">SIMPAN</string>
+    <string name="button_request">MINTA</string>
+    <string name="button_generate">GENERATE</string>
 
     <!-- Hint -->
     <string name="search_hint">Cari kata sandi</string>

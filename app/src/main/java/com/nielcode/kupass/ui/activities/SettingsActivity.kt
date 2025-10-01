@@ -94,8 +94,8 @@ class SettingsActivity : AppCompatActivity() {
             .setSingleChoiceItems(languageNames, selectedIndex) { _, which ->
                 selectedIndex = which
             }
-            .setNegativeButton(R.string.dialog_cancel, null)
-            .setPositiveButton(R.string.dialog_apply) { _, _ ->
+            .setNegativeButton(R.string.button_cancel, null)
+            .setPositiveButton(R.string.button_apply) { _, _ ->
                 if (prefs.language != selectedIndex) {
                     prefs.language = selectedIndex
                     applyLanguage(selectedIndex)
@@ -118,8 +118,8 @@ class SettingsActivity : AppCompatActivity() {
             .setSingleChoiceItems(R.array.theme_list, selectedIndex) { _, which ->
                 selectedIndex = which
             }
-            .setNegativeButton(R.string.dialog_cancel, null)
-            .setPositiveButton(R.string.dialog_apply) { _, _ ->
+            .setNegativeButton(R.string.button_cancel, null)
+            .setPositiveButton(R.string.button_apply) { _, _ ->
                 if (prefs.theme != selectedIndex) {
                     prefs.theme = selectedIndex
                     applyTheme(selectedIndex)
@@ -148,8 +148,8 @@ class SettingsActivity : AppCompatActivity() {
             .setSingleChoiceItems(options, selectedIndex) { _, which ->
                 selectedIndex = which
             }
-            .setNegativeButton(R.string.dialog_cancel, null)
-            .setPositiveButton(R.string.dialog_apply) { _, _ ->
+            .setNegativeButton(R.string.button_cancel, null)
+            .setPositiveButton(R.string.button_apply) { _, _ ->
                 val newSetting = if (selectedIndex == 0) {
                     AppConfig.DynamicColors.Code.ENABLE
                 } else {
@@ -179,7 +179,7 @@ class SettingsActivity : AppCompatActivity() {
     private fun showRestartDialog() {
         MaterialAlertDialogBuilder(this)
             .setMessage(R.string.dialog_message_language)
-            .setPositiveButton(R.string.dialog_restart) { _, _ ->
+            .setPositiveButton(R.string.button_restart) { _, _ ->
                 val restart = Intent(this, HomeActivity::class.java).apply {
                     flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
                 }
