@@ -6,6 +6,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
@@ -105,6 +106,31 @@ class HomeActivity : AppCompatActivity() {
         binding.fab.setOnClickListener {
             startActivity(Intent(this, CreatePasswordActivity::class.java))
         }
+
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                // If the search is open, close it first and reset the list.
+                val open = binding.searchView.currentTransitionState ==
+                        SearchView.TransitionState.SHOWN ||
+                        binding.searchView.currentTransitionState ==
+                        SearchView.TransitionState.SHOWING
+                if (open) {
+                    // Clear the query so that no filters remain.
+                    binding.searchView.editText.text?.clear()
+                    // Close search overlay
+                    binding.searchView.hide()
+                    // fallback: immediately restore the main list
+                    accountAdapter.submitList(siteAccounts.toList())
+                    filtered = siteAccounts
+                    updateEmptyState()
+                } else {
+                    // not searching → continue default back
+                    isEnabled = false
+                    onBackPressedDispatcher.onBackPressed()
+                }
+            }
+        })
+
     }
 
     private fun applyDynamicColors() {
@@ -146,16 +172,6 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun setupRecyclerView() {
-//        accountAdapter = AccountListAdapter(
-//            onLongClick = { account -> showDeleteConfirmationDialog(account) },
-//            onClick = { account ->
-//                // TODO: Navigate to DetailActivity
-//            },
-//        )
-//        binding.listPassword.apply {
-//            adapter = accountAdapter
-//            layoutManager = LinearLayoutManager(this@HomeActivity)
-//        }
         accountAdapter = AccountListAdapter(
             onLongClick = { account -> showDeleteConfirmationDialog(account) },
             onClick = { account -> /* TODO: Navigate to DetailActivity */ },
@@ -165,7 +181,7 @@ class HomeActivity : AppCompatActivity() {
             layoutManager = LinearLayoutManager(this@HomeActivity)
         }
 
-        // Adapter untuk konten di dalam SearchView (fullscreen)
+        // Adapter inside SearchView (fullscreen)
         searchAdapter = AccountListAdapter(
             onLongClick = { account -> showDeleteConfirmationDialog(account) },
             onClick = { account -> /* TODO: Navigate to DetailActivity */ },
@@ -245,14 +261,22 @@ class HomeActivity : AppCompatActivity() {
             isSearchOpen =
                 newState == SearchView.TransitionState.SHOWN || newState == SearchView.TransitionState.SHOWING
             if (!isSearchOpen) {
+                // The search has just been closed (e.g., click back on the left side of SearchView).
+                // Clear the query + clean the overlay adapter so it doesn't “stick”
+                binding.searchView.editText.text?.clear()
+                searchAdapter.submitList(emptyList())
+
+                // Restore full main list
                 accountAdapter.submitList(siteAccounts.toList())
                 filtered = siteAccounts
                 updateEmptyState()
             } else {
+                // When opened, synchronize the initial results with the current query (if any).
                 val q = binding.searchView.editText.text?.toString().orEmpty()
                 filterAndSubmit(q)
             }
         }
+
     }
 
 
@@ -272,10 +296,10 @@ class HomeActivity : AppCompatActivity() {
         }
 
         if (isSearchOpen) {
-            // tampilkan di RecyclerView dalam SearchView (overlay)
+            // show in RecyclerView in SearchView (overlay)
             searchAdapter.submitList(filtered.toList())
         } else {
-            // tampilkan di daftar utama
+            // show in the main list
             accountAdapter.submitList(filtered.toList())
             binding.emptyState.isVisible = filtered.isEmpty()
             binding.listPassword.isVisible = filtered.isNotEmpty()
