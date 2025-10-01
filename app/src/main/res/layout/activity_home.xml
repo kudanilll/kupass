@@ -90,7 +90,18 @@
         android:layout_height="match_parent"
         android:hint="@string/search_hint"
         app:backgroundTint="?attr/colorSurface"
-        app:layout_anchor="@id/search_password" />
+        app:layout_anchor="@id/search_password">
+
+        <!-- Search results shown while SearchView is open -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/search_results"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="true"
+            android:paddingTop="2dp"
+            tools:listitem="@layout/item_account" />
+
+    </com.google.android.material.search.SearchView>
 
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/navigation_view"

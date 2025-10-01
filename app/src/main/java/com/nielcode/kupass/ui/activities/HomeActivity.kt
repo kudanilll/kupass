@@ -10,7 +10,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.core.widget.doOnTextChanged
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.color.DynamicColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -29,6 +31,7 @@ import com.nielcode.kupass.model.SiteAccount
 import com.nielcode.kupass.ui.adapters.AccountListAdapter
 import com.nielcode.kupass.utils.AppConfig
 import com.nielcode.kupass.utils.FileHandler
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.util.Locale
 
@@ -37,9 +40,11 @@ class HomeActivity : AppCompatActivity() {
     private lateinit var binding: ActivityHomeBinding
     private lateinit var permissionManager: PermissionManager
     private lateinit var accountAdapter: AccountListAdapter
+    private lateinit var searchAdapter: AccountListAdapter
 
     private val siteAccounts = mutableListOf<SiteAccount>()       // source of truth
     private var filtered = listOf<SiteAccount>()                  // last filtered list
+    private var isSearchOpen = false
 
     private val requiredPermissions = if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) {
         listOf(
@@ -141,14 +146,32 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun setupRecyclerView() {
+//        accountAdapter = AccountListAdapter(
+//            onLongClick = { account -> showDeleteConfirmationDialog(account) },
+//            onClick = { account ->
+//                // TODO: Navigate to DetailActivity
+//            },
+//        )
+//        binding.listPassword.apply {
+//            adapter = accountAdapter
+//            layoutManager = LinearLayoutManager(this@HomeActivity)
+//        }
         accountAdapter = AccountListAdapter(
             onLongClick = { account -> showDeleteConfirmationDialog(account) },
-            onClick = { account ->
-                // TODO: Navigate to DetailActivity
-            },
+            onClick = { account -> /* TODO: Navigate to DetailActivity */ },
         )
         binding.listPassword.apply {
             adapter = accountAdapter
+            layoutManager = LinearLayoutManager(this@HomeActivity)
+        }
+
+        // Adapter untuk konten di dalam SearchView (fullscreen)
+        searchAdapter = AccountListAdapter(
+            onLongClick = { account -> showDeleteConfirmationDialog(account) },
+            onClick = { account -> /* TODO: Navigate to DetailActivity */ },
+        )
+        binding.searchResults.apply {
+            adapter = searchAdapter
             layoutManager = LinearLayoutManager(this@HomeActivity)
         }
     }
@@ -161,12 +184,8 @@ class HomeActivity : AppCompatActivity() {
             insets
         }
 
-        // Hamburger opens the left drawer
-        binding.searchPassword.setNavigationOnClickListener {
-            binding.drawerLayout.open()
-        }
-
-        // Right search icon opens the SearchView
+        binding.searchPassword.setNavigationOnClickListener { binding.drawerLayout.open() }
+        binding.searchPassword.setOnClickListener { binding.searchView.show() }
         binding.searchPassword.setOnMenuItemClickListener { item ->
             if (item.itemId == R.id.menu_search) {
                 binding.searchView.show()
@@ -174,7 +193,6 @@ class HomeActivity : AppCompatActivity() {
             } else false
         }
 
-        // Link SearchView with SearchBar (handles motion + insets)
         binding.searchView.setupWithSearchBar(binding.searchPassword)
     }
 
@@ -211,28 +229,32 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun setupSearch() {
-        // Real-time filtering
         val editText = binding.searchView.editText
+
         editText.doOnTextChanged { text, _, _, _ ->
             filterAndSubmit(text?.toString().orEmpty())
         }
 
-        // Submit from keyboard IME
         editText.setOnEditorActionListener { v, _, _ ->
             filterAndSubmit(v.text.toString())
             binding.searchView.hide()
             true
         }
 
-        // Reset list when SearchView is closed
-        binding.searchView.addTransitionListener { _, _, newState ->
-            if (newState == SearchView.TransitionState.HIDDEN) {
+        binding.searchView.addTransitionListener { _: SearchView, _: SearchView.TransitionState, newState: SearchView.TransitionState ->
+            isSearchOpen =
+                newState == SearchView.TransitionState.SHOWN || newState == SearchView.TransitionState.SHOWING
+            if (!isSearchOpen) {
                 accountAdapter.submitList(siteAccounts.toList())
                 filtered = siteAccounts
                 updateEmptyState()
+            } else {
+                val q = binding.searchView.editText.text?.toString().orEmpty()
+                filterAndSubmit(q)
             }
         }
     }
+
 
     private fun filterAndSubmit(query: String) {
         val q = query.trim().lowercase(Locale.getDefault())
@@ -248,26 +270,37 @@ class HomeActivity : AppCompatActivity() {
                 inSite || inNote || inCreds
             }
         }
-        accountAdapter.submitList(filtered.toList())
-        binding.emptyState.isVisible = filtered.isEmpty()
-        binding.listPassword.isVisible = filtered.isNotEmpty()
+
+        if (isSearchOpen) {
+            // tampilkan di RecyclerView dalam SearchView (overlay)
+            searchAdapter.submitList(filtered.toList())
+        } else {
+            // tampilkan di daftar utama
+            accountAdapter.submitList(filtered.toList())
+            binding.emptyState.isVisible = filtered.isEmpty()
+            binding.listPassword.isVisible = filtered.isNotEmpty()
+        }
     }
 
+
     private fun loadAndDisplayData() {
-        lifecycle.addObserver(object : androidx.lifecycle.DefaultLifecycleObserver {
-            override fun onStart(owner: androidx.lifecycle.LifecycleOwner) {
-                super.onStart(owner)
-                lifecycleScope.launch {
-                    repo.observeAll().collect { list ->
-                        siteAccounts.clear()
-                        siteAccounts += list
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                repo.observeAll().collectLatest { list ->
+                    siteAccounts.clear()
+                    siteAccounts += list
+
+                    val currentQuery = binding.searchView.editText.text?.toString().orEmpty()
+                    if (currentQuery.isNotBlank()) {
+                        filterAndSubmit(currentQuery)
+                    } else {
                         accountAdapter.submitList(list.toList())
                         filtered = list
                         updateEmptyState()
                     }
                 }
             }
-        })
+        }
     }
 
     private fun updateEmptyState() {

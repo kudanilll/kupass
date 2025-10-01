@@ -107,6 +107,10 @@ class CreatePasswordActivity : AppCompatActivity() {
         binding.tilPassword.error = null
 
         lifecycleScope.launch {
+            Log.d(
+                tag,
+                "Saving account: $account, username: $username, password: $password, notes: $notes"
+            )
             val siteId = repo.addOrUpdateSite(site = account, note = notes.ifBlank { null })
             repo.addCredential(siteId, username, password)
             setResult(RESULT_OK, Intent())
