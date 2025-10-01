@@ -19,12 +19,10 @@ data class SiteAccount(
     val note: String?,
     val credentials: List<UserCredential>
 ) : Parcelable {
+    val domain: String get() = site.trim().lowercase().replace("\\s+".toRegex(), "") + ".com"
+
     /** Favget endpoint (domain required; fallback guesses "<site>.com"). */
-    val logoUrl: String
-        get() {
-            val d = site.trim().lowercase().replace("\\s+".toRegex(), "") + ".com"
-            return "https://favget-api.vercel.app/v1/icon?domain=$d"
-        }
+    val logoUrl: String get() = "https://favget-api.vercel.app/v1/icon?domain=$domain"
 }
 
 /**

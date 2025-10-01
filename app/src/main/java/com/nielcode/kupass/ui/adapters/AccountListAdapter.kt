@@ -12,6 +12,7 @@ import coil.transform.CircleCropTransformation
 import com.nielcode.kupass.BuildConfig
 import com.nielcode.kupass.databinding.ItemAccountBinding
 import com.nielcode.kupass.model.SiteAccount
+import com.nielcode.kupass.utils.LogoCache
 
 private const val tag = "AccountListAdapter"
 
@@ -21,7 +22,7 @@ class AccountListAdapter(
 ) : ListAdapter<SiteAccount, AccountListAdapter.AccountViewHolder>(AccountDiffCallback) {
 
     /**
-     * ViewHolder untuk menampilkan setiap item akun.
+     * ViewHolder to display each account item.
      */
     inner class AccountViewHolder(private val binding: ItemAccountBinding) :
         RecyclerView.ViewHolder(binding.root) {
@@ -35,6 +36,7 @@ class AccountListAdapter(
                 } else {
                     account.credentials.firstOrNull()?.username ?: ""
                 }
+
             // Credentials count
             binding.itemCount.text = account.credentials.size.toString()
             binding.itemCount.visibility =
@@ -44,11 +46,17 @@ class AccountListAdapter(
             val initial = account.site.firstOrNull()?.uppercase() ?: ""
             binding.itemIconFallbackText.text = initial
 
-            // Load Image Using Coil
-            binding.itemIcon.load(account.logoUrl) {
+            // Load Image Using Coil with caching
+            val domain = account.domain
+
+            val cachedUrl = LogoCache.get(domain)
+            val urlToLoad = cachedUrl ?: account.logoUrl.also {
+                LogoCache.put(domain, it) // save to cache if it doesn't exist yet
+            }
+
+            binding.itemIcon.load(urlToLoad) {
                 crossfade(true)
                 transformations(CircleCropTransformation())
-                // addHeader("x-api-key", "9b2DzbbB5O6LQzMdO7sVOFmlgJBcL4TOlECozO6i46rRoGgvYy")
 
                 if (BuildConfig.FAVGET_API_KEY.isNotBlank()) {
                     addHeader("x-api-key", BuildConfig.FAVGET_API_KEY)
@@ -61,18 +69,17 @@ class AccountListAdapter(
                         binding.itemIconFallbackCard.visibility = View.GONE
                     },
                     onSuccess = { _, _ ->
-                        Log.i(tag, "success load image: ${account.logoUrl}")
+                        Log.i(tag, "success load image: $urlToLoad")
                         binding.itemIcon.visibility = View.VISIBLE
                         binding.itemIconFallbackCard.visibility = View.GONE
                     },
                     onError = { _, _ ->
-                        Log.e(tag, "failed load image: ${account.logoUrl}")
+                        Log.e(tag, "failed load image: $urlToLoad")
                         binding.itemIcon.visibility = View.GONE
                         binding.itemIconFallbackCard.visibility = View.VISIBLE
                     }
                 )
             }
-
 
             // Set on-click listener
             itemView.setOnClickListener {
@@ -99,8 +106,8 @@ class AccountListAdapter(
 }
 
 /**
- * Objek untuk menghitung perbedaan antara dua list, agar RecyclerView tahu
- * item mana yang berubah, ditambah, atau dihapus. Ini membuat update lebih efisien.
+ * An object to calculate the differences between two lists, so that RecyclerView knows which items have changed,
+ *  been added, or been removed. This makes updates more efficient.
  */
 object AccountDiffCallback : DiffUtil.ItemCallback<SiteAccount>() {
     override fun areItemsTheSame(oldItem: SiteAccount, newItem: SiteAccount): Boolean {
