@@ -130,7 +130,6 @@ class HomeActivity : AppCompatActivity() {
                 }
             }
         })
-
     }
 
     private fun applyDynamicColors() {
@@ -276,9 +275,7 @@ class HomeActivity : AppCompatActivity() {
                 filterAndSubmit(q)
             }
         }
-
     }
-
 
     private fun filterAndSubmit(query: String) {
         val q = query.trim().lowercase(Locale.getDefault())
@@ -306,25 +303,49 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
-
     private fun loadAndDisplayData() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 repo.observeAll().collectLatest { list ->
+                    // Group first before using the entire flow (search/filter/empty state)
+                    val grouped = groupAccounts(list)
+
                     siteAccounts.clear()
-                    siteAccounts += list
+                    siteAccounts += grouped
 
                     val currentQuery = binding.searchView.editText.text?.toString().orEmpty()
                     if (currentQuery.isNotBlank()) {
-                        filterAndSubmit(currentQuery)
+                        filterAndSubmit(currentQuery) // will filter from ‘siteAccounts’ that have been grouped
                     } else {
-                        accountAdapter.submitList(list.toList())
-                        filtered = list
+                        accountAdapter.submitList(grouped.toList())
+                        filtered = grouped
                         updateEmptyState()
                     }
                 }
             }
         }
+    }
+
+    /** Group accounts by site (case-insensitive), merge credentials, pick first non-empty note. */
+    private fun groupAccounts(list: List<SiteAccount>): List<SiteAccount> {
+        return list
+            .groupBy { it.site.trim().lowercase(Locale.getDefault()) }
+            .map { (_, group) ->
+                val siteName = group.first().site
+                val id = group.minOf { it.id } // id stable for display
+                val note = group.firstOrNull { !it.note.isNullOrBlank() }?.note
+                val mergedCreds = group
+                    .flatMap { it.credentials }
+                    .distinctBy { it.username } // avoid duplicate usernames
+
+                SiteAccount(
+                    id = id,
+                    site = siteName,
+                    note = note,
+                    credentials = mergedCreds
+                )
+            }
+            .sortedBy { it.site.lowercase(Locale.getDefault()) }
     }
 
     private fun updateEmptyState() {
