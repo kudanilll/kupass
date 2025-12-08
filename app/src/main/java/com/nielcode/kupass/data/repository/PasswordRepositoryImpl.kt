@@ -20,7 +20,7 @@ class PasswordRepositoryImpl(
         dao.observeAll().map { list -> list.map { it.toDomain(crypto) } }
 
     override suspend fun addOrUpdateSite(site: String, note: String?): Long {
-        // Untuk contoh sederhana: selalu insert site baru (bisa di-upsert kalau perlu)
+        // For a simple example: always insert a new site (can be upsert if necessary)
         return dao.insertSite(SiteEntity(site = site, note = note))
     }
 
@@ -30,7 +30,7 @@ class PasswordRepositoryImpl(
         plainPassword: String,
         lastUpdated: Date
     ) {
-        val aad = "$siteId|$username" // bind cipthertext ke konteks (Aad)
+        val aad = "$siteId|$username" // bind ciphertext to context (Aad)
         val cipherB64 = crypto.encryptToBase64(plainPassword, aad)
         dao.insertCred(
             CredentialEntity(
@@ -43,9 +43,13 @@ class PasswordRepositoryImpl(
     }
 
     override suspend fun deleteSite(siteId: Long) {
-        // Fetch site, lalu delete (CASCADE hapus creds)
+        // Fetch site, then delete (CASCADE delete credentials)
         val temp = SiteEntity(id = siteId, site = "", note = null)
         dao.deleteSite(temp)
+    }
+
+    override suspend fun deleteCredential(siteId: Long, username: String) {
+        dao.deleteCredential(siteId, username)
     }
 }
 
@@ -60,7 +64,7 @@ private fun SiteWithCreds.toDomain(crypto: CryptoManager): SiteAccount {
         }.getOrDefault("••••••••")
         UserCredential(
             username = e.username,
-            password = plain,       // ⚠️ hanya tampil untuk demo; di UI nyata jangan expose plaintext!
+            password = plain,       // ⚠️ Only display for demonstration purposes; do not expose plaintext in the actual UI!
             lastUpdated = e.lastUpdated
         )
     }

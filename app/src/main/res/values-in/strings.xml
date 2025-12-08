@@ -9,6 +9,7 @@
     <string name="create_new_password">Tambah sandi baru</string>
     <string name="show_password">Tampilkan kata sandi</string>
     <string name="empty_vault">Tidak ada sandi yang disimpan</string>
+    <string name="copied">Disalin ke papan klip</string>
 
     <!-- FAB -->
     <string name="fab_open">Tambah</string>
@@ -78,6 +79,7 @@
     <string name="button_save">SIMPAN</string>
     <string name="button_request">MINTA</string>
     <string name="button_generate">GENERATE</string>
+    <string name="button_edit">EDIT</string>
 
     <!-- Hint -->
     <string name="search_hint">Cari kata sandi</string>
@@ -89,4 +91,5 @@
     <!-- Permission -->
     <string name="permission_granted">Izin diberikan</string>
     <string name="permission_denied">Izin ditolak</string>
+    <string name="biometric_unavailable">Fitur biometrik tidak tersedia di perangkat ini</string>
 </resources>

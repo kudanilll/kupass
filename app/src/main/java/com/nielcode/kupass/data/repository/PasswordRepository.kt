@@ -19,4 +19,6 @@ interface PasswordRepository {
     )
 
     suspend fun deleteSite(siteId: Long)
+
+    suspend fun deleteCredential(siteId: Long, username: String)
 }

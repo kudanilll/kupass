@@ -9,8 +9,7 @@
     <string name="create_new_password">Create new password</string>
     <string name="show_password">Show password</string>
     <string name="empty_vault">No password saved</string>
-
-    <!-- Create Password -->
+    <string name="copied">Copied to clipboard</string>
 
     <!-- FAB -->
     <string name="fab_open">Create</string>
@@ -80,6 +79,7 @@
     <string name="button_save">SAVE</string>
     <string name="button_request">REQUEST</string>
     <string name="button_generate">GENERATE</string>
+    <string name="button_edit">EDIT</string>
 
     <!-- Hint -->
     <string name="search_hint">Search password</string>
@@ -91,4 +91,5 @@
     <!-- Permission -->
     <string name="permission_granted">Permission granted</string>
     <string name="permission_denied">Permission denied</string>
+    <string name="biometric_unavailable">Biometric feature is not available on this device</string>
 </resources>

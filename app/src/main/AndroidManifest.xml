@@ -43,5 +43,7 @@
 
         <activity android:name=".ui.activities.CreatePasswordActivity" />
 
+        <activity android:name=".ui.activities.ShowPasswordActivity" />
+
     </application>
 </manifest>

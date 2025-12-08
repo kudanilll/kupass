@@ -13,6 +13,7 @@ import com.nielcode.kupass.BuildConfig
 import com.nielcode.kupass.databinding.ItemAccountBinding
 import com.nielcode.kupass.model.SiteAccount
 import com.nielcode.kupass.utils.LogoCache
+import java.util.Locale
 
 private const val tag = "AccountListAdapter"
 
@@ -29,7 +30,8 @@ class AccountListAdapter(
 
         fun bind(account: SiteAccount) {
             Log.i(tag, "bind: $account")
-            binding.itemTitle.text = account.site
+            binding.itemTitle.text =
+                account.site.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }
             binding.itemSubtitle.text =
                 if (account.credentials.size > 1) {
                     if (account.note != "") account.note else account.credentials[0].username

@@ -1,6 +1,12 @@
 package com.nielcode.kupass.data.local.dao
 
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Delete
+import androidx.room.Embedded
+import androidx.room.Insert
+import androidx.room.Query
+import androidx.room.Relation
+import androidx.room.Transaction
 import com.nielcode.kupass.data.local.entity.CredentialEntity
 import com.nielcode.kupass.data.local.entity.SiteEntity
 import kotlinx.coroutines.flow.Flow
@@ -32,4 +38,7 @@ interface SiteDao {
 
     @Query("DELETE FROM credentials WHERE id = :credId")
     suspend fun deleteCredential(credId: Long)
+
+    @Query("DELETE FROM credentials WHERE siteId = :siteId AND username = :username")
+    suspend fun deleteCredential(siteId: Long, username: String)
 }

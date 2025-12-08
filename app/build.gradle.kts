@@ -87,6 +87,7 @@ dependencies {
     androidTestImplementation(libs.ext.junit)
 
     implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.biometric)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.sqlite)
