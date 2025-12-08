@@ -3,6 +3,7 @@ package com.nielcode.kupass.ui.activities
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -18,6 +19,7 @@ import com.nielcode.kupass.model.SiteAccount
 import com.nielcode.kupass.model.UserCredential
 import com.nielcode.kupass.ui.adapters.CredentialsAdapter
 import kotlinx.coroutines.launch
+import java.util.Locale
 import java.util.concurrent.Executor
 
 class ShowPasswordActivity : AppCompatActivity() {
@@ -29,6 +31,7 @@ class ShowPasswordActivity : AppCompatActivity() {
         private const val KEY_LAST_AUTH_AT = "last_auth_epoch_ms"
     }
 
+    private val tag = "ShowPasswordActivity"
     private lateinit var binding: ActivityShowPasswordBinding
     private lateinit var executor: Executor
     private lateinit var adapter: CredentialsAdapter
@@ -55,7 +58,8 @@ class ShowPasswordActivity : AppCompatActivity() {
         }
 
         // Toolbar title according to site
-        binding.toolbar.title = account.site
+        binding.toolbar.title =
+            account.site.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }
         binding.toolbar.setNavigationOnClickListener { finish() }
 
         // Setup list credential (card)
@@ -63,12 +67,11 @@ class ShowPasswordActivity : AppCompatActivity() {
             siteNote = account.note,
             onEdit = { /* TODO: navigate to edit */ },
             onCopy = { label, value -> copyToClipboard(label, value) },
-            onDelete = { credential -> showDeleteConfirmationDialog(account, credential) } // <— NEW
+            onDelete = { credential -> showDeleteConfirmationDialog(account, credential) }
         )
 
         binding.rvCredentials.layoutManager = LinearLayoutManager(this)
         binding.rvCredentials.adapter = adapter
-
 
         // Postpone data entry until authentication is complete
         ensureAuthenticated(
@@ -100,7 +103,8 @@ class ShowPasswordActivity : AppCompatActivity() {
             can != BiometricManager.BIOMETRIC_STATUS_UNKNOWN // Some unusual vendors report unknown
         ) {
             // If biometrics are not available → bypass immediately
-            Toast.makeText(this, R.string.biometric_unavailable, Toast.LENGTH_SHORT).show()
+            // Toast.makeText(this, R.string.biometric_unavailable, Toast.LENGTH_SHORT).show()
+            Log.i(tag, getString(R.string.biometric_unavailable))
             prefs.edit().putLong(KEY_LAST_AUTH_AT, System.currentTimeMillis()).apply()
             onSuccess()
             return
