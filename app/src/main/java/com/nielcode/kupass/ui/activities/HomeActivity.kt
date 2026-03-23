@@ -215,6 +215,29 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun setupNavigationView() {
+        val nav = binding.bottomNavigation
+
+        // Handle click menu
+        nav.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_export -> {
+                    exportFileLauncher.launch("kupass_backup.json")
+                    true
+                }
+
+                R.id.nav_import -> {
+                    importFileLauncher.launch("application/json")
+                    true
+                }
+
+                R.id.nav_settings -> {
+                    startActivity(Intent(this, SettingsActivity::class.java))
+                    true
+                }
+
+                else -> false
+            }
+        }
     }
 
     private fun setupSearch() {
