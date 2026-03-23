@@ -1,6 +1,7 @@
 <resources>
 
     <style name="KupassTheme" parent="Theme.Material3Expressive.Light.NoActionBar">
+        <item name="android:fontFamily">@font/googlesansflex</item>
 
         <item name="colorPrimary">@color/md_theme_primary</item>
         <item name="colorOnPrimary">@color/md_theme_onPrimary</item>

@@ -9,6 +9,7 @@ import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.WindowCompat
 import androidx.core.view.isVisible
 import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.Lifecycle
@@ -18,7 +19,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.color.DynamicColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.search.SearchView
-import com.nielcode.kupass.BuildConfig
 import com.nielcode.kupass.R
 import com.nielcode.kupass.core.PermissionManager
 import com.nielcode.kupass.core.PreferenceManager
@@ -27,7 +27,6 @@ import com.nielcode.kupass.core.crypto.SqlCipherKey
 import com.nielcode.kupass.data.local.AppDatabase
 import com.nielcode.kupass.data.repository.PasswordRepositoryImpl
 import com.nielcode.kupass.databinding.ActivityHomeBinding
-import com.nielcode.kupass.databinding.NavHeaderBinding
 import com.nielcode.kupass.model.SiteAccount
 import com.nielcode.kupass.ui.adapters.AccountListAdapter
 import com.nielcode.kupass.utils.AppConfig
@@ -94,6 +93,8 @@ class HomeActivity : AppCompatActivity() {
 
         binding = ActivityHomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        WindowCompat.setDecorFitsSystemWindows(window, false)
 
         setupPermissionManager()
         checkAndRequestPermissions()
@@ -209,48 +210,11 @@ class HomeActivity : AppCompatActivity() {
             insets
         }
 
-        binding.searchPassword.setNavigationOnClickListener { binding.drawerLayout.open() }
         binding.searchPassword.setOnClickListener { binding.searchView.show() }
-        binding.searchPassword.setOnMenuItemClickListener { item ->
-            if (item.itemId == R.id.menu_search) {
-                binding.searchView.show()
-                true
-            } else false
-        }
-
         binding.searchView.setupWithSearchBar(binding.searchPassword)
     }
 
     private fun setupNavigationView() {
-        val navigationView = binding.navigationView
-
-        // Set Version Text
-        val headerView = navigationView.getHeaderView(0)
-        val headerBinding = NavHeaderBinding.bind(headerView)
-        headerBinding.appVersion.text = BuildConfig.VERSION_NAME
-
-        // Navigation items
-        navigationView.setNavigationItemSelectedListener { menuItem ->
-            when (menuItem.itemId) {
-                R.id.nav_settings -> {
-                    binding.drawerLayout.closeDrawers()
-                    startActivity(Intent(this, SettingsActivity::class.java))
-                    true
-                }
-
-                R.id.nav_export -> {
-                    // TODO: Handle export
-                    true
-                }
-
-                R.id.nav_import -> {
-                    // TODO: Handle import
-                    true
-                }
-
-                else -> false
-            }
-        }
     }
 
     private fun setupSearch() {
