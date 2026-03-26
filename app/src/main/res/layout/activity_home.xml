@@ -20,7 +20,7 @@
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="@dimen/activity_horizontal_margin"
             android:layout_marginTop="?attr/actionBarSize"
-            android:fontFamily="@font/curvilingus"
+            android:fontFamily="@font/heming"
             android:text="@string/headline"
             android:textAppearance="@style/TextAppearance.Material3.DisplayMedium"
             android:textColor="?attr/colorPrimary"
