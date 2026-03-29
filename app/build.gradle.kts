@@ -2,23 +2,19 @@ import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.ksp)
-    alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.parcelize)
-    alias(libs.plugins.navigation.safe.args)
-    alias(libs.plugins.oss.licenses)
+    alias(libs.plugins.kotlin.compose)
 }
 
 android {
     namespace = "com.nielcode.kupass"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.nielcode.kupass"
         minSdk = 27
-        targetSdk = 36
-        versionCode = 4
-        versionName = "3.0.0"
+        targetSdk = 37
+        versionCode = 5
+        versionName = "3.0.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -34,15 +30,12 @@ android {
             buildConfigField("String", "GIT_URL", "\"https://github.com/kudanilll/kupass\"")
             buildConfigField("String", "DEV_URL", "\"https://www.kudaniel.my.id\"")
             buildConfigField("String", "DEV_NAME", "\"Achmad Daniel Syahputra\"")
-            
+
             // Favget API
             buildConfigField("String", "FAVGET_API_URL", "\"https://favget.nielcode.web.id\"")
-            buildConfigField(
-                "String",
-                "FAVGET_API_KEY",
-                properties.getProperty("FAVGET_API_KEY")
-            )
+            buildConfigField("String", "FAVGET_API_KEY", properties.getProperty("FAVGET_API_KEY"))
         }
+
         release {
             buildConfigField("String", "GIT_URL", "\"https://github.com/kudanilll/kupass\"")
             buildConfigField("String", "DEV_URL", "\"https://www.kudaniel.my.id\"")
@@ -50,15 +43,11 @@ android {
 
             // Favget API
             buildConfigField("String", "FAVGET_API_URL", "\"https://favget.nielcode.web.id\"")
-            buildConfigField(
-                "String",
-                "FAVGET_API_KEY",
-                properties.getProperty("FAVGET_API_KEY")
-            )
+            buildConfigField("String", "FAVGET_API_KEY", properties.getProperty("FAVGET_API_KEY"))
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
             signingConfig = signingConfigs.getByName("debug")
         }
@@ -69,42 +58,26 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = "17"
-    }
-
     buildFeatures {
-        viewBinding = true
+        compose = true
         buildConfig = true
     }
 }
 
-ksp {
-    arg("room.schemaLocation", "$projectDir/schemas")
-    //arg("room.generateKotlin", "true")
-}
-
 dependencies {
-    androidTestImplementation(libs.espresso.core)
-    androidTestImplementation(libs.ext.junit)
-
-    implementation(libs.androidx.appcompat)
-    implementation(libs.androidx.biometric)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.sqlite)
-    implementation(libs.google.android.material)
-    implementation(libs.google.gson)
-    implementation(libs.io.coil.kt)
-    implementation(libs.play.services.oss.licenses)
-    implementation(libs.room.ktx)
-    implementation(libs.room.runtime)
-    implementation(libs.safebox)
-    implementation(libs.sqlcipher.android)
-    implementation(libs.tink.android)
-
-    ksp(libs.room.compiler)
-
+    implementation(libs.androidx.activity.compose)
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.compose.ui)
+    implementation(libs.androidx.compose.ui.graphics)
+    implementation(libs.androidx.compose.ui.tooling.preview)
+    implementation(libs.androidx.compose.material3)
     testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    debugImplementation(libs.androidx.compose.ui.tooling)
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
 }
-
