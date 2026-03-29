@@ -1,11 +1,12 @@
 package com.nielcode.kupass.model
 
 import android.os.Parcelable
+import com.nielcode.kupass.BuildConfig
 import kotlinx.parcelize.Parcelize
 import java.util.Date
 
 /**
- * Represents a single account for a site, which can have multiple credentials..
+ * Represents a single account for a site, which can have multiple credentials.
  *
  * @property id Unique ID for this site account.
  * @property site Site name (e.g., "Google", "Facebook").
@@ -22,7 +23,7 @@ data class SiteAccount(
     val domain: String get() = site.trim().lowercase().replace("\\s+".toRegex(), "") + ".com"
 
     /** Favget endpoint (domain required; fallback guesses "<site>.com"). */
-    val logoUrl: String get() = "https://favget-api.vercel.app/v1/icon?domain=$domain"
+    val logoUrl: String get() = "${BuildConfig.FAVGET_API_URL}/v1/icon?domain=$domain"
 }
 
 /**

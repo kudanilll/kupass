@@ -34,8 +34,9 @@ android {
             buildConfigField("String", "GIT_URL", "\"https://github.com/kudanilll/kupass\"")
             buildConfigField("String", "DEV_URL", "\"https://www.kudaniel.my.id\"")
             buildConfigField("String", "DEV_NAME", "\"Achmad Daniel Syahputra\"")
-
-            // Favget API Key
+            
+            // Favget API
+            buildConfigField("String", "FAVGET_API_URL", "\"https://favget.nielcode.web.id\"")
             buildConfigField(
                 "String",
                 "FAVGET_API_KEY",
@@ -47,7 +48,8 @@ android {
             buildConfigField("String", "DEV_URL", "\"https://www.kudaniel.my.id\"")
             buildConfigField("String", "DEV_NAME", "\"Achmad Daniel Syahputra\"")
 
-            // Favget API Key
+            // Favget API
+            buildConfigField("String", "FAVGET_API_URL", "\"https://favget.nielcode.web.id\"")
             buildConfigField(
                 "String",
                 "FAVGET_API_KEY",
