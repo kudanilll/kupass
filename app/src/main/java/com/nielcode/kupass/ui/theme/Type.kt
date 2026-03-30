@@ -2,12 +2,10 @@ package com.nielcode.kupass.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.ExperimentalTextApi
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.sp
 import com.nielcode.kupass.R
 
 @OptIn(ExperimentalTextApi::class)
@@ -40,31 +38,23 @@ val hemingFontFamily: FontFamily =
         ),
     )
 
+// Default Material 3 typography values
+val baseline = Typography()
 val Typography =
     Typography(
-        bodyLarge =
-            TextStyle(
-                fontFamily = googleSansFlexFontFamily,
-                fontWeight = FontWeight.Normal,
-                fontSize = 16.sp,
-                lineHeight = 24.sp,
-                letterSpacing = 0.5.sp,
-            ),
-        titleLarge =
-            TextStyle(
-                fontFamily = hemingFontFamily,
-                fontWeight = FontWeight.Normal,
-                fontSize = 22.sp,
-                lineHeight = 28.sp,
-                letterSpacing = 0.sp,
-            ),
-        /* Other default text styles to override
-        labelSmall = TextStyle(
-            fontFamily = FontFamily.Default,
-            fontWeight = FontWeight.Medium,
-            fontSize = 11.sp,
-            lineHeight = 16.sp,
-            letterSpacing = 0.5.sp
-        )
-        */
+        displayLarge = baseline.displayLarge.copy(fontFamily = hemingFontFamily),
+        displayMedium = baseline.displayMedium.copy(fontFamily = hemingFontFamily),
+        displaySmall = baseline.displaySmall.copy(fontFamily = hemingFontFamily),
+        headlineLarge = baseline.headlineLarge.copy(fontFamily = hemingFontFamily),
+        headlineMedium = baseline.headlineMedium.copy(fontFamily = hemingFontFamily),
+        headlineSmall = baseline.headlineSmall.copy(fontFamily = hemingFontFamily),
+        titleLarge = baseline.titleLarge.copy(fontFamily = hemingFontFamily),
+        titleMedium = baseline.titleMedium.copy(fontFamily = hemingFontFamily),
+        titleSmall = baseline.titleSmall.copy(fontFamily = hemingFontFamily),
+        bodyLarge = baseline.bodyLarge.copy(fontFamily = googleSansFlexFontFamily),
+        bodyMedium = baseline.bodyMedium.copy(fontFamily = googleSansFlexFontFamily),
+        bodySmall = baseline.bodySmall.copy(fontFamily = googleSansFlexFontFamily),
+        labelLarge = baseline.labelLarge.copy(fontFamily = googleSansFlexFontFamily),
+        labelMedium = baseline.labelMedium.copy(fontFamily = googleSansFlexFontFamily),
+        labelSmall = baseline.labelSmall.copy(fontFamily = googleSansFlexFontFamily),
     )
