@@ -14,7 +14,7 @@ android {
         minSdk = 27
         targetSdk = 37
         versionCode = 5
-        versionName = "3.0.1"
+        versionName = "3.1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -23,6 +23,27 @@ android {
     val secretsFile = rootProject.file("secrets.properties")
     if (secretsFile.exists() && secretsFile.isFile) {
         secretsFile.inputStream().use { properties.load(it) }
+    }
+
+    signingConfigs {
+        getByName("debug") {
+        }
+
+        create("release") {
+            val keystoreFile = rootProject.file("release-key.jks")
+            if (keystoreFile.exists()) {
+                storeFile = keystoreFile
+                storePassword = properties.getProperty("RELEASE_STORE_PASSWORD")
+                keyAlias = properties.getProperty("RELEASE_KEY_ALIAS")
+                keyPassword = properties.getProperty("RELEASE_KEY_PASSWORD")
+            } else {
+                val debugSigning = getByName("debug")
+                storeFile = debugSigning.storeFile
+                storePassword = debugSigning.storePassword
+                keyAlias = debugSigning.keyAlias
+                keyPassword = debugSigning.keyPassword
+            }
+        }
     }
 
     buildTypes {
@@ -44,7 +65,10 @@ android {
             // Favget API
             buildConfigField("String", "FAVGET_API_URL", "\"https://favget.nielcode.web.id\"")
             buildConfigField("String", "FAVGET_API_KEY", properties.getProperty("FAVGET_API_KEY"))
-            isMinifyEnabled = false
+
+            isMinifyEnabled = true
+            isShrinkResources = true
+
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
