@@ -2,6 +2,7 @@ package com.nielcode.kupass.ui.screens.settings
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
@@ -12,15 +13,11 @@ import androidx.compose.material.icons.filled.Contrast
 import androidx.compose.material.icons.filled.Gavel
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.nielcode.kupass.R
@@ -30,34 +27,31 @@ import com.nielcode.kupass.ui.screens.settings.components.SettingItem
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen() {
-    val scrollBehavior =
-        TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
-
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
-            .nestedScroll(scrollBehavior.nestedScrollConnection),
-        topBar = {
-            LargeTopAppBar(
-                title = {
-                    Text(
-                        stringResource(R.string.settings),
-                        style = MaterialTheme.typography.displaySmall,
-                    )
-                },
-                scrollBehavior = scrollBehavior
-            )
-        }
     ) { innerPadding ->
-
         val bottomPadding = innerPadding.calculateBottomPadding() + 88.dp
-
         LazyColumn(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(top = innerPadding.calculateTopPadding()),
-            contentPadding = PaddingValues(bottom = bottomPadding)
+                .fillMaxSize(),
+            contentPadding = PaddingValues(
+                top = innerPadding.calculateTopPadding() + 32.dp,
+                bottom = bottomPadding
+            )
         ) {
+            // Header
+            item {
+                Text(
+                    text = stringResource(R.string.settings),
+                    style = MaterialTheme.typography.displaySmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier
+                        .fillMaxWidth(0.8f)
+                        .padding(start = 16.dp, top = 32.dp, bottom = 12.dp)
+                )
+            }
+
             // --- Section: General (Language) ---
             item {
                 SettingItem(
