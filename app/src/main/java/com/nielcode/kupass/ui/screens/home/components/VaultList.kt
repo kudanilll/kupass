@@ -35,7 +35,7 @@ fun VaultList(
     active: Boolean,
     onActiveChange: (Boolean) -> Unit,
 ) {
-    val bottomPadding = contentPadding.calculateBottomPadding() + 88.dp
+    val bottomPadding = contentPadding.calculateBottomPadding() + 56.dp
 
     LazyColumn(
         modifier = modifier.fillMaxSize(),
