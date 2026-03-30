@@ -1,5 +1,6 @@
 package com.nielcode.kupass.ui.screens.home
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -9,9 +10,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.nielcode.kupass.ui.screens.home.components.BottomNav
-import com.nielcode.kupass.ui.screens.home.components.FAB
 import com.nielcode.kupass.ui.screens.home.components.VaultList
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -23,20 +24,28 @@ fun HomeScreen() {
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        floatingActionButton = { FAB(onClick = { /* Navigate to CreatePassword */ }) },
-        bottomBar = {
+    ) { innerPadding ->
+        Box(modifier = Modifier.fillMaxSize()) {
+            VaultList(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = innerPadding.calculateTopPadding()),
+                contentPadding = innerPadding,
+                isEmpty = false,
+                query = searchQuery,
+                onQueryChange = { searchQuery = it },
+                active = isSearchActive,
+                onActiveChange = { isSearchActive = it },
+            )
+
             BottomNav(
                 currentRoute = "home",
-                onNavigate = { /* Handle navigate tab */ })
-        },
-    ) { innerPadding ->
-        VaultList(
-            modifier = Modifier.padding(innerPadding),
-            isEmpty = false,
-            query = searchQuery,
-            onQueryChange = { searchQuery = it },
-            active = isSearchActive,
-            onActiveChange = { isSearchActive = it },
-        )
+                onNavigate = { /* Handle routing */ },
+                onAddClick = { /* Handle navigation to CreatePassword */ },
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = innerPadding.calculateBottomPadding())
+            )
+        }
     }
 }

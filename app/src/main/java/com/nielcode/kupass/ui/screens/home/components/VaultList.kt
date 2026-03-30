@@ -4,6 +4,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -27,13 +28,19 @@ import com.nielcode.kupass.R
 @Composable
 fun VaultList(
     modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues(0.dp),
     isEmpty: Boolean,
     query: String,
     onQueryChange: (String) -> Unit,
     active: Boolean,
     onActiveChange: (Boolean) -> Unit,
 ) {
-    LazyColumn(modifier = modifier.fillMaxSize()) {
+    val bottomPadding = contentPadding.calculateBottomPadding() + 88.dp
+
+    LazyColumn(
+        modifier = modifier.fillMaxSize(),
+        contentPadding = PaddingValues(bottom = bottomPadding)
+    ) {
         item {
             if (!active) {
                 Text(
