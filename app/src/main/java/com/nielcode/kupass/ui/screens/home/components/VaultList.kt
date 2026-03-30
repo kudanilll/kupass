@@ -116,7 +116,15 @@ fun VaultList(
         if (isEmpty) {
             item { Text("Vault is empty", modifier = Modifier.padding(16.dp)) }
         } else {
-            items(20) { index -> Text("Password Item $index", modifier = Modifier.padding(16.dp)) }
+            items(20) { index ->
+                PasswordListItem(
+                    title = "Akun Google $index",
+                    subtitle = "test$index@gmail.com",
+                    fallbackChar = "G",
+                    itemCount = if (index % 3 == 0) 2 else 0,
+                    onClick = { /* Buka detail sandi */ }
+                )
+            }
         }
     }
 }
