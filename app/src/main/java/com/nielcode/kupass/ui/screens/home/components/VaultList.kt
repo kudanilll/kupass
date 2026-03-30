@@ -45,11 +45,11 @@ fun VaultList(
             if (!active) {
                 Text(
                     text = stringResource(R.string.headline),
-                    style = MaterialTheme.typography.displayMedium,
+                    style = MaterialTheme.typography.displaySmall,
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier
                         .fillMaxWidth(0.8f)
-                        .padding(start = 16.dp, top = 32.dp, bottom = 16.dp)
+                        .padding(start = 16.dp, top = 32.dp)
                 )
             }
         }
@@ -101,7 +101,7 @@ fun VaultList(
                     shadowElevation = SearchBarDefaults.ShadowElevation,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 8.dp),
+                        .padding(top = 16.dp, bottom = 8.dp),
                     content = {
                         if (active) {
                             if (query.isNotEmpty()) {
