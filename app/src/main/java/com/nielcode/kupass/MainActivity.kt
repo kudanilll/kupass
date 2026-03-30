@@ -5,7 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import com.nielcode.kupass.ui.screens.home.HomeScreen
+import com.nielcode.kupass.ui.screens.MainAppScreen
 import com.nielcode.kupass.ui.theme.KupassTheme
 
 class MainActivity : ComponentActivity() {
@@ -14,6 +14,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         enableEdgeToEdge()
-        setContent { KupassTheme { HomeScreen() } }
+        setContent { KupassTheme { MainAppScreen() } }
     }
 }

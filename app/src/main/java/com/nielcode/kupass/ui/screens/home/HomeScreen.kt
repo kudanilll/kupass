@@ -10,9 +10,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.nielcode.kupass.ui.screens.home.components.BottomNav
 import com.nielcode.kupass.ui.screens.home.components.VaultList
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -36,15 +34,6 @@ fun HomeScreen() {
                 onQueryChange = { searchQuery = it },
                 active = isSearchActive,
                 onActiveChange = { isSearchActive = it },
-            )
-
-            BottomNav(
-                currentRoute = "home",
-                onNavigate = { /* Handle routing */ },
-                onAddClick = { /* Handle navigation to CreatePassword */ },
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = innerPadding.calculateBottomPadding())
             )
         }
     }
