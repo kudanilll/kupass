@@ -2,6 +2,7 @@ package com.nielcode.kupass.ui.screens.home.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -33,6 +34,7 @@ fun BottomNav(
     onAddClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val isDarkMode = isSystemInDarkTheme()
     Row(
         modifier = modifier
             .fillMaxWidth(),
@@ -43,7 +45,7 @@ fun BottomNav(
         Row(
             modifier = Modifier
                 .clip(RoundedCornerShape(50))
-                .background(MaterialTheme.colorScheme.surfaceContainer)
+                .background(if (isDarkMode) MaterialTheme.colorScheme.surfaceContainer else MaterialTheme.colorScheme.surfaceVariant)
                 .padding(8.dp),
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically
