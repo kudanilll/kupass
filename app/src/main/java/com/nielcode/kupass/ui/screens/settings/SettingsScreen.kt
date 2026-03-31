@@ -1,6 +1,7 @@
 package com.nielcode.kupass.ui.screens.settings
 
 import android.content.Context
+import android.content.Intent
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
@@ -15,8 +16,10 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.google.android.gms.oss.licenses.v2.OssLicensesMenuActivity
 import com.nielcode.kupass.BuildConfig
 import com.nielcode.kupass.R
 import com.nielcode.kupass.ui.screens.settings.components.SectionHeader
@@ -26,6 +29,8 @@ import com.nielcode.kupass.utils.openUrl
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen() {
+    val context = LocalContext.current
+
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
@@ -84,7 +89,10 @@ fun SettingsScreen() {
                     icon = Icons.Default.Gavel,
                     title = stringResource(R.string.settings_license_title),
                     subtitle = stringResource(R.string.settings_license_summary),
-                    onClick = { /* TODO: Buka lisensi */ }
+                    onClick = {
+                        val intent = Intent(context, OssLicensesMenuActivity::class.java)
+                        context.startActivity(intent)
+                    }
                 )
             }
             item {
