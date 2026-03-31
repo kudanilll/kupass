@@ -1,9 +1,8 @@
 package com.nielcode.kupass.ui.screens.settings
 
+import android.content.Context
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
@@ -13,16 +12,16 @@ import androidx.compose.material.icons.filled.Contrast
 import androidx.compose.material.icons.filled.Gavel
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.nielcode.kupass.BuildConfig
 import com.nielcode.kupass.R
 import com.nielcode.kupass.ui.screens.settings.components.SectionHeader
 import com.nielcode.kupass.ui.screens.settings.components.SettingItem
+import com.nielcode.kupass.utils.openUrl
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,19 +39,8 @@ fun SettingsScreen() {
                 bottom = bottomPadding
             )
         ) {
-            // Header
-            item {
-                Text(
-                    text = stringResource(R.string.settings),
-                    style = MaterialTheme.typography.displaySmall,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier
-                        .fillMaxWidth(0.8f)
-                        .padding(start = 16.dp, top = 32.dp, bottom = 12.dp)
-                )
-            }
-
-            // --- Section: General (Language) ---
+            // Section: General
+            item { SectionHeader(title = stringResource(R.string.settings)) }
             item {
                 SettingItem(
                     icon = Icons.Default.Language,
@@ -62,9 +50,8 @@ fun SettingsScreen() {
                 )
             }
 
-            // --- Section: Appearance ---
+            // Section: Appearance
             item { SectionHeader(title = stringResource(R.string.settings_category_appearance)) }
-
             item {
                 SettingItem(
                     icon = Icons.Default.Contrast,
@@ -73,7 +60,6 @@ fun SettingsScreen() {
                     onClick = { /* TODO: Ganti tema */ }
                 )
             }
-
             item {
                 SettingItem(
                     icon = Icons.Default.ColorLens,
@@ -83,18 +69,16 @@ fun SettingsScreen() {
                 )
             }
 
-            // --- Section: Developer / Other ---
+            // Section: About
             item { SectionHeader(title = stringResource(R.string.settings_category_developer)) }
-
             item {
                 SettingItem(
                     icon = Icons.Default.AccountCircle,
                     title = stringResource(R.string.settings_about_title),
-                    subtitle = "Achmad Daniel Syahputra",
-                    onClick = { /* TODO: Buka profil developer */ }
+                    subtitle = BuildConfig.DEV_NAME,
+                    onClick = { openUrl(this as Context, BuildConfig.DEV_URL) }
                 )
             }
-
             item {
                 SettingItem(
                     icon = Icons.Default.Gavel,
@@ -103,13 +87,12 @@ fun SettingsScreen() {
                     onClick = { /* TODO: Buka lisensi */ }
                 )
             }
-
             item {
                 SettingItem(
                     icon = Icons.Default.Code,
                     title = stringResource(R.string.app_name),
-                    subtitle = "Version 3.0.1",
-                    onClick = { /* TODO: Buka GitHub KuPass */ }
+                    subtitle = "${BuildConfig.VERSION_NAME} - ${BuildConfig.BUILD_TYPE}",
+                    onClick = { openUrl(this as Context, BuildConfig.GIT_URL) }
                 )
             }
         }
