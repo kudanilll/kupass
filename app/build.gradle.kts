@@ -7,12 +7,13 @@ plugins {
 
 android {
     namespace = "com.nielcode.kupass"
-    compileSdk = 37
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.nielcode.kupass"
         minSdk = 27
-        targetSdk = 37
+        //noinspection OldTargetApi
+        targetSdk = 36
         versionCode = 5
         versionName = "3.1.0"
 
