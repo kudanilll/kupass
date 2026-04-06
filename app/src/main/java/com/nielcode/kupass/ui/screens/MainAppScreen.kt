@@ -15,8 +15,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.nielcode.kupass.ui.components.BottomNav
 import com.nielcode.kupass.ui.screens.home.HomeScreen
-import com.nielcode.kupass.ui.screens.home.components.BottomNav
 import com.nielcode.kupass.ui.screens.settings.SettingsScreen
 import kotlinx.coroutines.launch
 
@@ -28,7 +28,7 @@ fun MainAppScreen() {
     val currentTab =
         if (
             pagerState.currentPageOffsetFraction > 0.5f ||
-                pagerState.currentPage == 1 && pagerState.currentPageOffsetFraction > -0.5f
+            pagerState.currentPage == 1 && pagerState.currentPageOffsetFraction > -0.5f
         ) {
             "settings"
         } else {
@@ -60,9 +60,10 @@ fun MainAppScreen() {
                     )
                 }
             },
-            onAddClick = { /* TODO: Navigasi */},
+            onAddClick = { /* TODO: Navigasi */ },
             modifier =
-                Modifier.align(Alignment.BottomCenter)
+                Modifier
+                    .align(Alignment.BottomCenter)
                     .padding(
                         bottom =
                             WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()

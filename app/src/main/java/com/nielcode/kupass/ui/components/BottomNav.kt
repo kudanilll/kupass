@@ -1,4 +1,4 @@
-package com.nielcode.kupass.ui.screens.home.components
+package com.nielcode.kupass.ui.components
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
@@ -39,17 +39,19 @@ fun BottomNav(
 ) {
     val isDarkMode = isSystemInDarkTheme()
     Row(
-        modifier = modifier
-            .fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
-
         Row(
-            modifier = Modifier
-                .clip(RoundedCornerShape(50))
-                .background(if (isDarkMode) MaterialTheme.colorScheme.surfaceContainer else MaterialTheme.colorScheme.surfaceVariant)
-                .padding(8.dp),
+            modifier =
+                Modifier
+                    .clip(RoundedCornerShape(50))
+                    .background(
+                        if (isDarkMode) MaterialTheme.colorScheme.surfaceContainer
+                        else MaterialTheme.colorScheme.surfaceVariant
+                    )
+                    .padding(8.dp),
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -93,17 +95,22 @@ private fun NavItem(
     onClick: () -> Unit
 ) {
     Row(
-        modifier = Modifier
-            .clip(RoundedCornerShape(50))
-            .background(if (isSelected) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f) else Color.Transparent)
-            .clickable(onClick = onClick)
-            .padding(horizontal = 12.dp, vertical = 10.dp)
-            .animateContentSize(
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioMediumBouncy,
-                    stiffness = Spring.StiffnessLow
+        modifier =
+            Modifier
+                .clip(RoundedCornerShape(50))
+                .background(
+                    if (isSelected) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
+                    else Color.Transparent
                 )
-            ),
+                .clickable(onClick = onClick)
+                .padding(horizontal = 12.dp, vertical = 10.dp)
+                .animateContentSize(
+                    animationSpec =
+                        spring(
+                            dampingRatio = Spring.DampingRatioMediumBouncy,
+                            stiffness = Spring.StiffnessLow
+                        )
+                ),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {
