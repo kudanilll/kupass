@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="language_values">
+        <item>en-US</item>
+        <item>id-ID</item>
+    </string-array>
+    <string-array name="language_list">
+        <item>@string/lang_en</item>
+        <item>@string/lang_in</item>
+    </string-array>
+    <string-array name="theme_values">
+        <item>default</item>
+        <item>light</item>
+        <item>dark</item>
+    </string-array>
+    <string-array name="theme_list">
+        <item>@string/theme_default</item>
+        <item>@string/theme_light</item>
+        <item>@string/theme_dark</item>
+    </string-array>
+</resources>
