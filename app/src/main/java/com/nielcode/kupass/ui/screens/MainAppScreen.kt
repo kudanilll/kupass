@@ -1,6 +1,7 @@
 package com.nielcode.kupass.ui.screens
 
 import android.annotation.SuppressLint
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -16,9 +17,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -85,7 +94,22 @@ fun MainPagerScreen(onNavigateToEditor: () -> Unit) {
             "home"
         }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    var isBottomNavVisible by remember { mutableStateOf(true) }
+    val nestedScrollConnection = remember {
+        object : NestedScrollConnection {
+            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                if (available.y < -5f) isBottomNavVisible = false
+                if (available.y > 5f) isBottomNavVisible = true
+                return Offset.Zero
+            }
+        }
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .nestedScroll(nestedScrollConnection)
+    ) {
         HorizontalPager(
             state = pagerState,
             modifier = Modifier.fillMaxSize(),
@@ -99,25 +123,32 @@ fun MainPagerScreen(onNavigateToEditor: () -> Unit) {
             }
         }
 
-        BottomNav(
-            currentRoute = currentTab,
-            onNavigate = { selectedTab ->
-                coroutineScope.launch {
-                    val targetPage = if (selectedTab == "home") 0 else 1
-                    pagerState.animateScrollToPage(
-                        page = targetPage,
-                        animationSpec = tween(durationMillis = 400, easing = FastOutSlowInEasing)
-                    )
-                }
-            },
-            onAddClick = onNavigateToEditor,
-            modifier =
-                Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(
-                        bottom =
-                            WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-                    )
-        )
+        AnimatedVisibility(
+            visible = isBottomNavVisible,
+            enter = slideInVertically(initialOffsetY = { it }) + fadeIn(), // Muncul dari bawah
+            exit = slideOutVertically(targetOffsetY = { it }) + fadeOut(), // Ngilang ke bawah
+            modifier = Modifier.align(Alignment.BottomCenter)
+        ) {
+            BottomNav(
+                currentRoute = currentTab,
+                onNavigate = { selectedTab ->
+                    coroutineScope.launch {
+                        val targetPage = if (selectedTab == "home") 0 else 1
+                        pagerState.animateScrollToPage(
+                            page = targetPage,
+                            animationSpec = tween(
+                                durationMillis = 400,
+                                easing = FastOutSlowInEasing
+                            )
+                        )
+                    }
+                },
+                onAddClick = onNavigateToEditor,
+                modifier = Modifier.padding(
+                    bottom = WindowInsets.navigationBars.asPaddingValues()
+                        .calculateBottomPadding()
+                )
+            )
+        }
     }
 }

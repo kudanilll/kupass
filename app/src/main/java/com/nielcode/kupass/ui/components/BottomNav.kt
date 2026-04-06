@@ -1,8 +1,13 @@
 package com.nielcode.kupass.ui.components
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -72,17 +77,25 @@ fun BottomNav(
             )
         }
 
-        Spacer(modifier = Modifier.width(12.dp))
-
-        FloatingActionButton(
-            onClick = onAddClick,
-            modifier = Modifier.size(56.dp),
-            shape = RoundedCornerShape(16.dp),
-            containerColor = MaterialTheme.colorScheme.secondary,
-            contentColor = MaterialTheme.colorScheme.onSecondary,
-            elevation = FloatingActionButtonDefaults.elevation(0.dp)
+        AnimatedVisibility(
+            visible = currentRoute != "settings",
+            enter = scaleIn() + fadeIn(),
+            exit = scaleOut() + fadeOut()
         ) {
-            Icon(Icons.Default.Edit, contentDescription = "Add Password")
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Spacer(modifier = Modifier.width(12.dp))
+
+                FloatingActionButton(
+                    onClick = onAddClick,
+                    modifier = Modifier.size(56.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    containerColor = MaterialTheme.colorScheme.secondary,
+                    contentColor = MaterialTheme.colorScheme.onSecondary,
+                    elevation = FloatingActionButtonDefaults.elevation(0.dp)
+                ) {
+                    Icon(Icons.Default.Edit, contentDescription = "Add Password")
+                }
+            }
         }
     }
 }
