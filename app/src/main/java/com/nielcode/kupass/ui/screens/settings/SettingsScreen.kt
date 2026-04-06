@@ -104,7 +104,6 @@ fun SettingsScreen() {
                 SettingItem(
                     icon = Icons.Default.Contrast,
                     title = stringResource(R.string.settings_theme_title),
-                    // KUNCI: Gunakan State 'currentThemeIndex'
                     subtitle = themeList.getOrNull(currentThemeIndex) ?: "System Default",
                     onClick = { showThemeDialog = true }
                 )
