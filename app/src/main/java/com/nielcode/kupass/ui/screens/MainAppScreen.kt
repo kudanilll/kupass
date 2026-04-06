@@ -3,6 +3,10 @@ package com.nielcode.kupass.ui.screens
 import android.annotation.SuppressLint
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -45,7 +49,20 @@ fun MainAppScreen() {
             )
         }
 
-        composable<PasswordEditor> {
+        composable<PasswordEditor>(
+            enterTransition = {
+                slideInVertically(
+                    initialOffsetY = { fullHeight -> fullHeight },
+                    animationSpec = tween(durationMillis = 400, easing = FastOutSlowInEasing)
+                ) + fadeIn(animationSpec = tween(durationMillis = 400))
+            },
+            popExitTransition = {
+                slideOutVertically(
+                    targetOffsetY = { fullHeight -> fullHeight },
+                    animationSpec = tween(durationMillis = 400, easing = FastOutSlowInEasing)
+                ) + fadeOut(animationSpec = tween(durationMillis = 400))
+            }
+        ) {
             PasswordEditorScreen(
                 onNavigateBack = { navController.popBackStack() }
             )
