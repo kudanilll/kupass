@@ -2,6 +2,7 @@ package com.nielcode.kupass.ui.components
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
@@ -15,12 +16,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
@@ -48,33 +47,33 @@ fun BottomNav(
 ) {
     val isDarkMode = isSystemInDarkTheme()
     val fabVisible = currentRoute != "settings"
-    val spacing = 2.dp
+    val spacing = 12.dp
 
     val offsetX by animateDpAsState(
         targetValue = if (fabVisible) -(spacing / 2 + spacing / 2) else 0.dp,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessLow
+        animationSpec = tween(
+            durationMillis = 300,
+            easing = FastOutSlowInEasing
         ),
         label = "nav_offset"
     )
 
     Row(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth(),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Row(
-            modifier =
-                Modifier
-                    .offset(x = offsetX)
-                    .clip(RoundedCornerShape(50))
-                    .background(
-                        if (isDarkMode) MaterialTheme.colorScheme.surfaceContainer
-                        else MaterialTheme.colorScheme.surfaceVariant
-                    )
-                    .padding(8.dp),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            modifier = Modifier
+                .offset(x = offsetX)
+                .clip(RoundedCornerShape(50))
+                .background(
+                    if (isDarkMode) MaterialTheme.colorScheme.surfaceContainer
+                    else MaterialTheme.colorScheme.surfaceVariant
+                )
+                .padding(8.dp),
+            horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Item Home
@@ -95,7 +94,7 @@ fun BottomNav(
         }
 
         AnimatedVisibility(
-            visible = currentRoute != "settings",
+            visible = fabVisible,
             enter = scaleIn(
                 animationSpec = spring(
                     dampingRatio = Spring.DampingRatioMediumBouncy,
@@ -109,9 +108,9 @@ fun BottomNav(
                 targetScale = 0.7f
             ) + fadeOut()
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Spacer(modifier = Modifier.width(12.dp))
-
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 FloatingActionButton(
                     onClick = onAddClick,
                     modifier = Modifier.size(56.dp),
