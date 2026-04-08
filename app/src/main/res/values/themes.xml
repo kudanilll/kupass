@@ -3,7 +3,7 @@
 
     <style name="Theme.Kupass" parent="Theme.AppCompat.Light.NoActionBar" />
 
-    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+    <style name="Theme.Kupass.SplashScreen" parent="Theme.SplashScreen">
         <!-- Need to match surfaceLight in Colors.kt -->
         <item name="windowSplashScreenBackground">#FFF9FAEF</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/logo</item>
