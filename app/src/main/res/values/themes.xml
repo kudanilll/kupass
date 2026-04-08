@@ -4,6 +4,8 @@
     <style name="Theme.Kupass" parent="Theme.AppCompat.Light.NoActionBar" />
 
     <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+        <!-- Need to match surfaceLight in Colors.kt -->
+        <item name="windowSplashScreenBackground">#FFF9FAEF</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/logo</item>
         <item name="postSplashScreenTheme">@style/Theme.Kupass</item>
     </style>
