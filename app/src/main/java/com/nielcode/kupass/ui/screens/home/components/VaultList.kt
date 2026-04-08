@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
@@ -19,7 +20,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.nielcode.kupass.R
@@ -37,94 +41,126 @@ fun VaultList(
 ) {
     val bottomPadding = contentPadding.calculateBottomPadding()
 
-    LazyColumn(
-        modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(bottom = bottomPadding)
-    ) {
-        item {
-            if (!active) {
-                Text(
-                    text = stringResource(R.string.headline),
-                    style = MaterialTheme.typography.displaySmall,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier
-                        .fillMaxWidth(0.8f)
-                        .padding(start = 16.dp, top = 32.dp)
-                )
+    Box(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(
+            modifier = modifier.fillMaxSize(),
+            contentPadding = PaddingValues(bottom = bottomPadding)
+        ) {
+            item {
+                if (!active) {
+                    Text(
+                        text = stringResource(R.string.headline),
+                        style = MaterialTheme.typography.displaySmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .fillMaxWidth(0.8f)
+                            .padding(start = 16.dp, top = 32.dp)
+                    )
+                }
             }
-        }
 
-        stickyHeader {
-            Box(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.background)
-                        .padding(horizontal = 16.dp)
-            ) {
-                DockedSearchBar(
-                    inputField = {
-                        SearchBarDefaults.InputField(
-                            query = query,
-                            onQueryChange = onQueryChange,
-                            onSearch = { onActiveChange(false) },
-                            expanded = active,
-                            onExpandedChange = onActiveChange,
-                            enabled = true,
-                            placeholder = { Text(stringResource(R.string.search_hint)) },
-                            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-                            trailingIcon = {
-                                if (active) {
-                                    Icon(
-                                        imageVector = Icons.Default.Close,
-                                        contentDescription = "Close Search",
-                                        modifier = Modifier
-                                            .padding(8.dp)
-                                            .clickable {
-                                                if (query.isNotEmpty()) {
-                                                    onQueryChange("")
-                                                } else {
-                                                    onActiveChange(false)
-                                                }
-                                            }
+            stickyHeader {
+                Box(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .background(
+                                brush = Brush.verticalGradient(
+                                    colors = listOf(
+                                        MaterialTheme.colorScheme.surface,
+                                        MaterialTheme.colorScheme.surface.copy(alpha = 0.7f),
+                                        Color.Transparent
                                     )
+                                )
+                            )
+                            .padding(horizontal = 16.dp)
+                ) {
+                    DockedSearchBar(
+                        inputField = {
+                            SearchBarDefaults.InputField(
+                                query = query,
+                                onQueryChange = onQueryChange,
+                                onSearch = { onActiveChange(false) },
+                                expanded = active,
+                                onExpandedChange = onActiveChange,
+                                enabled = true,
+                                placeholder = { Text(stringResource(R.string.search_hint)) },
+                                leadingIcon = {
+                                    Icon(
+                                        Icons.Default.Search,
+                                        contentDescription = null
+                                    )
+                                },
+                                trailingIcon = {
+                                    if (active) {
+                                        Icon(
+                                            imageVector = Icons.Default.Close,
+                                            contentDescription = "Close Search",
+                                            modifier = Modifier
+                                                .padding(8.dp)
+                                                .clickable {
+                                                    if (query.isNotEmpty()) {
+                                                        onQueryChange("")
+                                                    } else {
+                                                        onActiveChange(false)
+                                                    }
+                                                }
+                                        )
+                                    }
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                        },
+                        expanded = active,
+                        onExpandedChange = onActiveChange,
+                        shape = SearchBarDefaults.dockedShape,
+                        colors = SearchBarDefaults.colors(),
+                        tonalElevation = SearchBarDefaults.TonalElevation,
+                        shadowElevation = SearchBarDefaults.ShadowElevation,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 16.dp, bottom = 8.dp),
+                        content = {
+                            if (active) {
+                                if (query.isNotEmpty()) {
+                                    Text("Mencari: $query", modifier = Modifier.padding(16.dp))
                                 }
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                        )
-                    },
-                    expanded = active,
-                    onExpandedChange = onActiveChange,
-                    shape = SearchBarDefaults.dockedShape,
-                    colors = SearchBarDefaults.colors(),
-                    tonalElevation = SearchBarDefaults.TonalElevation,
-                    shadowElevation = SearchBarDefaults.ShadowElevation,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 16.dp, bottom = 8.dp),
-                    content = {
-                        if (active) {
-                            if (query.isNotEmpty()) {
-                                Text("Mencari: $query", modifier = Modifier.padding(16.dp))
                             }
-                        }
-                    },
-                )
+                        },
+                    )
+                }
+            }
+
+            if (isEmpty) {
+                item { Text("Vault is empty", modifier = Modifier.padding(16.dp)) }
+            } else {
+                items(20) { index ->
+                    PasswordListItem(
+                        title = "Akun Google $index",
+                        subtitle = "test$index@gmail.com",
+                        fallbackChar = "G",
+                        itemCount = if (index % 3 == 0) 2 else 0,
+                        onClick = { /* Buka detail sandi */ }
+                    )
+                }
             }
         }
 
-        if (isEmpty) {
-            item { Text("Vault is empty", modifier = Modifier.padding(16.dp)) }
-        } else {
-            items(20) { index ->
-                PasswordListItem(
-                    title = "Akun Google $index",
-                    subtitle = "test$index@gmail.com",
-                    fallbackChar = "G",
-                    itemCount = if (index % 3 == 0) 2 else 0,
-                    onClick = { /* Buka detail sandi */ }
+        // Bottom gradient overlay
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter)
+                .background(
+                    brush = Brush.verticalGradient(
+                        colorStops = arrayOf(
+                            0f to Color.Transparent,
+                            0.6f to MaterialTheme.colorScheme.surface.copy(alpha = 0.7f),
+                            1f to MaterialTheme.colorScheme.surface
+                        )
+                    )
                 )
-            }
-        }
+                .height(80.dp)
+        )
     }
 }
