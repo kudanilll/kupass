@@ -3,7 +3,9 @@ package com.nielcode.kupass.ui.components
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
@@ -15,6 +17,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -29,6 +32,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,6 +47,18 @@ fun BottomNav(
     modifier: Modifier = Modifier
 ) {
     val isDarkMode = isSystemInDarkTheme()
+    val fabVisible = currentRoute != "settings"
+    val spacing = 2.dp
+
+    val offsetX by animateDpAsState(
+        targetValue = if (fabVisible) -(spacing / 2 + spacing / 2) else 0.dp,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
+        label = "nav_offset"
+    )
+
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.Center,
@@ -51,6 +67,7 @@ fun BottomNav(
         Row(
             modifier =
                 Modifier
+                    .offset(x = offsetX)
                     .clip(RoundedCornerShape(50))
                     .background(
                         if (isDarkMode) MaterialTheme.colorScheme.surfaceContainer
@@ -79,8 +96,18 @@ fun BottomNav(
 
         AnimatedVisibility(
             visible = currentRoute != "settings",
-            enter = scaleIn() + fadeIn(),
-            exit = scaleOut() + fadeOut()
+            enter = scaleIn(
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessLow
+                ),
+                initialScale = 0.7f
+            ) + fadeIn(),
+
+            exit = scaleOut(
+                animationSpec = tween(200),
+                targetScale = 0.7f
+            ) + fadeOut()
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Spacer(modifier = Modifier.width(12.dp))
