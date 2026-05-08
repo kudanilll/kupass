@@ -1,10 +1,8 @@
-# Kupass: An Open-Source Password Manager
-
 <p align="center">
 	<img src="/image/banner.png" alt="Kupass Banner">
 </p\>
 
----
+# Kupass: An Open-Source Password Manager
 
 ## Why Choose Kupass?
 
@@ -13,8 +11,6 @@ Kupass is an open-source password manager designed with a focus on both **securi
 ### Security and Open Source
 
 Unlike many closed-source applications, Kupass is completely **open source**. This means anyone can **audit and contribute** to its source code, ensuring that its security protocols are transparent and trustworthy. Your personal data is kept secure and well-encrypted, giving you peace of mind.
-
----
 
 ## Screenshots
 
@@ -36,40 +32,32 @@ Explore Kupass's user-friendly interface in both light and dark modes.
 	<img src="/image/dark_password.jpg?raw=true" width="30%" alt="Dark mode password screen">
 </p>
 
----
-
-## What's New?
-
-- **Updated UI/UX**: Enjoy a more streamlined and modern user experience.
-- **Import Feature**: Easily import your passwords from other sources.
-
----
-
 ## Download
 
 Get the latest version of Kupass here:
 
 [**Github Release Page**](https://github.com/kudanilll/kupass/releases)
 
----
-
 ## Support and Contribute
 
 If you appreciate my work, you can [**buy me a coffee**](https://www.buymeacoffee.com/kudanil) and share your feedback! Your support helps me continue to improve Kupass.
 
----
-
 ## License
 
-This project is licensed under the **GNU Affero General Public License v3.0**.
+This project is licensed under the **GNU General Public License v3.0 (GPL-3.0)**.
 
 See the [`LICENSE`](LICENSE) file for full license text.
 
 ```
-Copyright (C) 2026 Achmad Daniel Syahputra
+Copyright (C) 2026-present  Achmad Daniel Syahputra
 
 This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU Affero General Public License as published by
+it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 ```
