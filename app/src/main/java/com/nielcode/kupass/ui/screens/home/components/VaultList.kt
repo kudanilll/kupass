@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
@@ -27,19 +28,21 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.nielcode.kupass.R
+import com.nielcode.kupass.data.local.db.PasswordEntity
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun VaultList(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
-    isEmpty: Boolean,
+    passwords: List<PasswordEntity>,
     query: String,
     onQueryChange: (String) -> Unit,
     active: Boolean,
     onActiveChange: (Boolean) -> Unit,
 ) {
     val bottomPadding = contentPadding.calculateBottomPadding()
+    val isEmpty = passwords.isEmpty()
 
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
@@ -132,15 +135,22 @@ fun VaultList(
             }
 
             if (isEmpty) {
-                item { Text("Vault is empty", modifier = Modifier.padding(16.dp)) }
+                item {
+                    Text(
+                        text = stringResource(R.string.empty_vault),
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
             } else {
-                items(20) { index ->
+                items(
+                    items = passwords,
+                    key = { it.id }
+                ) { password ->
                     PasswordListItem(
-                        title = "Akun Google $index",
-                        subtitle = "test$index@gmail.com",
-                        fallbackChar = "G",
-                        itemCount = if (index % 3 == 0) 2 else 0,
-                        onClick = { /* Buka detail sandi */ }
+                        title = password.siteName,
+                        subtitle = password.username.ifBlank { password.url },
+                        fallbackChar = password.siteName.firstOrNull()?.uppercase() ?: "?",
+                        onClick = { /* TODO: Open password detail */ }
                     )
                 }
             }

@@ -26,21 +26,29 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.nielcode.kupass.R
 import com.nielcode.kupass.ui.components.TextField
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PasswordEditorScreen(onNavigateBack: () -> Unit) {
+fun PasswordEditorScreen(
+    onNavigateBack: () -> Unit,
+    viewModel: PasswordEditorViewModel = viewModel()
+) {
     // State form
     var siteName by remember { mutableStateOf("") }
     var username by remember { mutableStateOf("") }
@@ -53,27 +61,51 @@ fun PasswordEditorScreen(onNavigateBack: () -> Unit) {
 
     val isFormValid = siteName.isNotBlank() && password.isNotBlank()
 
+    // Observe save state
+    val saveState by viewModel.saveState.collectAsState()
+
+    // Navigate back on successful save
+    LaunchedEffect(saveState) {
+        if (saveState is SaveState.Success) {
+            viewModel.resetSaveState()
+            onNavigateBack()
+        }
+    }
+
+    val isSaving = saveState is SaveState.Saving
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text(text = "Tambah Sandi", fontWeight = FontWeight.Bold) },
+                title = {
+                    Text(
+                        text = stringResource(R.string.create_new_password),
+                        fontWeight = FontWeight.Bold
+                    )
+                },
                 navigationIcon = {
                     FilledTonalIconButton(
                         onClick = onNavigateBack,
                         modifier = Modifier.padding(start = 8.dp)
                     ) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
                     }
                 },
                 actions = {
                     FilledIconButton(
-                        onClick = { /* TODO: Save logic */
-                            onNavigateBack()
+                        onClick = {
+                            viewModel.savePassword(
+                                siteName = siteName,
+                                username = username,
+                                password = password,
+                                url = url,
+                                notes = notes
+                            )
                         },
-                        enabled = isFormValid,
+                        enabled = isFormValid && !isSaving,
                         modifier = Modifier.padding(end = 8.dp)
                     ) {
-                        Icon(Icons.Default.Check, contentDescription = "Simpan")
+                        Icon(Icons.Default.Check, contentDescription = stringResource(R.string.button_save))
                     }
                 }
             )
@@ -91,7 +123,7 @@ fun PasswordEditorScreen(onNavigateBack: () -> Unit) {
             TextField(
                 value = siteName,
                 onValueChange = { siteName = it },
-                label = "Nama Situs / Aplikasi",
+                label = stringResource(R.string.site_or_app_hint),
                 icon = Icons.Default.Language,
                 placeholder = "Cth: Netflix, Google"
             )
@@ -99,7 +131,7 @@ fun PasswordEditorScreen(onNavigateBack: () -> Unit) {
             TextField(
                 value = username,
                 onValueChange = { username = it },
-                label = "Username / Email",
+                label = stringResource(R.string.username_hint),
                 icon = Icons.Default.Person,
                 keyboardType = KeyboardType.Email
             )
@@ -107,7 +139,7 @@ fun PasswordEditorScreen(onNavigateBack: () -> Unit) {
             TextField(
                 value = password,
                 onValueChange = { password = it },
-                label = "Kata Sandi",
+                label = stringResource(R.string.password_hint),
                 icon = Icons.Default.Lock,
                 keyboardType = KeyboardType.Password,
                 visualTransformation =
@@ -118,7 +150,7 @@ fun PasswordEditorScreen(onNavigateBack: () -> Unit) {
                         if (passwordVisible) Icons.Default.Visibility
                         else Icons.Default.VisibilityOff
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                        Icon(imageVector = image, contentDescription = "Toggle Password")
+                        Icon(imageVector = image, contentDescription = stringResource(R.string.show_password))
                     }
                 }
             )
@@ -135,7 +167,7 @@ fun PasswordEditorScreen(onNavigateBack: () -> Unit) {
             TextField(
                 value = notes,
                 onValueChange = { notes = it },
-                label = "Catatan Tambahan",
+                label = stringResource(R.string.note_hint),
                 icon = Icons.AutoMirrored.Filled.Notes,
                 singleLine = false,
                 modifier = Modifier.fillMaxWidth()
