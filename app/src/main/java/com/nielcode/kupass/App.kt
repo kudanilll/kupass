@@ -10,7 +10,7 @@ import com.google.android.material.color.DynamicColors
 import com.nielcode.kupass.data.local.prefs.PreferenceManager
 import com.nielcode.kupass.utils.AppConfig
 
-class KupassApplication : Application() {
+class App : Application() {
 
     override fun onCreate() {
         super.onCreate()

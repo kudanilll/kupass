@@ -22,5 +22,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Kupass"
+rootProject.name = "kupass"
 include(":app")
