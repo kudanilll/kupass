@@ -13,14 +13,19 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.DockedSearchBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SearchBarDefaults
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -40,6 +45,8 @@ fun VaultList(
     onQueryChange: (String) -> Unit,
     active: Boolean,
     onActiveChange: (Boolean) -> Unit,
+    onItemClick: (PasswordEntity) -> Unit = {},
+    onDeleteItem: (PasswordEntity) -> Unit = {},
 ) {
     val bottomPadding = contentPadding.calculateBottomPadding()
     val isEmpty = passwords.isEmpty()
@@ -146,12 +153,43 @@ fun VaultList(
                     items = passwords,
                     key = { it.id }
                 ) { password ->
-                    PasswordListItem(
-                        title = password.siteName,
-                        subtitle = password.username.ifBlank { password.url },
-                        fallbackChar = password.siteName.firstOrNull()?.uppercase() ?: "?",
-                        onClick = { /* TODO: Open password detail */ }
-                    )
+                    val dismissState = rememberSwipeToDismissBoxState()
+
+                    // Trigger delete when swiped
+                    LaunchedEffect(dismissState.currentValue) {
+                        if (dismissState.currentValue == SwipeToDismissBoxValue.EndToStart) {
+                            onDeleteItem(password)
+                        }
+                    }
+
+                    SwipeToDismissBox(
+                        state = dismissState,
+                        backgroundContent = {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(vertical = 2.dp)
+                                    .background(MaterialTheme.colorScheme.errorContainer),
+                                contentAlignment = Alignment.CenterEnd
+                            ) {
+                                Icon(
+                                    Icons.Default.Delete,
+                                    contentDescription = stringResource(R.string.button_delete),
+                                    tint = MaterialTheme.colorScheme.onErrorContainer,
+                                    modifier = Modifier.padding(end = 24.dp)
+                                )
+                            }
+                        },
+                        enableDismissFromStartToEnd = false,
+                        enableDismissFromEndToStart = true
+                    ) {
+                        PasswordListItem(
+                            title = password.siteName,
+                            subtitle = password.username.ifBlank { password.url },
+                            fallbackChar = password.siteName.firstOrNull()?.uppercase() ?: "?",
+                            onClick = { onItemClick(password) }
+                        )
+                    }
                 }
             }
         }

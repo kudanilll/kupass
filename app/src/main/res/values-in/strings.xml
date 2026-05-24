@@ -8,9 +8,16 @@
     <string name="not_supported">Tidak didukung pada perangkat ini</string>
     <string name="github">Github</string>
     <string name="create_new_password">Tambah sandi baru</string>
+    <string name="edit_password">Edit kata sandi</string>
+    <string name="password_detail">Detail kata sandi</string>
     <string name="show_password">Tampilkan kata sandi</string>
     <string name="empty_vault">Tidak ada sandi yang disimpan</string>
     <string name="copied">Disalin ke papan klip</string>
+    <string name="copy">Salin</string>
+    <string name="url_label">URL</string>
+    <string name="notes_label">Catatan</string>
+    <string name="created_at">Dibuat</string>
+    <string name="updated_at">Terakhir diperbarui</string>
 
     <!-- FAB -->
     <string name="fab_open">Tambah</string>

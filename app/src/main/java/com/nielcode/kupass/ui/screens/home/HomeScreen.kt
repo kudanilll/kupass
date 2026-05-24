@@ -13,11 +13,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.nielcode.kupass.data.local.db.PasswordEntity
 import com.nielcode.kupass.ui.screens.home.components.VaultList
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(viewModel: HomeViewModel = viewModel()) {
+fun HomeScreen(
+    onNavigateToDetail: (Long) -> Unit = {},
+    viewModel: HomeViewModel = viewModel()
+) {
     // Collect state from ViewModel
     val passwords by viewModel.passwords.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
@@ -39,6 +43,12 @@ fun HomeScreen(viewModel: HomeViewModel = viewModel()) {
                 onQueryChange = { viewModel.onSearchQueryChange(it) },
                 active = isSearchActive,
                 onActiveChange = { isSearchActive = it },
+                onItemClick = { password: PasswordEntity ->
+                    onNavigateToDetail(password.id)
+                },
+                onDeleteItem = { password: PasswordEntity ->
+                    viewModel.deletePassword(password)
+                }
             )
         }
     }

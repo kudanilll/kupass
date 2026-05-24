@@ -46,9 +46,12 @@ import com.nielcode.kupass.ui.components.TextField
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PasswordEditorScreen(
+    passwordId: Long = -1L,
     onNavigateBack: () -> Unit,
     viewModel: PasswordEditorViewModel = viewModel()
 ) {
+    val isEditMode = passwordId > 0
+
     // State form
     var siteName by remember { mutableStateOf("") }
     var username by remember { mutableStateOf("") }
@@ -58,6 +61,30 @@ fun PasswordEditorScreen(
 
     // State hide/show password
     var passwordVisible by remember { mutableStateOf(false) }
+
+    // Track if form has been pre-filled (to avoid overwriting user edits)
+    var hasPreFilled by remember { mutableStateOf(false) }
+
+    // Load existing password in edit mode
+    LaunchedEffect(passwordId) {
+        if (isEditMode) {
+            viewModel.loadPassword(passwordId)
+        }
+    }
+
+    // Pre-fill form when existing password is loaded
+    val existingPassword by viewModel.existingPassword.collectAsState()
+    LaunchedEffect(existingPassword) {
+        val existing = existingPassword
+        if (existing != null && !hasPreFilled) {
+            siteName = existing.siteName
+            username = existing.username
+            password = existing.password
+            url = existing.url
+            notes = existing.notes
+            hasPreFilled = true
+        }
+    }
 
     val isFormValid = siteName.isNotBlank() && password.isNotBlank()
 
@@ -79,7 +106,10 @@ fun PasswordEditorScreen(
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        text = stringResource(R.string.create_new_password),
+                        text = stringResource(
+                            if (isEditMode) R.string.edit_password
+                            else R.string.create_new_password
+                        ),
                         fontWeight = FontWeight.Bold
                     )
                 },
@@ -158,7 +188,7 @@ fun PasswordEditorScreen(
             TextField(
                 value = url,
                 onValueChange = { url = it },
-                label = "URL Website",
+                label = stringResource(R.string.url_label),
                 icon = Icons.Default.Link,
                 placeholder = "https://...",
                 keyboardType = KeyboardType.Uri

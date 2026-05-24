@@ -8,9 +8,16 @@
     <string name="not_supported">Not supported on this device</string>
     <string name="github">Github</string>
     <string name="create_new_password">Create new password</string>
+    <string name="edit_password">Edit password</string>
+    <string name="password_detail">Password detail</string>
     <string name="show_password">Show password</string>
     <string name="empty_vault">No password saved</string>
     <string name="copied">Copied to clipboard</string>
+    <string name="copy">Copy</string>
+    <string name="url_label">URL</string>
+    <string name="notes_label">Notes</string>
+    <string name="created_at">Created</string>
+    <string name="updated_at">Last updated</string>
 
     <!-- FAB -->
     <string name="fab_open">Create</string>
