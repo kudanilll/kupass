@@ -1,4 +1,4 @@
-package com.nielcode.kupass.ui.screens.settings.components
+package com.nielcode.kupass.ui.components
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,7 +22,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun SettingItem(
+fun SectionItem(
     icon: ImageVector,
     title: String,
     subtitle: String,

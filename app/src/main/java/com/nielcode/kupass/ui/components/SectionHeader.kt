@@ -1,4 +1,4 @@
-package com.nielcode.kupass.ui.screens.settings.components
+package com.nielcode.kupass.ui.components
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme

@@ -3,11 +3,10 @@ package com.nielcode.kupass.ui.screens.settings
 import android.content.Intent
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
@@ -43,8 +42,8 @@ import com.nielcode.kupass.BuildConfig
 import com.nielcode.kupass.MainActivity
 import com.nielcode.kupass.R
 import com.nielcode.kupass.data.local.prefs.PreferenceManager
-import com.nielcode.kupass.ui.screens.settings.components.SectionHeader
-import com.nielcode.kupass.ui.screens.settings.components.SettingItem
+import com.nielcode.kupass.ui.components.SectionHeader
+import com.nielcode.kupass.ui.components.SectionItem
 import com.nielcode.kupass.utils.AppConfig
 import com.nielcode.kupass.utils.openUrl
 
@@ -78,57 +77,47 @@ fun SettingsScreen() {
     Scaffold(
         modifier = Modifier.fillMaxSize()
     ) { innerPadding ->
-        val bottomPadding = innerPadding.calculateBottomPadding() + 88.dp
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(
-                top = innerPadding.calculateTopPadding(),
-                bottom = bottomPadding
-            )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(vertical = 16.dp)
         ) {
             // Section: General
-            item { SectionHeader(title = stringResource(R.string.settings)) }
-            item {
-                SettingItem(
+            SectionHeader(title = stringResource(R.string.settings))
+            SectionItem(
                     icon = Icons.Default.Language,
                     title = stringResource(R.string.settings_language_title),
                     subtitle = languageList.getOrNull(currentLanguageIndex)
                         ?: stringResource(R.string.lang_en),
                     onClick = { showLanguageDialog = true }
                 )
-            }
+
 
             // Section: Appearance
-            item { SectionHeader(title = stringResource(R.string.settings_category_appearance)) }
-            item {
-                SettingItem(
+            SectionHeader(title = stringResource(R.string.settings_category_appearance))
+                SectionItem(
                     icon = Icons.Default.Contrast,
                     title = stringResource(R.string.settings_theme_title),
                     subtitle = themeList.getOrNull(currentThemeIndex) ?: "System Default",
                     onClick = { showThemeDialog = true }
                 )
-            }
-            item {
-                SettingItem(
+                SectionItem(
                     icon = Icons.Default.ColorLens,
                     title = stringResource(R.string.settings_dynamic_colors_title),
                     subtitle = dynamicColorStatus,
                     onClick = { if (isDynamicColorSupported) showDynamicColorsDialog = true }
                 )
-            }
 
             // Section: About
-            item { SectionHeader(title = stringResource(R.string.settings_category_developer)) }
-            item {
-                SettingItem(
+            SectionHeader(title = stringResource(R.string.settings_category_developer))
+                SectionItem(
                     icon = Icons.Default.AccountCircle,
                     title = stringResource(R.string.settings_about_title),
                     subtitle = BuildConfig.DEV_NAME,
                     onClick = { openUrl(context, BuildConfig.DEV_URL) }
                 )
-            }
-            item {
-                SettingItem(
+                SectionItem(
                     icon = Icons.Default.Gavel,
                     title = stringResource(R.string.settings_license_title),
                     subtitle = stringResource(R.string.settings_license_summary),
@@ -137,15 +126,12 @@ fun SettingsScreen() {
                         context.startActivity(intent)
                     }
                 )
-            }
-            item {
-                SettingItem(
+                SectionItem(
                     icon = Icons.Default.Code,
                     title = stringResource(R.string.app_name),
                     subtitle = "${BuildConfig.VERSION_NAME} - ${BuildConfig.BUILD_TYPE}",
                     onClick = { openUrl(context, BuildConfig.GIT_URL) }
                 )
-            }
         }
 
         val languageValues = stringArrayResource(id = R.array.language_values)
