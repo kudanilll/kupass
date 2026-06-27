@@ -63,6 +63,7 @@ fun PasswordDetailScreen(
     viewModel: PasswordDetailViewModel = viewModel()
 ) {
     val context = LocalContext.current
+    val deleteSuccessText = stringResource(R.string.toast_success_delete)
     val password by viewModel.password.collectAsState()
     val deleteState by viewModel.deleteState.collectAsState()
 
@@ -70,15 +71,13 @@ fun PasswordDetailScreen(
     var passwordVisible by remember { mutableStateOf(false) }
 
     // Load password on first composition
-    LaunchedEffect(passwordId) {
-        viewModel.loadPassword(passwordId)
-    }
+    LaunchedEffect(passwordId) { viewModel.loadPassword(passwordId) }
 
     // Navigate back on successful delete
     LaunchedEffect(deleteState) {
         if (deleteState is DeleteState.Success) {
             viewModel.resetDeleteState()
-            Toast.makeText(context, context.getString(R.string.toast_success_delete), Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, deleteSuccessText, Toast.LENGTH_SHORT).show()
             onNavigateBack()
         }
     }
@@ -89,9 +88,7 @@ fun PasswordDetailScreen(
             onDismissRequest = { showDeleteDialog = false },
             title = { Text(stringResource(R.string.dialog_title_delete)) },
             text = {
-                Text(
-                    "${stringResource(R.string.dialog_message_delete)} \"${password?.siteName}\"?"
-                )
+                Text("${stringResource(R.string.dialog_message_delete)} \"${password?.siteName}\"?")
             },
             confirmButton = {
                 TextButton(
@@ -133,7 +130,10 @@ fun PasswordDetailScreen(
                 },
                 actions = {
                     IconButton(onClick = { password?.let { onNavigateToEdit(it.id) } }) {
-                        Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.button_edit))
+                        Icon(
+                            Icons.Default.Edit,
+                            contentDescription = stringResource(R.string.button_edit)
+                        )
                     }
                     IconButton(onClick = { showDeleteDialog = true }) {
                         Icon(
@@ -149,11 +149,12 @@ fun PasswordDetailScreen(
         val currentPassword = password
         if (currentPassword != null) {
             Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .padding(horizontal = 20.dp)
-                    .verticalScroll(rememberScrollState()),
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding)
+                        .padding(horizontal = 20.dp)
+                        .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 // Site Name
@@ -180,8 +181,9 @@ fun PasswordDetailScreen(
                     trailingAction = {
                         IconButton(onClick = { passwordVisible = !passwordVisible }) {
                             Icon(
-                                imageVector = if (passwordVisible) Icons.Default.Visibility
-                                else Icons.Default.VisibilityOff,
+                                imageVector =
+                                    if (passwordVisible) Icons.Default.Visibility
+                                    else Icons.Default.VisibilityOff,
                                 contentDescription = stringResource(R.string.show_password)
                             )
                         }
@@ -213,12 +215,26 @@ fun PasswordDetailScreen(
                     SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault())
                 }
                 Text(
-                    text = "${stringResource(R.string.created_at)}: ${dateFormat.format(Date(currentPassword.createdAt))}",
+                    text =
+                        "${stringResource(R.string.created_at)}: ${
+                            dateFormat.format(
+                                Date(
+                                    currentPassword.createdAt
+                                )
+                            )
+                        }",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
-                    text = "${stringResource(R.string.updated_at)}: ${dateFormat.format(Date(currentPassword.updatedAt))}",
+                    text =
+                        "${stringResource(R.string.updated_at)}: ${
+                            dateFormat.format(
+                                Date(
+                                    currentPassword.updatedAt
+                                )
+                            )
+                        }",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -239,14 +255,14 @@ private fun DetailField(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
-        )
+        colors =
+            CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 16.dp, top = 12.dp, end = 4.dp, bottom = 4.dp)
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, top = 12.dp, end = 4.dp, bottom = 4.dp)
         ) {
             Text(
                 text = label,

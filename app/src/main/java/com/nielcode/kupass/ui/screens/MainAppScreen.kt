@@ -5,7 +5,9 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -34,6 +36,7 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -49,6 +52,7 @@ import com.nielcode.kupass.ui.screens.settings.SettingsScreen
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 
+@OptIn(ExperimentalAnimationApi::class)
 @Serializable
 object HomeBase
 
@@ -62,10 +66,7 @@ data class PasswordDetail(val passwordId: Long)
 fun MainAppScreen() {
     val navController = rememberNavController()
 
-    NavHost(
-        navController = navController,
-        startDestination = HomeBase
-    ) {
+    NavHost(navController = navController, startDestination = HomeBase) {
         composable<HomeBase> {
             MainPagerScreen(
                 onNavigateToEditor = { navController.navigate(PasswordEditor()) },
@@ -93,9 +94,7 @@ fun MainAppScreen() {
             PasswordDetailScreen(
                 passwordId = route.passwordId,
                 onNavigateBack = { navController.popBackStack() },
-                onNavigateToEdit = { id ->
-                    navController.navigate(PasswordEditor(passwordId = id))
-                }
+                onNavigateToEdit = { id -> navController.navigate(PasswordEditor(passwordId = id)) }
             )
         }
 
@@ -122,6 +121,7 @@ fun MainAppScreen() {
     }
 }
 
+@OptIn(ExperimentalAnimationApi::class)
 @SuppressLint("FrequentlyChangingValue")
 @Composable
 fun MainPagerScreen(
@@ -129,15 +129,15 @@ fun MainPagerScreen(
     onNavigateToDetail: (Long) -> Unit = {},
     homeViewModel: HomeViewModel = viewModel()
 ) {
-    val context = LocalContext.current
     val pagerState = rememberPagerState(pageCount = { 3 })
     val coroutineScope = rememberCoroutineScope()
-    val currentTab = when (pagerState.currentPage) {
-        0 -> "home"
-        1 -> "data"
-        2 -> "settings"
-        else -> "home"
-    }
+    val currentTab =
+        when (pagerState.currentPage) {
+            0 -> "home"
+            1 -> "data"
+            2 -> "settings"
+            else -> "home"
+        }
 
     var isBottomNavVisible by remember { mutableStateOf(true) }
     val nestedScrollConnection = remember {
@@ -151,39 +151,45 @@ fun MainPagerScreen(
     }
 
     // Export/Import file pickers
-    val exportLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.CreateDocument("application/json")
-    ) { uri ->
-        uri?.let { homeViewModel.exportPasswords(it) }
-    }
+    val exportLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.CreateDocument("application/json")
+        ) { uri ->
+            uri?.let { homeViewModel.exportPasswords(it) }
+        }
 
-    val importLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.OpenDocument()
-    ) { uri ->
-        uri?.let { homeViewModel.importPasswords(it) }
-    }
+    val importLauncher =
+        rememberLauncherForActivityResult(contract = ActivityResultContracts.OpenDocument()) { uri
+            ->
+            uri?.let { homeViewModel.importPasswords(it) }
+        }
 
     // Observe operation messages for toast
     val operationMessage by homeViewModel.operationMessage.collectAsState()
+    val context = LocalContext.current
+    val exportSuccessText = stringResource(R.string.toast_success_export)
+    val exportFailedText = stringResource(R.string.toast_failed_export)
+    val importSuccessText = stringResource(R.string.toast_success_import)
+    val importFailedText = stringResource(R.string.toast_failed_import)
+    val noDataText = stringResource(R.string.toast_no_data)
     LaunchedEffect(operationMessage) {
         val msg = operationMessage ?: return@LaunchedEffect
-        val toastText = when (msg) {
-            "export_success" -> context.getString(R.string.toast_success_export)
-            "export_failed" -> context.getString(R.string.toast_failed_export)
-            "import_success" -> context.getString(R.string.toast_success_import)
-            "import_failed" -> context.getString(R.string.toast_failed_import)
-            "no_data" -> context.getString(R.string.toast_no_data)
-            else -> msg
-        }
+        val toastText =
+            when (msg) {
+                "export_success" -> exportSuccessText
+                "export_failed" -> exportFailedText
+                "import_success" -> importSuccessText
+                "import_failed" -> importFailedText
+                "no_data" -> noDataText
+                else -> msg
+            }
         Toast.makeText(context, toastText, Toast.LENGTH_SHORT).show()
         homeViewModel.clearOperationMessage()
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .nestedScroll(nestedScrollConnection)
-    ) {
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .nestedScroll(nestedScrollConnection)) {
         HorizontalPager(
             state = pagerState,
             modifier = Modifier.fillMaxSize(),
@@ -191,14 +197,18 @@ fun MainPagerScreen(
         ) { page ->
             Box(modifier = Modifier.fillMaxSize()) {
                 when (page) {
-                    0 -> HomeScreen(
-                        onNavigateToDetail = onNavigateToDetail,
-                        viewModel = homeViewModel
-                    )
-                    1 -> com.nielcode.kupass.ui.screens.data.DataScreen(
-                        onExportClick = { exportLauncher.launch("kupass_backup.json") },
-                        onImportClick = { importLauncher.launch(arrayOf("application/json")) }
-                    )
+                    0 ->
+                        HomeScreen(
+                            onNavigateToDetail = onNavigateToDetail,
+                            viewModel = homeViewModel
+                        )
+
+                    1 ->
+                        com.nielcode.kupass.ui.screens.data.DataScreen(
+                            onExportClick = { exportLauncher.launch("kupass_backup.json") },
+                            onImportClick = { importLauncher.launch(arrayOf("application/json")) }
+                        )
+
                     2 -> SettingsScreen()
                 }
             }
@@ -206,34 +216,42 @@ fun MainPagerScreen(
 
         AnimatedVisibility(
             visible = isBottomNavVisible,
-            enter = slideInVertically(initialOffsetY = { it }) + fadeIn(), // Muncul dari bawah
-            exit = slideOutVertically(targetOffsetY = { it }) + fadeOut(), // Ngilang ke bawah
+            enter =
+                slideInVertically(
+                    initialOffsetY = { fullWidth -> fullWidth },
+                    animationSpec = tween(durationMillis = 300, easing = LinearEasing)
+                ) + fadeIn(animationSpec = tween(durationMillis = 300, easing = LinearEasing)),
+            exit =
+                slideOutVertically(
+                    targetOffsetY = { fullWidth -> fullWidth },
+                    animationSpec = tween(durationMillis = 300, easing = LinearEasing)
+                ) + fadeOut(animationSpec = tween(durationMillis = 300, easing = LinearEasing)),
             modifier = Modifier.align(Alignment.BottomCenter)
         ) {
             BottomNav(
                 currentRoute = currentTab,
                 onNavigate = { selectedTab ->
                     coroutineScope.launch {
-                        val targetPage = when (selectedTab) {
-                            "home" -> 0
-                            "data" -> 1
-                            "settings" -> 2
-                            else -> 0
-                        }
+                        val targetPage =
+                            when (selectedTab) {
+                                "home" -> 0
+                                "data" -> 1
+                                "settings" -> 2
+                                else -> 0
+                            }
                         pagerState.animateScrollToPage(
                             page = targetPage,
-                            animationSpec = tween(
-                                durationMillis = 400,
-                                easing = FastOutSlowInEasing
-                            )
+                            animationSpec =
+                                tween(durationMillis = 400, easing = FastOutSlowInEasing)
                         )
                     }
                 },
                 onAddClick = onNavigateToEditor,
-                modifier = Modifier.padding(
-                    bottom = WindowInsets.navigationBars.asPaddingValues()
-                        .calculateBottomPadding()
-                )
+                modifier =
+                    Modifier.padding(
+                        bottom =
+                            WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+                    )
             )
         }
     }

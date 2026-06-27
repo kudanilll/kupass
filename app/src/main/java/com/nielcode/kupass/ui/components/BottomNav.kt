@@ -2,16 +2,16 @@ package com.nielcode.kupass.ui.components
 
 import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -37,11 +37,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.nielcode.kupass.R
 
+@OptIn(ExperimentalAnimationApi::class)
 @SuppressLint("ModifierParameter", "UseOfNonLambdaOffsetOverload")
 @Composable
 fun BottomNav(
@@ -54,14 +56,12 @@ fun BottomNav(
     val fabVisible = !(currentRoute == "settings" || currentRoute == "data")
     val spacing = 12.dp
 
-    val offsetX by animateDpAsState(
-        targetValue = if (fabVisible) -(spacing / 2 + spacing / 2) else 0.dp,
-        animationSpec = tween(
-            durationMillis = 300,
-            easing = FastOutSlowInEasing
-        ),
-        label = "nav_offset"
-    )
+    val offsetX by
+        animateDpAsState(
+            targetValue = if (fabVisible) -(spacing / 2 + spacing / 2) else 0.dp,
+            animationSpec = tween(durationMillis = 250, easing = LinearEasing),
+            label = "nav_offset"
+        )
 
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -69,18 +69,17 @@ fun BottomNav(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Row(
-            modifier = Modifier
-                .offset(x = offsetX)
-                .clip(RoundedCornerShape(50))
-                .background(
-                    if (isDarkMode) MaterialTheme.colorScheme.surfaceContainer
-                    else MaterialTheme.colorScheme.surfaceVariant
-                )
-                .padding(8.dp),
-            horizontalArrangement = Arrangement.Center,
+            modifier =
+                Modifier.offset(x = offsetX)
+                    .clip(RoundedCornerShape(50))
+                    .background(
+                        if (isDarkMode) MaterialTheme.colorScheme.surfaceContainer
+                        else MaterialTheme.colorScheme.surfaceVariant
+                    )
+                    .padding(8.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Item Home
             NavItem(
                 title = "Home",
                 icon = Icons.Default.Home,
@@ -88,7 +87,6 @@ fun BottomNav(
                 onClick = { onNavigate("home") }
             )
 
-            // Item Data
             NavItem(
                 title = "Data",
                 icon = Icons.Default.Storage,
@@ -96,7 +94,6 @@ fun BottomNav(
                 onClick = { onNavigate("data") }
             )
 
-            // Item Settings
             NavItem(
                 title = "Settings",
                 icon = Icons.Default.Settings,
@@ -107,31 +104,26 @@ fun BottomNav(
 
         AnimatedVisibility(
             visible = fabVisible,
-            enter = scaleIn(
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioMediumBouncy,
-                    stiffness = Spring.StiffnessLow
-                ),
-                initialScale = 0.7f
-            ) + fadeIn(),
-
-            exit = scaleOut(
-                animationSpec = tween(200),
-                targetScale = 0.7f
-            ) + fadeOut()
+            enter =
+                slideInHorizontally(
+                    initialOffsetX = { fullWidth -> fullWidth / 2 },
+                    animationSpec = tween(durationMillis = 250, easing = LinearEasing)
+                ) + fadeIn(animationSpec = tween(durationMillis = 250, easing = LinearEasing)),
+            exit =
+                slideOutHorizontally(
+                    targetOffsetX = { fullWidth -> fullWidth / 2 },
+                    animationSpec = tween(durationMillis = 250, easing = LinearEasing)
+                ) + fadeOut(animationSpec = tween(durationMillis = 250, easing = LinearEasing))
         ) {
             Surface(
-                modifier = Modifier
-                    .size(56.dp)
-                    .clip(RoundedCornerShape(16.dp))
-                    .clickable(
-                        role = Role.Button,
-                        onClick = onAddClick
-                    ),
+                modifier =
+                    Modifier.size(56.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .clickable(role = Role.Button, onClick = onAddClick),
                 shape = RoundedCornerShape(16.dp),
                 color = MaterialTheme.colorScheme.secondary,
                 contentColor = MaterialTheme.colorScheme.onSecondary,
-                tonalElevation = 0.dp
+                tonalElevation = 4.dp
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
@@ -150,23 +142,37 @@ private fun NavItem(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
+    val targetScale = if (isSelected) 1.1f else 1.0f
+    val scale by
+        animateFloatAsState(
+            targetValue = targetScale,
+            animationSpec = tween(durationMillis = 200, easing = LinearEasing)
+        )
+
+    val targetAlpha = if (isSelected) 1.0f else 0.6f
+    val alpha by
+        animateFloatAsState(
+            targetValue = targetAlpha,
+            animationSpec = tween(durationMillis = 200, easing = LinearEasing)
+        )
+
     Row(
         modifier =
-            Modifier
-                .clip(RoundedCornerShape(50))
+            Modifier.clip(RoundedCornerShape(50))
                 .background(
                     if (isSelected) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
                     else Color.Transparent
                 )
                 .clickable(onClick = onClick)
-                .padding(horizontal = 12.dp, vertical = 10.dp)
+                .padding(horizontal = 12.dp, vertical = 8.dp)
                 .animateContentSize(
-                    animationSpec =
-                        spring(
-                            dampingRatio = Spring.DampingRatioMediumBouncy,
-                            stiffness = Spring.StiffnessLow
-                        )
-                ),
+                    animationSpec = tween(durationMillis = 200, easing = LinearEasing)
+                )
+                .graphicsLayer {
+                    this.scaleX = scale
+                    this.scaleY = scale
+                    this.alpha = alpha
+                },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {
@@ -174,7 +180,7 @@ private fun NavItem(
             imageVector = icon,
             contentDescription = title,
             modifier = Modifier.size(24.dp),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant
+            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = alpha)
         )
         if (isSelected) {
             Text(
