@@ -29,8 +29,7 @@ android {
     }
 
     signingConfigs {
-        getByName("debug") {
-        }
+        getByName("debug") {}
 
         create("release") {
             val keystoreFile = rootProject.file("release-key.jks")
@@ -57,7 +56,6 @@ android {
 
             // Favget API
             buildConfigField("String", "FAVGET_API_URL", "\"https://favget.nielcode.web.id\"")
-            buildConfigField("String", "FAVGET_API_KEY", properties.getProperty("FAVGET_API_KEY"))
         }
 
         release {
@@ -67,7 +65,6 @@ android {
 
             // Favget API
             buildConfigField("String", "FAVGET_API_URL", "\"https://favget.nielcode.web.id\"")
-            buildConfigField("String", "FAVGET_API_KEY", properties.getProperty("FAVGET_API_KEY"))
 
             isMinifyEnabled = true
             isShrinkResources = true

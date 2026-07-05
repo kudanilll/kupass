@@ -2,25 +2,38 @@ package com.nielcode.kupass.data.repository
 
 import com.nielcode.kupass.data.local.db.PasswordDao
 import com.nielcode.kupass.data.local.db.PasswordEntity
+import com.nielcode.kupass.utils.CryptoManager
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 /**
- * Repository for password data access.
- * Acts as a single source of truth, abstracting the DAO from ViewModels.
+ * Repository for password data access. Acts as a single source of truth, abstracting the DAO from
+ * ViewModels.
  */
 class PasswordRepository(private val passwordDao: PasswordDao) {
 
-    fun getAllPasswords(): Flow<List<PasswordEntity>> = passwordDao.getAll()
+    // transparent encryption/decryption at repository layer
+    // avoid touching UI components or DAO interfaces
 
-    fun searchPasswords(query: String): Flow<List<PasswordEntity>> = passwordDao.search(query)
+    private fun PasswordEntity.decrypt() = copy(password = CryptoManager.decrypt(password))
 
-    fun getPasswordById(id: Long): Flow<PasswordEntity?> = passwordDao.getById(id)
+    private fun PasswordEntity.encrypt() = copy(password = CryptoManager.encrypt(password))
 
-    suspend fun insertPassword(password: PasswordEntity): Long = passwordDao.insert(password)
+    fun getAllPasswords(): Flow<List<PasswordEntity>> =
+        passwordDao.getAll().map { list -> list.map { it.decrypt() } }
 
-    suspend fun updatePassword(password: PasswordEntity) = passwordDao.update(password)
+    fun searchPasswords(query: String): Flow<List<PasswordEntity>> =
+        passwordDao.search(query).map { list -> list.map { it.decrypt() } }
 
-    suspend fun deletePassword(password: PasswordEntity) = passwordDao.delete(password)
+    fun getPasswordById(id: Long): Flow<PasswordEntity?> =
+        passwordDao.getById(id).map { it?.decrypt() }
+
+    suspend fun insertPassword(password: PasswordEntity): Long =
+        passwordDao.insert(password.encrypt())
+
+    suspend fun updatePassword(password: PasswordEntity) = passwordDao.update(password.encrypt())
+
+    suspend fun deletePassword(password: PasswordEntity) = passwordDao.delete(password.encrypt())
 
     suspend fun deletePasswordById(id: Long) = passwordDao.deleteById(id)
 }
