@@ -14,6 +14,14 @@
     <string name="empty_vault">Tidak ada sandi yang disimpan</string>
     <string name="copied">Disalin ke papan klip</string>
     <string name="copy">Salin</string>
+
+    <!-- Data Screen -->
+    <string name="data_export_import_title">Ekspor &amp; Impor</string>
+    <string name="data_export_subtitle">Cadangkan kata sandi ke file JSON</string>
+    <string name="data_import_subtitle">Pulihkan kata sandi dari cadangan JSON</string>
+    <string name="data_export_title">Ekspor Data</string>
+    <string name="data_import_title">Impor Data</string>
+
     <string name="url_label">URL</string>
     <string name="notes_label">Catatan</string>
     <string name="created_at">Dibuat</string>
@@ -100,4 +108,7 @@
     <string name="permission_granted">Izin diberikan</string>
     <string name="permission_denied">Izin ditolak</string>
     <string name="biometric_unavailable">Fitur biometrik tidak tersedia di perangkat ini</string>
+
+    <!-- Misc -->
+    <string name="toast_url_failed">Tidak ada aplikasi yang dapat membuka tautan ini</string>
 </resources>

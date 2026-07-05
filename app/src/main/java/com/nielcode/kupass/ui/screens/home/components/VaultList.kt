@@ -25,7 +25,6 @@ import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -75,13 +74,17 @@ fun VaultList(
                         Modifier
                             .fillMaxWidth()
                             .background(
-                                brush = Brush.verticalGradient(
-                                    colors = listOf(
-                                        MaterialTheme.colorScheme.surface,
-                                        MaterialTheme.colorScheme.surface.copy(alpha = 0.7f),
-                                        Color.Transparent
+                                brush =
+                                    Brush.verticalGradient(
+                                        colors =
+                                            listOf(
+                                                MaterialTheme.colorScheme.surface,
+                                                MaterialTheme.colorScheme.surface.copy(
+                                                    alpha = 0.7f
+                                                ),
+                                                Color.Transparent
+                                            )
                                     )
-                                )
                             )
                             .padding(horizontal = 16.dp)
                 ) {
@@ -96,25 +99,23 @@ fun VaultList(
                                 enabled = true,
                                 placeholder = { Text(stringResource(R.string.search_hint)) },
                                 leadingIcon = {
-                                    Icon(
-                                        Icons.Default.Search,
-                                        contentDescription = null
-                                    )
+                                    Icon(Icons.Default.Search, contentDescription = null)
                                 },
                                 trailingIcon = {
                                     if (active) {
                                         Icon(
                                             imageVector = Icons.Default.Close,
                                             contentDescription = "Close Search",
-                                            modifier = Modifier
-                                                .padding(8.dp)
-                                                .clickable {
-                                                    if (query.isNotEmpty()) {
-                                                        onQueryChange("")
-                                                    } else {
-                                                        onActiveChange(false)
+                                            modifier =
+                                                Modifier
+                                                    .padding(8.dp)
+                                                    .clickable {
+                                                        if (query.isNotEmpty()) {
+                                                            onQueryChange("")
+                                                        } else {
+                                                            onActiveChange(false)
+                                                        }
                                                     }
-                                                }
                                         )
                                     }
                                 },
@@ -149,27 +150,30 @@ fun VaultList(
                     )
                 }
             } else {
-                items(
-                    items = passwords,
-                    key = { it.id }
-                ) { password ->
-                    val dismissState = rememberSwipeToDismissBoxState()
-
-                    // Trigger delete when swiped
-                    LaunchedEffect(dismissState.currentValue) {
-                        if (dismissState.currentValue == SwipeToDismissBoxValue.EndToStart) {
-                            onDeleteItem(password)
-                        }
-                    }
+                items(items = passwords, key = { it.id }) { password ->
+                    val dismissState =
+                        rememberSwipeToDismissBoxState(
+                            confirmValueChange = { dismissValue ->
+                                if (dismissValue == SwipeToDismissBoxValue.EndToStart) {
+                                    // Trigger dialog callback and always reject the immediate
+                                    // dismiss
+                                    onDeleteItem(password)
+                                    false
+                                } else {
+                                    true
+                                }
+                            }
+                        )
 
                     SwipeToDismissBox(
                         state = dismissState,
                         backgroundContent = {
                             Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(vertical = 2.dp)
-                                    .background(MaterialTheme.colorScheme.errorContainer),
+                                modifier =
+                                    Modifier
+                                        .fillMaxSize()
+                                        .padding(vertical = 2.dp)
+                                        .background(MaterialTheme.colorScheme.errorContainer),
                                 contentAlignment = Alignment.CenterEnd
                             ) {
                                 Icon(
@@ -196,19 +200,23 @@ fun VaultList(
 
         // Bottom gradient overlay
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.BottomCenter)
-                .background(
-                    brush = Brush.verticalGradient(
-                        colorStops = arrayOf(
-                            0f to Color.Transparent,
-                            0.6f to MaterialTheme.colorScheme.surface.copy(alpha = 0.7f),
-                            1f to MaterialTheme.colorScheme.surface
-                        )
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.BottomCenter)
+                    .background(
+                        brush =
+                            Brush.verticalGradient(
+                                colorStops =
+                                    arrayOf(
+                                        0f to Color.Transparent,
+                                        0.6f to
+                                                MaterialTheme.colorScheme.surface.copy(alpha = 0.7f),
+                                        1f to MaterialTheme.colorScheme.surface
+                                    )
+                            )
                     )
-                )
-                .height(80.dp)
+                    .height(80.dp)
         )
     }
 }

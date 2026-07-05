@@ -18,31 +18,21 @@ import com.nielcode.kupass.ui.components.SectionItem
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DataScreen(
-    onExportClick: () -> Unit,
-    onImportClick: () -> Unit
-) {
-    Scaffold(
-        modifier = Modifier.fillMaxSize()
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(vertical = 16.dp)
-        ) {
-            SectionHeader(title = "Export & Import")
+fun DataScreen(onExportClick: () -> Unit, onImportClick: () -> Unit) {
+    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+        Column(modifier = Modifier.fillMaxSize().padding(innerPadding).padding(vertical = 16.dp)) {
+            SectionHeader(title = stringResource(R.string.data_export_import_title))
             SectionItem(
                 icon = Icons.Default.FileUpload,
                 title = stringResource(R.string.nav_export),
-                subtitle = "Backup passwords to a JSON file",
+                subtitle = stringResource(R.string.data_export_subtitle),
                 onClick = onExportClick
             )
 
             SectionItem(
                 icon = Icons.Default.FileDownload,
                 title = stringResource(R.string.nav_import),
-                subtitle = "Restore passwords from a JSON backup",
+                subtitle = stringResource(R.string.data_import_subtitle),
                 onClick = onImportClick
             )
         }

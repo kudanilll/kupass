@@ -68,70 +68,65 @@ fun SettingsScreen() {
     val themeList = stringArrayResource(id = R.array.theme_list)
 
     val isDynamicColorSupported = DynamicColors.isDynamicColorAvailable()
-    val dynamicColorStatus = when {
-        !isDynamicColorSupported -> stringResource(R.string.not_supported)
-        currentDynamicColor == AppConfig.DynamicColors.Code.ENABLE -> stringResource(R.string.enable)
-        else -> stringResource(R.string.disable)
-    }
+    val dynamicColorStatus =
+        when {
+            !isDynamicColorSupported -> stringResource(R.string.not_supported)
+            currentDynamicColor == AppConfig.DynamicColors.Code.ENABLE ->
+                stringResource(R.string.enable)
+            else -> stringResource(R.string.disable)
+        }
 
-    Scaffold(
-        modifier = Modifier.fillMaxSize()
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(vertical = 16.dp)
-        ) {
+    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+        Column(modifier = Modifier.fillMaxSize().padding(innerPadding).padding(vertical = 16.dp)) {
             // Section: General
             SectionHeader(title = stringResource(R.string.settings))
             SectionItem(
-                    icon = Icons.Default.Language,
-                    title = stringResource(R.string.settings_language_title),
-                    subtitle = languageList.getOrNull(currentLanguageIndex)
+                icon = Icons.Default.Language,
+                title = stringResource(R.string.settings_language_title),
+                subtitle =
+                    languageList.getOrNull(currentLanguageIndex)
                         ?: stringResource(R.string.lang_en),
-                    onClick = { showLanguageDialog = true }
-                )
-
+                onClick = { showLanguageDialog = true }
+            )
 
             // Section: Appearance
             SectionHeader(title = stringResource(R.string.settings_category_appearance))
-                SectionItem(
-                    icon = Icons.Default.Contrast,
-                    title = stringResource(R.string.settings_theme_title),
-                    subtitle = themeList.getOrNull(currentThemeIndex) ?: "System Default",
-                    onClick = { showThemeDialog = true }
-                )
-                SectionItem(
-                    icon = Icons.Default.ColorLens,
-                    title = stringResource(R.string.settings_dynamic_colors_title),
-                    subtitle = dynamicColorStatus,
-                    onClick = { if (isDynamicColorSupported) showDynamicColorsDialog = true }
-                )
+            SectionItem(
+                icon = Icons.Default.Contrast,
+                title = stringResource(R.string.settings_theme_title),
+                subtitle = themeList.getOrNull(currentThemeIndex) ?: "System Default",
+                onClick = { showThemeDialog = true }
+            )
+            SectionItem(
+                icon = Icons.Default.ColorLens,
+                title = stringResource(R.string.settings_dynamic_colors_title),
+                subtitle = dynamicColorStatus,
+                onClick = { if (isDynamicColorSupported) showDynamicColorsDialog = true }
+            )
 
             // Section: About
             SectionHeader(title = stringResource(R.string.settings_category_developer))
-                SectionItem(
-                    icon = Icons.Default.AccountCircle,
-                    title = stringResource(R.string.settings_about_title),
-                    subtitle = BuildConfig.DEV_NAME,
-                    onClick = { openUrl(context, BuildConfig.DEV_URL) }
-                )
-                SectionItem(
-                    icon = Icons.Default.Gavel,
-                    title = stringResource(R.string.settings_license_title),
-                    subtitle = stringResource(R.string.settings_license_summary),
-                    onClick = {
-                        val intent = Intent(context, OssLicensesMenuActivity::class.java)
-                        context.startActivity(intent)
-                    }
-                )
-                SectionItem(
-                    icon = Icons.Default.Code,
-                    title = stringResource(R.string.app_name),
-                    subtitle = "${BuildConfig.VERSION_NAME} - ${BuildConfig.BUILD_TYPE}",
-                    onClick = { openUrl(context, BuildConfig.GIT_URL) }
-                )
+            SectionItem(
+                icon = Icons.Default.AccountCircle,
+                title = stringResource(R.string.settings_about_title),
+                subtitle = BuildConfig.DEV_NAME,
+                onClick = { openUrl(context, BuildConfig.DEV_URL) }
+            )
+            SectionItem(
+                icon = Icons.Default.Gavel,
+                title = stringResource(R.string.settings_license_title),
+                subtitle = stringResource(R.string.settings_license_summary),
+                onClick = {
+                    val intent = Intent(context, OssLicensesMenuActivity::class.java)
+                    context.startActivity(intent)
+                }
+            )
+            SectionItem(
+                icon = Icons.Default.Code,
+                title = stringResource(R.string.app_name),
+                subtitle = "${BuildConfig.VERSION_NAME} - ${BuildConfig.BUILD_TYPE}",
+                onClick = { openUrl(context, BuildConfig.GIT_URL) }
+            )
         }
 
         val languageValues = stringArrayResource(id = R.array.language_values)
@@ -146,8 +141,11 @@ fun SettingsScreen() {
                     if (currentLanguageIndex != newIndex) {
                         prefs.language = newIndex
                         currentLanguageIndex = newIndex
+                        // Safeguard out of bounds index crash if translation
+                        // arrays drift in sync length
+                        val languageTag = languageValues.getOrNull(newIndex) ?: "en"
                         AppCompatDelegate.setApplicationLocales(
-                            LocaleListCompat.forLanguageTags(languageValues[newIndex])
+                            LocaleListCompat.forLanguageTags(languageTag)
                         )
                     }
                     showLanguageDialog = false
@@ -165,11 +163,12 @@ fun SettingsScreen() {
                     if (currentThemeIndex != newIndex) {
                         prefs.theme = newIndex
                         currentThemeIndex = newIndex
-                        val nightMode = when (newIndex) {
-                            AppConfig.Theme.Code.LIGHT -> AppCompatDelegate.MODE_NIGHT_NO
-                            AppConfig.Theme.Code.DARK -> AppCompatDelegate.MODE_NIGHT_YES
-                            else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
-                        }
+                        val nightMode =
+                            when (newIndex) {
+                                AppConfig.Theme.Code.LIGHT -> AppCompatDelegate.MODE_NIGHT_NO
+                                AppConfig.Theme.Code.DARK -> AppCompatDelegate.MODE_NIGHT_YES
+                                else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+                            }
                         AppCompatDelegate.setDefaultNightMode(nightMode)
                     }
                     showThemeDialog = false
@@ -189,7 +188,8 @@ fun SettingsScreen() {
                 onDismiss = { showDynamicColorsDialog = false },
                 onConfirm = { newIndex ->
                     val newSetting =
-                        if (newIndex == 0) AppConfig.DynamicColors.Code.ENABLE else AppConfig.DynamicColors.Code.DISABLE
+                        if (newIndex == 0) AppConfig.DynamicColors.Code.ENABLE
+                        else AppConfig.DynamicColors.Code.DISABLE
                     if (currentDynamicColor != newSetting) {
                         prefs.dynamicColor = newSetting
                         currentDynamicColor = newSetting
@@ -202,20 +202,23 @@ fun SettingsScreen() {
 
         if (showRestartDialog) {
             AlertDialog(
-                onDismissRequest = { },
-                properties = DialogProperties(
-                    dismissOnBackPress = false,
-                    dismissOnClickOutside = false
-                ),
+                onDismissRequest = {},
+                properties =
+                    DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false),
                 text = { Text(stringResource(R.string.dialog_message_language)) },
                 confirmButton = {
-                    TextButton(onClick = {
-                        showRestartDialog = false
-                        val restart = Intent(context, MainActivity::class.java).apply {
-                            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+                    TextButton(
+                        onClick = {
+                            showRestartDialog = false
+                            val restart =
+                                Intent(context, MainActivity::class.java).apply {
+                                    flags =
+                                        Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                                            Intent.FLAG_ACTIVITY_NEW_TASK
+                                }
+                            context.startActivity(restart)
                         }
-                        context.startActivity(restart)
-                    }) {
+                    ) {
                         Text(stringResource(R.string.button_restart))
                     }
                 }
@@ -223,7 +226,6 @@ fun SettingsScreen() {
         }
     }
 }
-
 
 @Composable
 fun SingleChoiceDialog(
@@ -242,12 +244,12 @@ fun SingleChoiceDialog(
             Column {
                 options.forEachIndexed { index, option ->
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .selectable(
-                                selected = (index == tempSelectedIndex),
-                                onClick = { tempSelectedIndex = index }
-                            ),
+                        modifier =
+                            Modifier.fillMaxWidth()
+                                .selectable(
+                                    selected = (index == tempSelectedIndex),
+                                    onClick = { tempSelectedIndex = index }
+                                ),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         RadioButton(
@@ -265,9 +267,7 @@ fun SingleChoiceDialog(
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.button_cancel))
-            }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.button_cancel)) }
         }
     )
 }

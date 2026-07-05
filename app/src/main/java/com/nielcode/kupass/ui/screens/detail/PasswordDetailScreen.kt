@@ -3,7 +3,10 @@ package com.nielcode.kupass.ui.screens.detail
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.os.Build
+import android.os.PersistableBundle
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -54,6 +57,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+@RequiresApi(Build.VERSION_CODES.P)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PasswordDetailScreen(
@@ -177,7 +181,14 @@ fun PasswordDetailScreen(
                 DetailField(
                     label = stringResource(R.string.password_hint),
                     value = if (passwordVisible) currentPassword.password else "••••••••",
-                    onCopy = { copyToClipboard(context, "Password", currentPassword.password) },
+                    onCopy = {
+                        copyToClipboard(
+                            context,
+                            "Password",
+                            currentPassword.password,
+                            isSensitive = true
+                        )
+                    },
                     trailingAction = {
                         IconButton(onClick = { passwordVisible = !passwordVisible }) {
                             Icon(
@@ -296,9 +307,48 @@ private fun DetailField(
     }
 }
 
-private fun copyToClipboard(context: Context, label: String, text: String) {
+@RequiresApi(Build.VERSION_CODES.P)
+private fun copyToClipboard(
+    context: Context,
+    label: String,
+    text: String,
+    isSensitive: Boolean = false
+) {
     val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
     val clip = ClipData.newPlainText(label, text)
+
+    // explicitly flag sensitive clipboard data on Android 13+ (API 33+)
+    // to prevent keyboard/system surfaces from saving or showing it.
+    if (
+        isSensitive && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+    ) {
+        clip.description.extras =
+            PersistableBundle().apply {
+                putBoolean("android.content.extra.IS_SENSITIVE", true)
+            }
+    }
+
     clipboard.setPrimaryClip(clip)
+
+    // Auto-clear sensitive data after a short duration on API < 33 (since the flag doesn't work
+    // there)
+    if (isSensitive && Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+        // Use a simple postDelayed via the main looper to clear it after 45 seconds
+        android.os
+            .Handler(android.os.Looper.getMainLooper())
+            .postDelayed(
+                {
+                    // Only clear if the clipboard still contains our sensitive text
+                    val currentClip = clipboard.primaryClip
+                    if (currentClip != null && currentClip.itemCount > 0) {
+                        if (currentClip.getItemAt(0).text?.toString() == text) {
+                            clipboard.clearPrimaryClip()
+                        }
+                    }
+                },
+                45000
+            )
+    }
+
     Toast.makeText(context, context.getString(R.string.copied), Toast.LENGTH_SHORT).show()
 }

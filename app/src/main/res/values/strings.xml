@@ -14,6 +14,14 @@
     <string name="empty_vault">No password saved</string>
     <string name="copied">Copied to clipboard</string>
     <string name="copy">Copy</string>
+    
+    <!-- Data Screen -->
+    <string name="data_export_import_title">Export &amp; Import</string>
+    <string name="data_export_subtitle">Backup passwords to a JSON file</string>
+    <string name="data_import_subtitle">Restore passwords from a JSON backup</string>
+    <string name="data_export_title">Export Data</string>
+    <string name="data_import_title">Import Data</string>
+
     <string name="url_label">URL</string>
     <string name="notes_label">Notes</string>
     <string name="created_at">Created</string>
@@ -100,4 +108,7 @@
     <string name="permission_granted">Permission granted</string>
     <string name="permission_denied">Permission denied</string>
     <string name="biometric_unavailable">Biometric feature is not available on this device</string>
+    
+    <!-- Misc -->
+    <string name="toast_url_failed">No application found to handle this link</string>
 </resources>

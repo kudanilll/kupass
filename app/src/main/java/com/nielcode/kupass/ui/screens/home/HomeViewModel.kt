@@ -19,9 +19,10 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 /**
- * ViewModel for the Home screen.
- * Manages the password list, search, delete, and export/import functionality.
+ * ViewModel for the Home screen. Manages the password list, search, delete, and export/import
+ * functionality.
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository: PasswordRepository
@@ -41,17 +42,20 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         val dao = database.passwordDao()
         repository = PasswordRepository(dao)
 
-        passwords = _searchQuery.flatMapLatest { query ->
-            if (query.isBlank()) {
-                repository.getAllPasswords()
-            } else {
-                repository.searchPasswords(query)
-            }
-        }.stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList()
-        )
+        passwords =
+            _searchQuery
+                .flatMapLatest { query ->
+                    if (query.isBlank()) {
+                        repository.getAllPasswords()
+                    } else {
+                        repository.searchPasswords(query)
+                    }
+                }
+                .stateIn(
+                    scope = viewModelScope,
+                    started = SharingStarted.WhileSubscribed(5000),
+                    initialValue = emptyList()
+                )
     }
 
     fun onSearchQueryChange(query: String) {
@@ -59,9 +63,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun deletePassword(password: PasswordEntity) {
-        viewModelScope.launch {
-            repository.deletePassword(password)
-        }
+        viewModelScope.launch { repository.deletePassword(password) }
     }
 
     fun exportPasswords(uri: Uri) {
@@ -78,7 +80,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                     outputStream.write(json.toByteArray())
                 }
                 _operationMessage.value = "export_success"
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 _operationMessage.value = "export_failed"
             }
         }
@@ -88,17 +90,29 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             try {
                 val context = getApplication<Application>()
-                val json = context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                    inputStream.bufferedReader().readText()
-                } ?: return@launch
+                val json =
+                    context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                        inputStream.bufferedReader().readText()
+                    } ?: return@launch
 
                 val imported = JsonExportImport.importFromJson(json)
-                imported.forEach { entity ->
+
+                // validate import limits and prevent OOM
+                if (imported.size > 2000) {
+                    _operationMessage.value = "import_failed_too_large"
+                    return@launch
+                }
+
+                // filter out invalid/empty rows before inserting
+                val validEntries =
+                    imported.filter { it.siteName.isNotBlank() && it.password.isNotBlank() }
+
+                validEntries.forEach { entity ->
                     // Insert as new entries (reset ID so Room auto-generates)
                     repository.insertPassword(entity.copy(id = 0))
                 }
                 _operationMessage.value = "import_success"
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 _operationMessage.value = "import_failed"
             }
         }
