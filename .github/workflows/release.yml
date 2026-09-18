@@ -1,0 +1,134 @@
+# Builds a signed release APK and publishes a GitHub Release when a version tag is pushed.
+#
+# Trigger: `git tag v3.1.0 && git push origin v3.1.0`. The tag must match `versionName`
+# in app/build.gradle.kts.
+#
+# Required repository secrets (Settings → Secrets and variables → Actions):
+#   RELEASE_KEYSTORE_BASE64  base64 of release-key.jks   (e.g. `base64 -w0 release-key.jks`)
+#   RELEASE_STORE_PASSWORD   keystore password
+#   RELEASE_KEY_ALIAS        key alias
+#   RELEASE_KEY_PASSWORD     key password
+name: Release
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+
+# Deny everything by default; the job below opts into the single scope it needs.
+permissions: {}
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Build signed APK and publish release
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write # create the GitHub Release and upload assets
+    environment: release
+    env:
+      TAG: ${{ github.ref_name }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Verify tag matches versionName
+        run: |
+          version_name=$(sed -n 's/^[[:space:]]*versionName = "\(.*\)"/\1/p' app/build.gradle.kts)
+          if [ "v${version_name}" != "${TAG}" ]; then
+            echo "::error::Tag ${TAG} does not match versionName ${version_name} in app/build.gradle.kts"
+            exit 1
+          fi
+          echo "VERSION_NAME=${version_name}" >> "$GITHUB_ENV"
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+        with:
+          # Release builds never write to the cache, so a tag push can't poison it for other runs.
+          cache-read-only: true
+
+      - name: Restore signing config
+        env:
+          RELEASE_KEYSTORE_BASE64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
+          RELEASE_STORE_PASSWORD: ${{ secrets.RELEASE_STORE_PASSWORD }}
+          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+        run: |
+          if [ -z "$RELEASE_KEYSTORE_BASE64" ] || [ -z "$RELEASE_STORE_PASSWORD" ] \
+            || [ -z "$RELEASE_KEY_ALIAS" ] || [ -z "$RELEASE_KEY_PASSWORD" ]; then
+            # Without these, app/build.gradle.kts silently falls back to debug signing.
+            echo "::error::Release signing secrets are missing"
+            exit 1
+          fi
+          umask 077
+          printf '%s' "$RELEASE_KEYSTORE_BASE64" | base64 --decode > release-key.jks
+          {
+            printf 'RELEASE_STORE_PASSWORD=%s\n' "$RELEASE_STORE_PASSWORD"
+            printf 'RELEASE_KEY_ALIAS=%s\n' "$RELEASE_KEY_ALIAS"
+            printf 'RELEASE_KEY_PASSWORD=%s\n' "$RELEASE_KEY_PASSWORD"
+          } > secrets.properties
+
+      - name: Test
+        run: ./gradlew :app:testReleaseUnitTest --console=plain
+
+      - name: Build release APK
+        run: ./gradlew :app:assembleRelease --console=plain
+
+      - name: Verify APK is release-signed
+        run: |
+          apk=app/build/outputs/apk/release/app-release.apk
+          apksigner=$(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V | tail -1)apksigner
+          certs=$("$apksigner" verify --print-certs "$apk")
+          echo "$certs" | grep -E "Signer #1 certificate (DN|SHA-256)"
+          if echo "$certs" | grep -q "CN=Android Debug"; then
+            echo "::error::APK is signed with the debug key"
+            exit 1
+          fi
+          mkdir -p dist
+          cp "$apk" "dist/kupass-${TAG}.apk"
+          (cd dist && sha256sum "kupass-${TAG}.apk" > "kupass-${TAG}.apk.sha256")
+
+      - name: Remove signing material
+        if: always()
+        run: rm -f release-key.jks secrets.properties
+
+      - name: Extract release notes from CHANGELOG.md
+        run: |
+          # Section between "## [X.Y.Z]" and the next "## [" heading.
+          awk -v v="$VERSION_NAME" '
+            index($0, "## [" v "]") == 1 { found = 1; next }
+            found && /^## \[/ { exit }
+            found { print }
+          ' CHANGELOG.md > release-notes.md
+          if [ ! -s release-notes.md ]; then
+            echo "::warning::No CHANGELOG.md section for ${VERSION_NAME}; using generated notes"
+          fi
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ -s release-notes.md ]; then
+            notes=(--notes-file release-notes.md)
+          else
+            notes=(--generate-notes)
+          fi
+          gh release create "$TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "Kupass ${TAG}" \
+            --verify-tag \
+            "${notes[@]}" \
+            "dist/kupass-${TAG}.apk" \
+            "dist/kupass-${TAG}.apk.sha256"

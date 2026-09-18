@@ -6,10 +6,10 @@
 
 | Area                  | Value                                                                                                             | Evidence                                                                         |
 | --------------------- | ----------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| Primary language      | Kotlin 2.4.0 (33 `.kt` files, ~6.4k LOC total repo)                                                               | `gradle/libs.versions.toml` (`kotlin`), scan CODE METRICS                        |
+| Primary language      | Kotlin 2.4.20 (33 `.kt` files, ~6.4k LOC total repo)                                                              | `gradle/libs.versions.toml` (`kotlin`), scan CODE METRICS                        |
 | Runtime               | Android. minSdk 27 (8.1), compileSdk/targetSdk 37                                                                 | `app/build.gradle.kts`                                                           |
 | JVM                   | Gradle daemon toolchain JDK 21 (foojay auto-provisioned). Bytecode target Java 11                                 | `gradle/gradle-daemon-jvm.properties`, `app/build.gradle.kts` (`compileOptions`) |
-| Build system          | Gradle 9.6.1 (Kotlin DSL), AGP 9.2.1, single module `:app`                                                        | `gradle/wrapper/gradle-wrapper.properties`, `settings.gradle.kts`                |
+| Build system          | Gradle 9.7.1 (Kotlin DSL), AGP 9.4.0 (max API 37), single module `:app`                                           | `gradle/wrapper/gradle-wrapper.properties`, `settings.gradle.kts`                |
 | Dependency management | Gradle version catalog `gradle/libs.versions.toml`, repos `google()` + `mavenCentral()` (`FAIL_ON_PROJECT_REPOS`) | `settings.gradle.kts`                                                            |
 | App identity          | `com.nielcode.kupass`, versionName `3.1.0`, versionCode `5`                                                       | `app/build.gradle.kts`                                                           |
 | License               | GPL-3.0                                                                                                           | `LICENSE`, `README.md`                                                           |
@@ -18,33 +18,33 @@
 
 | Dependency                                                                                      | Version                      | Role in system                                      | Evidence                              |
 | ----------------------------------------------------------------------------------------------- | ---------------------------- | --------------------------------------------------- | ------------------------------------- |
-| Compose BOM (`ui`, `ui-graphics`, `material3`, `material-icons-extended`, `ui-tooling-preview`) | 2026.06.00                   | Entire UI layer                                     | `libs.versions.toml`                  |
+| Compose BOM (`ui`, `ui-graphics`, `material3`, `material-icons-extended`, `ui-tooling-preview`) | 2026.09.00 (material3 1.4.0) | Entire UI layer                                     | `libs.versions.toml`                  |
 | `activity-compose`                                                                              | 1.13.0                       | `setContent`, `enableEdgeToEdge`, SAF launchers     | `MainActivity.kt`, `MainAppScreen.kt` |
-| `navigation-compose`                                                                            | 2.9.8                        | Typed `@Serializable` routes                        | `MainAppScreen.kt`                    |
+| `navigation-compose`                                                                            | 2.10.1                       | Typed `@Serializable` routes                        | `MainAppScreen.kt`                    |
 | `lifecycle-runtime-ktx`, `lifecycle-viewmodel-compose`                                          | 2.11.0                       | `AndroidViewModel`, `viewModelScope`, `viewModel()` | `ui/screens/*/*ViewModel.kt`          |
-| Room (`runtime`, `ktx`, `compiler` via KSP 2.3.7)                                               | 2.8.4                        | Local DB `kupass_database`                          | `data/local/db/*`                     |
-| `kotlinx-serialization-json` (+ Kotlin serialization plugin 2.4.0)                              | 1.11.0                       | Backup JSON format and nav routes                   | `JsonExportImport.kt`                 |
+| Room (`runtime`, `ktx`, `compiler` via KSP 2.3.12)                                              | 2.8.5                        | Local DB `kupass_database`                          | `data/local/db/*`                     |
+| `kotlinx-serialization-json` (+ Kotlin serialization plugin 2.4.20)                             | 1.11.0                       | Backup JSON format and nav routes                   | `JsonExportImport.kt`                 |
 | `core-ktx`                                                                                      | 1.19.0                       | `toUri()` and other extensions                      | `Util.kt`                             |
 | `core-splashscreen`                                                                             | 1.2.0                        | `installSplashScreen()`                             | `MainActivity.kt`                     |
-| `play-services-oss-licenses` (+ `oss-licenses` plugin 0.12.0)                                   | 17.5.1                       | `OssLicensesMenuActivity`                           | `SettingsScreen.kt`                   |
-| **AppCompat** (`AppCompatActivity`, `AppCompatDelegate`)                                        | **not declared**, transitive | Per-app locale, night mode                          | `MainActivity.kt`, `App.kt`           |
-| **Material Components** (`com.google.android.material.color.DynamicColors`)                     | **not declared**, transitive | Dynamic color check/apply                           | `App.kt`, `SettingsScreen.kt`         |
+| `play-services-oss-licenses` (+ `oss-licenses` plugin 0.13.0)                                   | 17.5.2                       | `OssLicensesMenuActivity`                           | `SettingsScreen.kt`                   |
+| **AppCompat** (`AppCompatActivity`, `AppCompatDelegate`)                                        | 1.8.0 (declared)             | Per-app locale, night mode                          | `MainActivity.kt`, `App.kt`           |
+| **Material Components** (`com.google.android.material.color.DynamicColors`)                     | 1.14.0 (declared)            | Dynamic color check/apply                           | `App.kt`, `SettingsScreen.kt`         |
 | Android Keystore / `javax.crypto` (platform)                                                    | platform                     | AES-256-GCM encryption of the password field        | `utils/CryptoManager.kt`              |
 
 Bundled assets that affect APK size: `res/font/googlesansflex.ttf` (**~3.9 MB**, variable font) and `res/font/heming.ttf` (~30 KB), referenced in `ui/theme/Type.kt`.
 
 ## 3) Development Toolchain
 
-| Tool                                                                           | Purpose                                       | Evidence                            |
-| ------------------------------------------------------------------------------ | --------------------------------------------- | ----------------------------------- |
-| JUnit 4.13.2                                                                   | Unit tests                                    | `libs.versions.toml`                |
-| Robolectric 4.11.1 (hardcoded, not in the catalog)                             | Android framework on the JVM for unit tests   | `app/build.gradle.kts`              |
-| AndroidX Test (`junit` 1.3.0, `espresso-core` 3.7.0, `compose-ui-test-junit4`) | Instrumented tests                            | `libs.versions.toml`                |
-| R8 (`isMinifyEnabled`, `isShrinkResources` in release)                         | Shrinking/obfuscation                         | `app/build.gradle.kts`              |
-| Android Lint                                                                   | Static checks (default config, no `lint.xml`) | [TODO] no lint config found         |
-| google-java-format IDE plugin (enabled in `.idea`, which is gitignored)        | Formatting in the IDE only                    | `.idea/google-java-format.xml`      |
-| `kotlin.code.style=official`                                                   | Kotlin style hint for the IDE                 | `gradle.properties`                 |
-| CI/CD                                                                          | **none**                                      | scan: "No CI/CD pipelines detected" |
+| Tool                                                                           | Purpose                                                                                                                                | Evidence                       |
+| ------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
+| JUnit 4.13.2                                                                   | Unit tests                                                                                                                             | `libs.versions.toml`           |
+| Robolectric 4.17 (supports SDK 37)                                             | Android framework on the JVM for unit tests                                                                                            | `app/build.gradle.kts`         |
+| AndroidX Test (`junit` 1.3.0, `espresso-core` 3.7.0, `compose-ui-test-junit4`) | Instrumented tests                                                                                                                     | `libs.versions.toml`           |
+| R8 (`isMinifyEnabled`, `isShrinkResources` in release)                         | Shrinking/obfuscation                                                                                                                  | `app/build.gradle.kts`         |
+| Android Lint                                                                   | Static checks (default config, no `lint.xml`)                                                                                          | [TODO] no lint config found    |
+| google-java-format IDE plugin (enabled in `.idea`, which is gitignored)        | Formatting in the IDE only                                                                                                             | `.idea/google-java-format.xml` |
+| `kotlin.code.style=official`                                                   | Kotlin style hint for the IDE                                                                                                          | `gradle.properties`            |
+| CI/CD                                                                          | Release workflow only (`.github/workflows/release.yml`, tag `v*`). Dependabot (`.github/dependabot.yml`). No PR/push CI yet (PRD QA-2) | `.github/`                     |
 
 ## 4) Key Commands
 

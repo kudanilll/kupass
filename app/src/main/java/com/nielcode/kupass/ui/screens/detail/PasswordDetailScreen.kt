@@ -6,7 +6,6 @@ import android.content.Context
 import android.os.Build
 import android.os.PersistableBundle
 import android.widget.Toast
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -57,7 +56,6 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-@RequiresApi(Build.VERSION_CODES.P)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PasswordDetailScreen(
@@ -307,7 +305,6 @@ private fun DetailField(
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.P)
 private fun copyToClipboard(
     context: Context,
     label: String,
@@ -342,7 +339,12 @@ private fun copyToClipboard(
                     val currentClip = clipboard.primaryClip
                     if (currentClip != null && currentClip.itemCount > 0) {
                         if (currentClip.getItemAt(0).text?.toString() == text) {
-                            clipboard.clearPrimaryClip()
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                                clipboard.clearPrimaryClip()
+                            } else {
+                                // clearPrimaryClip() is API 28+; overwrite with an empty clip on 27.
+                                clipboard.setPrimaryClip(ClipData.newPlainText("", ""))
+                            }
                         }
                     }
                 },

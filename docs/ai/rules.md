@@ -51,6 +51,8 @@ If a skill or MCP server fits the task, use it and name it in the end-of-turn re
 - Commit or push only when asked.
 - Conventional-style messages, as already used in history: `feat(crypto): ...`, `fix: ...`, `refactor: ...`, `style: ...`, `docs: ...`, `test: ...`.
 - Never skip hooks or force-push without explicit instruction.
+- Add user-visible changes under `## [Unreleased]` in `CHANGELOG.md` (Keep a Changelog).
+- Releasing: bump `versionName`/`versionCode`, move `[Unreleased]` to `## [X.Y.Z] - date`, then push tag `vX.Y.Z` (it must equal `versionName`). `.github/workflows/release.yml` builds, verifies, and publishes the signed APK. Use the `github-release` skill.
 
 ## 5. Communication
 

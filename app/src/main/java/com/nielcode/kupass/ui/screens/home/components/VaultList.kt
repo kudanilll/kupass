@@ -25,6 +25,7 @@ import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -33,6 +34,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.nielcode.kupass.R
 import com.nielcode.kupass.data.local.db.PasswordEntity
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -48,6 +50,7 @@ fun VaultList(
     onDeleteItem: (PasswordEntity) -> Unit = {},
 ) {
     val bottomPadding = contentPadding.calculateBottomPadding()
+    val coroutineScope = rememberCoroutineScope()
     val isEmpty = passwords.isEmpty()
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -151,19 +154,7 @@ fun VaultList(
                 }
             } else {
                 items(items = passwords, key = { it.id }) { password ->
-                    val dismissState =
-                        rememberSwipeToDismissBoxState(
-                            confirmValueChange = { dismissValue ->
-                                if (dismissValue == SwipeToDismissBoxValue.EndToStart) {
-                                    // Trigger dialog callback and always reject the immediate
-                                    // dismiss
-                                    onDeleteItem(password)
-                                    false
-                                } else {
-                                    true
-                                }
-                            }
-                        )
+                    val dismissState = rememberSwipeToDismissBoxState()
 
                     SwipeToDismissBox(
                         state = dismissState,
@@ -185,7 +176,15 @@ fun VaultList(
                             }
                         },
                         enableDismissFromStartToEnd = false,
-                        enableDismissFromEndToStart = true
+                        enableDismissFromEndToStart = true,
+                        onDismiss = { dismissValue ->
+                            if (dismissValue == SwipeToDismissBoxValue.EndToStart) {
+                                // Ask for confirmation instead of deleting right away, then
+                                // slide the row back; deletion happens only from the dialog.
+                                onDeleteItem(password)
+                                coroutineScope.launch { dismissState.reset() }
+                            }
+                        }
                     ) {
                         PasswordListItem(
                             title = password.siteName,

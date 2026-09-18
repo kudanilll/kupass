@@ -4,7 +4,7 @@
 
 ## 1) Test Stack and Commands
 
-- Primary framework: JUnit 4.13.2 + Robolectric 4.11.1 (`@RunWith(RobolectricTestRunner::class)`).
+- Primary framework: JUnit 4.13.2 + Robolectric 4.17 (`@RunWith(RobolectricTestRunner::class)`).
 - Assertions: `org.junit.Assert` (`assertEquals`, `assertTrue`). No mocking library.
 - Instrumented: AndroidX Test JUnit 1.3.0, Espresso 3.7.0, `compose-ui-test-junit4` (dependencies exist, no real tests yet).
 
