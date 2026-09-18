@@ -15,7 +15,7 @@
 | Constants            | `UPPER_SNAKE` in `companion object` or nested `object`s       | `AppConfig.Theme.Code.DARK`, `KEY_LANGUAGE`                    | `AppConfig.kt`, `PreferenceManager.kt`      |
 | Room columns         | snake_case via `@ColumnInfo`                                  | `site_name`, `created_at`                                      | `PasswordEntity.kt`                         |
 | Routes               | PascalCase `@Serializable` object/data class                  | `HomeBase`, `PasswordEditor`                                   | `MainAppScreen.kt`                          |
-| Tests                | Backtick sentence names                                       | `` `exportToJson encrypts passwords` ``                        | `JsonExportImportTest.kt`                   |
+| Tests                | Backtick sentence names                                       | `` `v2 file contains no plaintext vault data` ``                        | `BackupCodecTest.kt`                   |
 | String resources     | snake_case with a prefix by kind                              | `toast_success_export`, `dialog_title_delete`, `button_cancel` | `res/values/strings.xml`                    |
 
 ## 2) Formatting and Linting
@@ -58,4 +58,4 @@
 - `app/src/main/java/com/nielcode/kupass/ui/screens/editor/PasswordEditorViewModel.kt`
 - `app/src/main/java/com/nielcode/kupass/utils/CryptoManager.kt`, `AppConfig.kt`
 - `app/src/main/res/values/strings.xml`, `values-in/strings.xml`, `values/arrays.xml`
-- `app/src/test/java/com/nielcode/kupass/data/local/json/JsonExportImportTest.kt`
+- `app/src/test/java/com/nielcode/kupass/data/backup/BackupCodecTest.kt`

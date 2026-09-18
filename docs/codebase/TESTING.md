@@ -19,7 +19,7 @@ Results land in `app/build/test-results/testDebugUnitTest/*.xml` and `app/build/
 
 ## 2) Test Layout
 
-- Unit tests: `app/src/test/java/` mirroring the source package (`utils/CryptoManagerTest.kt`, `data/local/json/JsonExportImportTest.kt`).
+- Unit tests: `app/src/test/java/` mirroring the source package (`utils/CryptoManagerTest.kt`, `data/backup/BackupCodecTest.kt`).
 - Instrumented: `app/src/androidTest/java/.../ExampleInstrumentedTest.kt` (template only).
 - Naming: `<ClassUnderTest>Test`, with backtick sentence method names and Arrange/Act/Assert comments.
 - Setup files: none (no shared rules, fixtures, or `robolectric.properties`).
@@ -46,7 +46,7 @@ Results land in `app/build/test-results/testDebugUnitTest/*.xml` and `app/build/
 ## 5) Coverage and Quality Signals
 
 - Coverage tool/threshold: [TODO] none.
-- Current coverage: [TODO] unmeasured. By inspection, only `CryptoManager` and `JsonExportImport` are exercised.
+- Current coverage: [TODO] unmeasured. By inspection, only `CryptoManager` and `BackupCodec` are exercised.
 - CI: `.github/workflows/ci.yml` runs `assembleDebug`, `testDebugUnitTest`, and `lintDebug` on every push/PR to `master`. Reports are uploaded as an artifact on failure.
 - Gaps to prioritize: instrumented Keystore crypto test, Room DAO + migration tests, ViewModel tests (after introducing a factory/DI), and a regression test for C-1 (a backup from a different key must not import ciphertext as a password).
 
@@ -54,6 +54,6 @@ Results land in `app/build/test-results/testDebugUnitTest/*.xml` and `app/build/
 
 - `app/build.gradle.kts` (test dependencies)
 - `app/src/test/java/com/nielcode/kupass/utils/CryptoManagerTest.kt`
-- `app/src/test/java/com/nielcode/kupass/data/local/json/JsonExportImportTest.kt`
+- `app/src/test/java/com/nielcode/kupass/data/backup/BackupCodecTest.kt`
 - `app/src/main/java/com/nielcode/kupass/utils/CryptoManager.kt` (test key branch)
 - `./gradlew :app:testDebugUnitTest` output on 2026-09-18: BUILD SUCCESSFUL. Suites: ExampleUnitTest 1, JsonExportImportTest 4, CryptoManagerTest 4. 0 failures

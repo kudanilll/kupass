@@ -40,7 +40,7 @@ User action (Compose) -> ViewModel (viewModelScope) -> PasswordRepository (encry
 | ViewModels                       | Screen state as `StateFlow`, one-shot results (`SaveState`, `DeleteState`, `operationMessage`), coroutines | Android Views, `Context` beyond `Application`      | `*ViewModel.kt`         |
 | `PasswordRepository`             | Vault API for ViewModels, transparent password-field crypto                                                | UI state                                           | `PasswordRepository.kt` |
 | `PasswordDao` / `KupassDatabase` | SQL, reactive queries, singleton DB                                                                        | Crypto                                             | `data/local/db/*`       |
-| `JsonExportImport`               | Backup file format                                                                                         | File I/O (done in the ViewModel)                   | `JsonExportImport.kt`   |
+| `BackupCodec`               | Backup file format                                                                                         | File I/O (done in the ViewModel)                   | `BackupCodec.kt`   |
 | `CryptoManager`                  | Key creation/lookup, AES-GCM encrypt/decrypt                                                               | Knowledge of entities                              | `CryptoManager.kt`      |
 | `PreferenceManager`              | Settings persistence                                                                                       | Applying settings (done in `App`/`SettingsScreen`) | `PreferenceManager.kt`  |
 
@@ -49,7 +49,7 @@ User action (Compose) -> ViewModel (viewModelScope) -> PasswordRepository (encry
 | Pattern                                            | Where found                                              | Why it exists                                           |
 | -------------------------------------------------- | -------------------------------------------------------- | ------------------------------------------------------- |
 | Double-checked-locking singleton                   | `KupassDatabase.getInstance`                             | One Room instance per process                           |
-| Kotlin `object` singleton                          | `CryptoManager`, `JsonExportImport`, `AppConfig`         | Stateless utilities                                     |
+| Kotlin `object` singleton                          | `CryptoManager`, `BackupCodec`, `AppConfig`         | Stateless utilities                                     |
 | Repository (thin, with a crypto decorator)         | `PasswordRepository`                                     | Keep the DAO and UI unaware of encryption               |
 | `AndroidViewModel` + manual construction           | all 3 ViewModels                                         | No DI; needs `Application` for DB and `ContentResolver` |
 | Sealed interface operation state                   | `SaveState`, `DeleteState`                               | Drive navigation after async work via `LaunchedEffect`  |
@@ -73,5 +73,5 @@ User action (Compose) -> ViewModel (viewModelScope) -> PasswordRepository (encry
 - `app/src/main/java/com/nielcode/kupass/ui/screens/home/HomeViewModel.kt`, `editor/PasswordEditorViewModel.kt`, `detail/PasswordDetailViewModel.kt`
 - `app/src/main/java/com/nielcode/kupass/data/repository/PasswordRepository.kt`
 - `app/src/main/java/com/nielcode/kupass/data/local/db/KupassDatabase.kt`, `PasswordDao.kt`
-- `app/src/main/java/com/nielcode/kupass/utils/CryptoManager.kt`, `data/local/json/JsonExportImport.kt`
+- `app/src/main/java/com/nielcode/kupass/utils/CryptoManager.kt`, `data/backup/BackupCodec.kt`
 - `app/src/main/java/com/nielcode/kupass/ui/theme/Theme.kt`
