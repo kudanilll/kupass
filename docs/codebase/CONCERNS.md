@@ -43,7 +43,7 @@
 | Non-portable, fail-open backup crypto   | MASVS-CRYPTO, MASVS-STORAGE | C-1, C-2                                         | Password field encrypted         | Portability, fail-closed behavior, format version |
 | Plaintext metadata at rest              | MASVS-STORAGE               | C-3                                              | App sandbox, `allowBackup=false` | Field or DB encryption                            |
 | No local authentication                 | MASVS-AUTH                  | C-4                                              | Device lock screen only          | App lock                                          |
-| Clipboard exposure on API 33+           | MASVS-PLATFORM              | `copyToClipboard`: the timer only runs on < 33   | `IS_SENSITIVE` flag              | Auto-clear on all API levels                      |
+| Clipboard exposure | MASVS-PLATFORM | `security/SecureClipboard.kt` | **Fixed 2026-09-18 (S-3.3)**: sensitive flag (API 33+) + clear after 45 s on every API. Cleared even when unreadable in the background (Android 10+) | Timeout isn't user-configurable yet (PRD SEC-6). The Handler timer doesn't survive process death |
 | D2D transfer of the DB | MASVS-STORAGE | C-6 | `allowBackup=false` + explicit exclusions for every domain | none |
 | Screenshots/recents                     | MASVS-PLATFORM              | `App.kt`                                         | `FLAG_SECURE` on all Activities  | none                                              |
 | Exported components                     | MASVS-PLATFORM              | Manifest: only the launcher Activity is exported | OK                               | none                                              |

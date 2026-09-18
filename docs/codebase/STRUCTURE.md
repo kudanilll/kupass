@@ -37,6 +37,7 @@ com/nielcode/kupass/
 ├── MainActivity.kt                AppCompatActivity host for Compose
 ├── di/AppContainer.kt             manual DI: repository, prefs, ContentResolver; `CreationExtras.appContainer()`
 ├── security/AppLock.kt           UI-level vault lock state machine (auto-lock timeout, background exemptions)
+├── security/SecureClipboard.kt   sensitive clipboard copy + 45 s auto-clear on every API level
 ├── data/
 │   ├── local/db/
 │   │   ├── KupassDatabase.kt      Room singleton "kupass_database", version 1, exportSchema=false
