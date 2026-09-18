@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.ColorLens
 import androidx.compose.material.icons.filled.Contrast
 import androidx.compose.material.icons.filled.Gavel
 import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -32,6 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringArrayResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
@@ -41,7 +43,8 @@ import com.google.android.material.color.DynamicColors
 import com.nielcode.kupass.BuildConfig
 import com.nielcode.kupass.MainActivity
 import com.nielcode.kupass.R
-import com.nielcode.kupass.data.local.prefs.PreferenceManager
+import com.nielcode.kupass.App
+import com.nielcode.kupass.security.AppLock
 import com.nielcode.kupass.ui.components.SectionHeader
 import com.nielcode.kupass.ui.components.SectionItem
 import com.nielcode.kupass.utils.AppConfig
@@ -52,11 +55,16 @@ import com.nielcode.kupass.utils.openUrl
 fun SettingsScreen() {
 
     val context = LocalContext.current
-    val prefs = remember { PreferenceManager(context) }
+    val container = remember { (context.applicationContext as App).container }
+    val prefs = container.preferenceManager
+    val appLock = container.appLock
 
     var currentLanguageIndex by remember { mutableIntStateOf(prefs.language) }
     var currentThemeIndex by remember { mutableIntStateOf(prefs.theme) }
     var currentDynamicColor by remember { mutableIntStateOf(prefs.dynamicColor) }
+    var currentAutoLockSeconds by remember { mutableIntStateOf(prefs.autoLockSeconds) }
+    var showAutoLockDialog by remember { mutableStateOf(false) }
+    val autoLockLabels = AppLock.TIMEOUT_OPTIONS_SECONDS.map { autoLockLabel(it) }
 
     // State Variables For Visibility
     var showLanguageDialog by remember { mutableStateOf(false) }
@@ -89,6 +97,15 @@ fun SettingsScreen() {
                 onClick = { showLanguageDialog = true }
             )
 
+            // Section: Security
+            SectionHeader(title = stringResource(R.string.settings_category_security))
+            SectionItem(
+                icon = Icons.Default.Lock,
+                title = stringResource(R.string.settings_auto_lock_title),
+                subtitle = autoLockLabel(currentAutoLockSeconds),
+                onClick = { showAutoLockDialog = true }
+            )
+
             // Section: Appearance
             SectionHeader(title = stringResource(R.string.settings_category_appearance))
             SectionItem(
@@ -110,13 +127,17 @@ fun SettingsScreen() {
                 icon = Icons.Default.AccountCircle,
                 title = stringResource(R.string.settings_about_title),
                 subtitle = BuildConfig.DEV_NAME,
-                onClick = { openUrl(context, BuildConfig.DEV_URL) }
+                onClick = {
+                    appLock.allowNextBackground()
+                    openUrl(context, BuildConfig.DEV_URL)
+                }
             )
             SectionItem(
                 icon = Icons.Default.Gavel,
                 title = stringResource(R.string.settings_license_title),
                 subtitle = stringResource(R.string.settings_license_summary),
                 onClick = {
+                    appLock.allowNextBackground()
                     val intent = Intent(context, OssLicensesMenuActivity::class.java)
                     context.startActivity(intent)
                 }
@@ -125,7 +146,25 @@ fun SettingsScreen() {
                 icon = Icons.Default.Code,
                 title = stringResource(R.string.app_name),
                 subtitle = "${BuildConfig.VERSION_NAME} - ${BuildConfig.BUILD_TYPE}",
-                onClick = { openUrl(context, BuildConfig.GIT_URL) }
+                onClick = {
+                    appLock.allowNextBackground()
+                    openUrl(context, BuildConfig.GIT_URL)
+                }
+            )
+        }
+
+        if (showAutoLockDialog) {
+            SingleChoiceDialog(
+                title = stringResource(R.string.settings_auto_lock_title),
+                options = autoLockLabels,
+                selectedIndex = AppLock.TIMEOUT_OPTIONS_SECONDS.indexOf(currentAutoLockSeconds).coerceAtLeast(0),
+                onDismiss = { showAutoLockDialog = false },
+                onConfirm = { index ->
+                    val seconds = AppLock.TIMEOUT_OPTIONS_SECONDS[index]
+                    prefs.autoLockSeconds = seconds
+                    currentAutoLockSeconds = seconds
+                    showAutoLockDialog = false
+                }
             )
         }
 
@@ -271,3 +310,11 @@ fun SingleChoiceDialog(
         }
     )
 }
+
+@Composable
+private fun autoLockLabel(seconds: Int): String =
+    when {
+        seconds == 0 -> stringResource(R.string.auto_lock_immediately)
+        seconds < 60 -> pluralStringResource(R.plurals.auto_lock_seconds, seconds, seconds)
+        else -> pluralStringResource(R.plurals.auto_lock_minutes, seconds / 60, seconds / 60)
+    }

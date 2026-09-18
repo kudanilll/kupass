@@ -125,4 +125,21 @@
 
     <!-- Misc -->
     <string name="toast_url_failed">Tidak ada aplikasi yang dapat membuka tautan ini</string>
+    <string name="settings_category_security">Keamanan</string>
+    <string name="settings_auto_lock_title">Kunci otomatis</string>
+    <string name="auto_lock_immediately">Segera</string>
+    <string name="lock_title">Kupass terkunci</string>
+    <string name="lock_message">Buka dengan sidik jari, wajah, atau kunci layar untuk membuka vault kamu.</string>
+    <string name="lock_button_unlock">Buka kunci</string>
+    <string name="lock_prompt_title">Buka Kupass</string>
+    <string name="lock_prompt_subtitle">Konfirmasi bahwa ini kamu untuk membuka vault</string>
+    <string name="lock_no_credential_title">Atur kunci layar</string>
+    <string name="lock_no_credential_message">Kupass membutuhkan PIN, pola, atau kata sandi di perangkat ini untuk melindungi vault kamu.</string>
+    <string name="lock_open_settings">Buka pengaturan keamanan</string>
+    <plurals name="auto_lock_seconds">
+        <item quantity="other">%1$d detik</item>
+    </plurals>
+    <plurals name="auto_lock_minutes">
+        <item quantity="other">%1$d menit</item>
+    </plurals>
 </resources>

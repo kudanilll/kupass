@@ -42,6 +42,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.nielcode.kupass.App
 import com.nielcode.kupass.R
 import com.nielcode.kupass.ui.screens.data.BackupProgressDialog
 import com.nielcode.kupass.ui.screens.data.ExportPasswordDialog
@@ -167,6 +168,8 @@ fun MainPagerScreen(
             uri?.let { homeViewModel.importPasswords(it) }
         }
 
+    val appContext = LocalContext.current.applicationContext
+    val appLock = remember(appContext) { (appContext as App).container.appLock }
     var showExportPasswordDialog by remember { mutableStateOf(false) }
     val importPrompt by homeViewModel.importPrompt.collectAsState()
     val backupBusy by homeViewModel.backupBusy.collectAsState()
@@ -176,6 +179,7 @@ fun MainPagerScreen(
             onConfirm = { password ->
                 showExportPasswordDialog = false
                 homeViewModel.prepareExport(password)
+                appLock.allowNextBackground()
                 exportLauncher.launch("kupass-backup.json")
             },
             onDismiss = { showExportPasswordDialog = false },
@@ -242,7 +246,10 @@ fun MainPagerScreen(
                     1 ->
                         com.nielcode.kupass.ui.screens.data.DataScreen(
                             onExportClick = { showExportPasswordDialog = true },
-                            onImportClick = { importLauncher.launch(arrayOf("application/json")) }
+                            onImportClick = {
+                                appLock.allowNextBackground()
+                                importLauncher.launch(arrayOf("application/json"))
+                            }
                         )
 
                     2 -> SettingsScreen()

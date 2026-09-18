@@ -2,6 +2,7 @@ package com.nielcode.kupass.data.local.prefs
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.nielcode.kupass.security.AppLock
 import com.nielcode.kupass.utils.AppConfig
 
 class PreferenceManager(context: Context) {
@@ -26,10 +27,16 @@ class PreferenceManager(context: Context) {
         get() = sharedPreferences.getInt(KEY_DYNAMIC_COLOR, AppConfig.DynamicColors.Code.DISABLE)
         set(value) = edit { putInt(KEY_DYNAMIC_COLOR, value) }
 
+    /** Auto-lock delay after leaving the app, in seconds (0 = immediately). */
+    var autoLockSeconds: Int
+        get() = sharedPreferences.getInt(KEY_AUTO_LOCK_SECONDS, AppLock.DEFAULT_TIMEOUT_SECONDS)
+        set(value) = edit { putInt(KEY_AUTO_LOCK_SECONDS, value) }
+
     companion object {
         private const val PREF_NAME = "kupass_preferences"
         private const val KEY_LANGUAGE = "language"
         private const val KEY_THEME = "theme"
         private const val KEY_DYNAMIC_COLOR = "dynamic_color"
+        private const val KEY_AUTO_LOCK_SECONDS = "auto_lock_seconds"
     }
 }

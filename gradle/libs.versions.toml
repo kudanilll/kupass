@@ -1,6 +1,7 @@
 [versions]
 activityCompose = "1.13.0"
 appcompat = "1.8.0"
+biometric = "1.1.0"
 agp = "9.4.0"
 composeBom = "2026.09.00"
 coreKtx = "1.19.0"
@@ -24,6 +25,7 @@ robolectric = "4.17"
 
 [libraries]
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
+androidx-biometric = { group = "androidx.biometric", name = "biometric", version.ref = "biometric" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
 androidx-compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }

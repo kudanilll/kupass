@@ -125,4 +125,23 @@
     
     <!-- Misc -->
     <string name="toast_url_failed">No application found to handle this link</string>
+    <string name="settings_category_security">Security</string>
+    <string name="settings_auto_lock_title">Auto-lock</string>
+    <string name="auto_lock_immediately">Immediately</string>
+    <string name="lock_title">Kupass is locked</string>
+    <string name="lock_message">Unlock with your fingerprint, face, or screen lock to open your vault.</string>
+    <string name="lock_button_unlock">Unlock</string>
+    <string name="lock_prompt_title">Unlock Kupass</string>
+    <string name="lock_prompt_subtitle">Confirm it is you to open your vault</string>
+    <string name="lock_no_credential_title">Set up a screen lock</string>
+    <string name="lock_no_credential_message">Kupass needs a PIN, pattern, or password on this device to protect your vault.</string>
+    <string name="lock_open_settings">Open security settings</string>
+    <plurals name="auto_lock_seconds">
+        <item quantity="one">%1$d second</item>
+        <item quantity="other">%1$d seconds</item>
+    </plurals>
+    <plurals name="auto_lock_minutes">
+        <item quantity="one">%1$d minute</item>
+        <item quantity="other">%1$d minutes</item>
+    </plurals>
 </resources>

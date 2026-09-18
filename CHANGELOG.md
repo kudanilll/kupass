@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- App lock: the vault opens only after fingerprint/face or the device PIN/pattern/password, and locks again after leaving the app (Settings → Security → Auto-lock: immediately, 30 seconds, 1 minute, or 5 minutes). Devices without a screen lock are asked to set one up.
 - Portable encrypted backups: export asks for a backup password and encrypts the whole vault (PBKDF2-HMAC-SHA256 + AES-256-GCM), so a backup can be restored on a new phone or after reinstalling.
 
 ### Changed

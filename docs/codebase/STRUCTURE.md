@@ -36,6 +36,7 @@ com/nielcode/kupass/
 ├── App.kt                         Application: FLAG_SECURE, locale, theme, dynamic colors
 ├── MainActivity.kt                AppCompatActivity host for Compose
 ├── di/AppContainer.kt             manual DI: repository, prefs, ContentResolver; `CreationExtras.appContainer()`
+├── security/AppLock.kt           UI-level vault lock state machine (auto-lock timeout, background exemptions)
 ├── data/
 │   ├── local/db/
 │   │   ├── KupassDatabase.kt      Room singleton "kupass_database", version 1, exportSchema=false
@@ -50,6 +51,8 @@ com/nielcode/kupass/
 │   │   ├── MainAppScreen.kt       routes, pager (Home/Data/Settings), SAF export/import launchers, toasts
 │   │   ├── home/                  HomeScreen, HomeViewModel (list, search, delete, export/import), components/{VaultList, PasswordListItem}
 │   │   ├── data/DataScreen.kt     export/import buttons only
+│   │   ├── data/BackupPasswordDialog.kt  export/import password dialogs + progress
+│   │   ├── lock/LockScreen.kt     locked state / "set up a screen lock" guidance
 │   │   ├── detail/                PasswordDetailScreen (+ copyToClipboard), PasswordDetailViewModel
 │   │   ├── editor/                PasswordEditorScreen, PasswordEditorViewModel, components/TextField.kt
 │   │   └── settings/SettingsScreen.kt   language/theme/dynamic color dialogs, about links, SingleChoiceDialog

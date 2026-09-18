@@ -8,6 +8,7 @@ import com.nielcode.kupass.App
 import com.nielcode.kupass.data.local.db.KupassDatabase
 import com.nielcode.kupass.data.local.prefs.PreferenceManager
 import com.nielcode.kupass.data.repository.PasswordRepository
+import com.nielcode.kupass.security.AppLock
 
 /**
  * Manual dependency container, created once in [App.onCreate]. Kept deliberately small instead of
@@ -21,6 +22,9 @@ class AppContainer(context: Context) {
     }
 
     val preferenceManager: PreferenceManager by lazy { PreferenceManager(appContext) }
+
+    /** Process-wide vault lock; survives activity recreation, resets (locked) with the process. */
+    val appLock: AppLock by lazy { AppLock(timeoutMillis = { preferenceManager.autoLockSeconds * 1000L }) }
 
     val contentResolver: ContentResolver
         get() = appContext.contentResolver
