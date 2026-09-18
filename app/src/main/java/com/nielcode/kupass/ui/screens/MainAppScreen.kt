@@ -172,6 +172,7 @@ fun MainPagerScreen(
     val importSuccessText = stringResource(R.string.toast_success_import)
     val importFailedText = stringResource(R.string.toast_failed_import)
     val noDataText = stringResource(R.string.toast_no_data)
+    val vaultReadFailedText = stringResource(R.string.toast_vault_read_failed)
     LaunchedEffect(operationMessage) {
         val msg = operationMessage ?: return@LaunchedEffect
         val toastText =
@@ -181,6 +182,7 @@ fun MainPagerScreen(
                 "import_success" -> importSuccessText
                 "import_failed" -> importFailedText
                 "no_data" -> noDataText
+                "vault_read_failed" -> vaultReadFailedText
                 else -> msg
             }
         Toast.makeText(context, toastText, Toast.LENGTH_SHORT).show()

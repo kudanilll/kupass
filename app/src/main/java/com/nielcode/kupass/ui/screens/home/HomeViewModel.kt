@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
@@ -45,10 +46,16 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         passwords =
             _searchQuery
                 .flatMapLatest { query ->
-                    if (query.isBlank()) {
-                        repository.getAllPasswords()
-                    } else {
-                        repository.searchPasswords(query)
+                    val source =
+                        if (query.isBlank()) {
+                            repository.getAllPasswords()
+                        } else {
+                            repository.searchPasswords(query)
+                        }
+                    // Never crash or show ciphertext when the vault can't be decrypted.
+                    source.catch {
+                        _operationMessage.value = "vault_read_failed"
+                        emit(emptyList())
                     }
                 }
                 .stateIn(

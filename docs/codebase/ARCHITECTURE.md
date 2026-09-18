@@ -61,7 +61,7 @@ User action (Compose) -> ViewModel (viewModelScope) -> PasswordRepository (encry
 ## 5) Known Architectural Risks
 
 - **Crypto is bound to one device key.** The same Keystore key encrypts both the DB and backups, so backups can't be restored after reinstall or on another device. `decrypt()` then silently returns ciphertext as data. See CONCERNS C-1.
-- **Fail-open crypto:** `encrypt()` returns plaintext on exception, so a Keystore failure silently downgrades storage to plaintext.
+- ~~Fail-open crypto~~: fixed by EN-06 (CryptoManager v2 is fail-closed and versioned).
 - **No DB migration path** (`version = 1`, `exportSchema = false`): the first schema change risks crashes or data loss.
 - **Decrypt-on-list:** every list emission decrypts every row on the main-dispatcher collector, although the list shows no passwords.
 - **Two dynamic-color mechanisms:** `DynamicColors.applyToActivitiesIfAvailable` (View theme) in `App` and the `KupassTheme(dynamicColor)` Compose scheme in `MainActivity`. Only the latter affects Compose UI. [TODO] confirm whether the View-level call is still needed (splash/system dialogs).

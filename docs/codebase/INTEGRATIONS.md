@@ -32,7 +32,7 @@ No analytics, crash reporting, network client, or push service is present. The `
 ## 4) Reliability and Failure Behavior
 
 - Retry/timeout: n/a (no network).
-- Fallbacks: `CryptoManager.encrypt` returns plaintext on failure, and `decrypt` returns its input on failure (**fail-open**).
+- Crypto failure policy (EN-06): fail-closed. `CryptoManager.encrypt`/`decrypt` throw `CryptoException`. ViewModels catch it: the list shows the `toast_vault_read_failed` toast and never ciphertext.
 - SAF failures are caught generically and surfaced as the `export_failed`/`import_failed` toasts.
 - Import cap: rejects more than 2000 entries, but only after the full file is read and parsed.
 

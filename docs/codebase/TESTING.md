@@ -28,7 +28,7 @@ Results land in `app/build/test-results/testDebugUnitTest/*.xml` and `app/build/
 
 | Scope               | Covered? | Typical target                                                                | Notes                                                                                                                      |
 | ------------------- | -------- | ----------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| Unit: crypto        | Yes (4)  | `CryptoManager` round-trip, blank handling, fallback on invalid input         | Runs on the **in-memory test key** because AndroidKeyStore is absent in Robolectric, so the real Keystore path is untested |
+| Unit: crypto | Yes (11) | v2 round-trip, fresh IV, empty/whitespace, legacy v1 + plaintext reads, tamper/wrong-key/malformed → `CryptoException`, fail-closed encrypt | Injected test key. Real Keystore covered by `androidTest/.../CryptoManagerKeystoreTest` (2) |
 | Unit: backup format | Yes (4)  | `JsonExportImport` export shape, encryption, import mapping, legacy plaintext | One test asserts the fail-open fallback (see CONCERNS C-1)                                                                 |
 | Unit: ViewModels    | No       | `HomeViewModel`, `PasswordEditorViewModel`, `PasswordDetailViewModel`         | Blocked by the lack of DI (ViewModels construct Room themselves)                                                           |
 | Unit: repository    | No       | `PasswordRepository` encrypt/decrypt wiring                                   | Needs a fake DAO or in-memory Room                                                                                         |
@@ -39,7 +39,7 @@ Results land in `app/build/test-results/testDebugUnitTest/*.xml` and `app/build/
 ## 4) Mocking and Isolation Strategy
 
 - No mocks. The tests use real singletons.
-- `CryptoManager` isolation comes from a production-code branch: when `KeyStore.getInstance("AndroidKeyStore")` throws, it generates a process-local AES key (`testKey`). This test hook lives in production code (`CryptoManager.kt`, comment "ponytail: degrade gracefully...").
+- `CryptoManager` isolation: JVM tests inject a fixed AES key with `CryptoManager.setKeyProviderForTesting { key }` in `@Before`. The real Keystore path is covered by the instrumented `CryptoManagerKeystoreTest`.
 - Shared state: the `CryptoManager` object and its `testKey` persist across tests in the same JVM. The tests don't reset them.
 - Common failure mode: tests pass on the JVM while real-device Keystore behavior (key invalidation, `KeyPermanentlyInvalidatedException`, StrongBox) stays untested.
 

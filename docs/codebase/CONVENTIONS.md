@@ -34,9 +34,9 @@
 ## 4) Error and Logging Conventions
 
 - **ViewModels:** `try/catch (e: Exception)` around suspend work, mapped to `SaveState.Error(message)` / `DeleteState.Error`, or to string keys `"export_failed"` / `"import_failed"`. The `Error` states are **never rendered** by the screens (only `Success` is observed).
-- **Crypto:** catch-all with a fallback (encrypt → plaintext, decrypt → input) and `e.printStackTrace()` in `encrypt`.
+- **Crypto:** fail-closed. `CryptoException` (message only, never secret values) is thrown by `CryptoManager` and caught in ViewModels (`.catch {}` on read flows, `try/catch` on writes). No `printStackTrace`/logging in crypto paths.
 - **UI feedback:** `Toast`, with messages taken from `stringResource`.
-- **Logging:** there are no `Log.*` calls. The only diagnostic output is `printStackTrace()` in `CryptoManager.kt:67`.
+- **Logging:** there are no `Log.*` calls and no `printStackTrace()` in production code.
 - **Redaction:** no explicit policy in code. Secrets are simply never logged, apart from the stack trace above, which carries no secret value.
 
 ## 5) Testing Conventions

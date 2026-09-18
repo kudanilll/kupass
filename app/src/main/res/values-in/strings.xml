@@ -62,6 +62,7 @@
     <string name="settings_version_title">Versi Kupass</string>
 
     <!-- Toast -->
+    <string name="toast_vault_read_failed">Beberapa entri vault tidak dapat didekripsi</string>
     <string name="toast_no_data">Tidak ada kata sandi untuk disimpan</string>
     <string name="toast_success">Kata sandi berhasil dibuat</string>
     <string name="toast_success_delete">Sukses menghapus</string>

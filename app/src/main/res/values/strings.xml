@@ -62,6 +62,7 @@
     <string name="settings_version_title">Kupass Version</string>
 
     <!-- Toast -->
+    <string name="toast_vault_read_failed">Some vault entries could not be decrypted</string>
     <string name="toast_no_data">There is no password to save</string>
     <string name="toast_success">Password created</string>
     <string name="toast_success_delete">Success delete</string>

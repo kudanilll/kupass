@@ -4,6 +4,8 @@ import com.nielcode.kupass.data.local.db.PasswordEntity
 import com.nielcode.kupass.utils.CryptoManager
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import javax.crypto.KeyGenerator
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -12,6 +14,12 @@ import kotlinx.serialization.json.jsonArray
 
 @RunWith(RobolectricTestRunner::class)
 class JsonExportImportTest {
+
+    @Before
+    fun setUp() {
+        val key = KeyGenerator.getInstance("AES").apply { init(256) }.generateKey()
+        CryptoManager.setKeyProviderForTesting { key }
+    }
 
     @Test
     fun `exportToJson outputs valid JSON array`() {
@@ -42,8 +50,7 @@ class JsonExportImportTest {
 
         // Assert
         assertTrue("JSON should contain siteName", jsonString.contains("Google"))
-        // Password should be encrypted, not plaintext. If the fallback kicks in due to lack of keystore, it'll fail this test,
-        // but we now provided a fallback Random Key in CryptoManager so this should pass!
+        // Password should be encrypted, not plaintext.
         assertTrue("JSON should not contain plaintext password", !jsonString.contains("my_secret_password"))
         
         // Let's verify we can decrypt it back
