@@ -27,9 +27,9 @@ User action (Compose) -> ViewModel (viewModelScope) -> PasswordRepository (encry
 4. On success `SaveState.Success` is set, and the screen's `LaunchedEffect(saveState)` pops the back stack.
 5. `HomeViewModel.passwords` (`flatMapLatest` over the search query → `getAll`/`search` Flow → decrypt each row) re-emits, and `VaultList` recomposes.
 
-**Export:** `DataScreen` → `exportLauncher` (SAF `CreateDocument`) → `HomeViewModel.exportPasswords(uri)` → `repository.getAllPasswords().first()` (decrypted) → `JsonExportImport.exportToJson` (re-encrypts the password with the same Keystore key) → `contentResolver.openOutputStream`.
+**Export:** `DataScreen` → `ExportPasswordDialog` (backup password ≥ 8 chars, confirmed) → `HomeViewModel.prepareExport(CharArray)` → SAF `CreateDocument` → `exportPasswords(uri)` → `repository.getAllPasswords().first()` → `BackupCodec.encode` on `Dispatchers.Default` (PBKDF2 600k ≈ 2 s on an emulator, with `BackupProgressDialog`) → write → password array zeroed.
 
-**Import:** SAF `OpenDocument` → `HomeViewModel.importPasswords` → `readText()` → `JsonExportImport.importFromJson` (decrypt, falling back to the raw value) → size check (≤ 2000) → filter blanks → `insertPassword` one by one.
+**Import:** SAF `OpenDocument` → `HomeViewModel.importPasswords` → bounded read (≤ 32 MB) → `BackupCodec.isPasswordProtected` ? `ImportPasswordDialog` (retry on wrong password) : legacy path → `BackupCodec.decode` → filter blanks → `insertPassword` one by one (atomic import is S-2.4).
 
 ## 3) Layer/Module Responsibilities
 
@@ -60,7 +60,7 @@ User action (Compose) -> ViewModel (viewModelScope) -> PasswordRepository (encry
 
 ## 5) Known Architectural Risks
 
-- **Crypto is bound to one device key.** The same Keystore key encrypts both the DB and backups, so backups can't be restored after reinstall or on another device. `decrypt()` then silently returns ciphertext as data. See CONCERNS C-1.
+- ~~Backups bound to one device key~~: fixed by F-2.1 (password-based portable backups). The *database* is still bound to the device Keystore key by design.
 - ~~Fail-open crypto~~: fixed by EN-06 (CryptoManager v2 is fail-closed and versioned).
 - **No DB migration path** (`version = 1`, `exportSchema = false`): the first schema change risks crashes or data loss.
 - **Decrypt-on-list:** every list emission decrypts every row on the main-dispatcher collector, although the list shows no passwords.

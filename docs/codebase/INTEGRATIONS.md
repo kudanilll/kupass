@@ -21,7 +21,7 @@ No analytics, crash reporting, network client, or push service is present. The `
 | ------------------------------------------------ | ----------------------------------------- | -------------------------------------- | --------------------------------------------------------------------------------- | ---------------------------------------- |
 | Room/SQLite `kupass_database`, table `passwords` | Vault                                     | `PasswordDao` via `PasswordRepository` | Only `password` is encrypted. No migrations (`version 1`, `exportSchema = false`) | `KupassDatabase.kt`, `PasswordEntity.kt` |
 | SharedPreferences `kupass_preferences`           | `language`, `theme`, `dynamic_color` ints | `PreferenceManager`                    | Low (no secrets)                                                                  | `PreferenceManager.kt`                   |
-| Exported JSON file (user storage)                | Backup                                    | `JsonExportImport`                     | Metadata in plaintext. Password bound to the device key                           | `JsonExportImport.kt`                    |
+| Backup file (user storage, `kupass-backup.json`) | Portable backup v2 | `data/backup/BackupCodec` | Strength depends on the user's backup password (min 8 chars, PBKDF2 600k) | `BackupCodec.kt` |
 
 ## 3) Secrets and Credentials Handling
 

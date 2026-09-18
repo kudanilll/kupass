@@ -17,8 +17,8 @@
     
     <!-- Data Screen -->
     <string name="data_export_import_title">Export &amp; Import</string>
-    <string name="data_export_subtitle">Backup passwords to a JSON file</string>
-    <string name="data_import_subtitle">Restore passwords from a JSON backup</string>
+    <string name="data_export_subtitle">Encrypted backup protected by a password</string>
+    <string name="data_import_subtitle">Restore from a Kupass backup</string>
     <string name="data_export_title">Export Data</string>
     <string name="data_import_title">Import Data</string>
 
@@ -62,6 +62,19 @@
     <string name="settings_version_title">Kupass Version</string>
 
     <!-- Toast -->
+    <string name="backup_export_dialog_title">Protect your backup</string>
+    <string name="backup_export_dialog_message">Choose a backup password. You will need it to restore this backup on any device. It cannot be recovered if you forget it.</string>
+    <string name="backup_password_label">Backup password</string>
+    <string name="backup_password_confirm_label">Confirm password</string>
+    <string name="backup_password_too_short">Use at least %1$d characters</string>
+    <string name="backup_password_mismatch">Passwords do not match</string>
+    <string name="backup_import_dialog_title">Enter backup password</string>
+    <string name="backup_import_dialog_message">This backup is encrypted. Enter the password you chose when exporting it.</string>
+    <string name="backup_wrong_password">Wrong password or damaged file</string>
+    <string name="backup_working">Please wait…</string>
+    <string name="toast_backup_foreign_device">This older backup was made on another device and cannot be restored here. Export a new backup from the original device.</string>
+    <string name="toast_backup_unsupported">Unsupported backup file</string>
+    <string name="toast_import_too_large">The backup file is too large</string>
     <string name="toast_vault_read_failed">Some vault entries could not be decrypted</string>
     <string name="toast_no_data">There is no password to save</string>
     <string name="toast_success">Password created</string>

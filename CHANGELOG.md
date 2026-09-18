@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Portable encrypted backups: export asks for a backup password and encrypts the whole vault (PBKDF2-HMAC-SHA256 + AES-256-GCM), so a backup can be restored on a new phone or after reinstalling.
+
 ### Changed
 
 - Updated the build toolchain to the latest stable releases: Android Gradle Plugin 9.4.0, Gradle 9.7.1, Kotlin 2.4.20, and KSP 2.3.12.
@@ -15,6 +19,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Swipe-to-delete uses the current Material 3 `SwipeToDismissBox` API. The confirmation dialog behaves the same as before.
 
 ### Fixed
+
+- Importing an old backup made on another device no longer imports encrypted text as passwords. The import is refused with an explanation.
+- Encryption failures no longer fall back to storing plaintext, and unreadable entries are no longer shown as ciphertext.
 
 - Copied passwords are now cleared from the clipboard without crashing on Android 8.1 (API 27), where `clearPrimaryClip()` is unavailable.
 

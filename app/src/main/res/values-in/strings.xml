@@ -17,8 +17,8 @@
 
     <!-- Data Screen -->
     <string name="data_export_import_title">Ekspor &amp; Impor</string>
-    <string name="data_export_subtitle">Cadangkan kata sandi ke file JSON</string>
-    <string name="data_import_subtitle">Pulihkan kata sandi dari cadangan JSON</string>
+    <string name="data_export_subtitle">Cadangan terenkripsi dengan kata sandi</string>
+    <string name="data_import_subtitle">Pulihkan dari cadangan Kupass</string>
     <string name="data_export_title">Ekspor Data</string>
     <string name="data_import_title">Impor Data</string>
 
@@ -62,6 +62,19 @@
     <string name="settings_version_title">Versi Kupass</string>
 
     <!-- Toast -->
+    <string name="backup_export_dialog_title">Lindungi cadangan kamu</string>
+    <string name="backup_export_dialog_message">Buat kata sandi cadangan. Kata sandi ini dibutuhkan untuk memulihkan cadangan di perangkat mana pun dan tidak dapat dipulihkan jika lupa.</string>
+    <string name="backup_password_label">Kata sandi cadangan</string>
+    <string name="backup_password_confirm_label">Konfirmasi kata sandi</string>
+    <string name="backup_password_too_short">Gunakan minimal %1$d karakter</string>
+    <string name="backup_password_mismatch">Kata sandi tidak cocok</string>
+    <string name="backup_import_dialog_title">Masukkan kata sandi cadangan</string>
+    <string name="backup_import_dialog_message">Cadangan ini terenkripsi. Masukkan kata sandi yang kamu buat saat mengekspornya.</string>
+    <string name="backup_wrong_password">Kata sandi salah atau file rusak</string>
+    <string name="backup_working">Mohon tunggu…</string>
+    <string name="toast_backup_foreign_device">Cadangan lama ini dibuat di perangkat lain dan tidak dapat dipulihkan di sini. Ekspor cadangan baru dari perangkat asalnya.</string>
+    <string name="toast_backup_unsupported">File cadangan tidak didukung</string>
+    <string name="toast_import_too_large">File cadangan terlalu besar</string>
     <string name="toast_vault_read_failed">Beberapa entri vault tidak dapat didekripsi</string>
     <string name="toast_no_data">Tidak ada kata sandi untuk disimpan</string>
     <string name="toast_success">Kata sandi berhasil dibuat</string>

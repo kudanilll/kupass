@@ -40,7 +40,7 @@ com/nielcode/kupass/
 │   │   ├── KupassDatabase.kt      Room singleton "kupass_database", version 1, exportSchema=false
 │   │   ├── PasswordDao.kt         Flow getAll/search/getById, suspend insert(REPLACE)/update/delete
 │   │   └── PasswordEntity.kt      table "passwords"
-│   ├── local/json/JsonExportImport.kt   backup (de)serialization, password field encrypted
+│   ├── backup/BackupCodec.kt      portable backup v2 (PBKDF2 + AES-GCM) + strict legacy v1 import
 │   ├── local/prefs/PreferenceManager.kt SharedPreferences "kupass_preferences"
 │   └── repository/PasswordRepository.kt encrypt on write, decrypt on read (password field only)
 ├── ui/
