@@ -64,7 +64,7 @@ Regenerate the scan with the skill's `scan.py` (output: `docs/codebase/.codebase
 6. License is **GPL-3.0**. New dependencies must be compatible with it.
 7. Do not commit `secrets.properties`, `*.jks`, or `local.properties`.
 
-Confirmed product decisions (app lock, portable backups, font, CI, etc.) are in the `docs/ai/prd.md` §8 Decision Log.
+Confirmed product decisions (app lock, portable backups, font, CI, etc.) are in the `docs/ai/prd.md` §8 Decision Log. The ordered plan (milestones M0–M3, item IDs such as `EN-06` and `S-3.1`, dependencies, and open questions) is in [`docs/ai/roadmap.md`](docs/ai/roadmap.md). Check it before picking up work.
 
 ## Build & Test
 
