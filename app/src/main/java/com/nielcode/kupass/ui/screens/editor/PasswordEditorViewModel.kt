@@ -1,9 +1,11 @@
 package com.nielcode.kupass.ui.screens.editor
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.nielcode.kupass.data.local.db.KupassDatabase
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import com.nielcode.kupass.di.appContainer
 import com.nielcode.kupass.data.local.db.PasswordEntity
 import com.nielcode.kupass.data.repository.PasswordRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,9 +30,7 @@ sealed interface SaveState {
  * ViewModel for the Password Editor screen.
  * Handles creating new passwords and editing existing ones.
  */
-class PasswordEditorViewModel(application: Application) : AndroidViewModel(application) {
-
-    private val repository: PasswordRepository
+class PasswordEditorViewModel(private val repository: PasswordRepository) : ViewModel() {
 
     private val _saveState = MutableStateFlow<SaveState>(SaveState.Idle)
     val saveState: StateFlow<SaveState> = _saveState.asStateFlow()
@@ -41,12 +41,6 @@ class PasswordEditorViewModel(application: Application) : AndroidViewModel(appli
 
     /** Whether we are in edit mode (vs create mode). */
     val isEditMode: Boolean get() = _existingPassword.value != null
-
-    init {
-        val database = KupassDatabase.getInstance(application)
-        val dao = database.passwordDao()
-        repository = PasswordRepository(dao)
-    }
 
     /**
      * Load an existing password for editing.
@@ -112,5 +106,11 @@ class PasswordEditorViewModel(application: Application) : AndroidViewModel(appli
 
     fun resetSaveState() {
         _saveState.value = SaveState.Idle
+    }
+
+    companion object {
+        val Factory: ViewModelProvider.Factory = viewModelFactory {
+            initializer { PasswordEditorViewModel(appContainer().passwordRepository) }
+        }
     }
 }

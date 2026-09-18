@@ -1,15 +1,19 @@
 package com.nielcode.kupass.ui.screens.home
 
-import android.app.Application
+import android.content.ContentResolver
 import android.net.Uri
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.nielcode.kupass.data.local.db.KupassDatabase
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import com.nielcode.kupass.di.appContainer
 import com.nielcode.kupass.data.local.db.PasswordEntity
 import com.nielcode.kupass.data.backup.BackupCodec
 import com.nielcode.kupass.data.backup.BackupException
 import com.nielcode.kupass.data.repository.PasswordRepository
 import java.io.IOException
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,9 +32,12 @@ import kotlinx.coroutines.withContext
  * functionality.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
-class HomeViewModel(application: Application) : AndroidViewModel(application) {
-
-    private val repository: PasswordRepository
+class HomeViewModel(
+    private val repository: PasswordRepository,
+    private val contentResolver: ContentResolver,
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    private val cpuDispatcher: CoroutineDispatcher = Dispatchers.Default,
+) : ViewModel() {
 
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
@@ -43,10 +50,6 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     val operationMessage: StateFlow<String?> = _operationMessage.asStateFlow()
 
     init {
-        val database = KupassDatabase.getInstance(application)
-        val dao = database.passwordDao()
-        repository = PasswordRepository(dao)
-
         passwords =
             _searchQuery
                 .flatMapLatest { query ->
@@ -114,10 +117,9 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                     _operationMessage.value = "no_data"
                     return@launch
                 }
-                val backup = withContext(Dispatchers.Default) { BackupCodec.encode(allPasswords, password) }
-                withContext(Dispatchers.IO) {
-                    val context = getApplication<Application>()
-                    val stream = context.contentResolver.openOutputStream(uri, "wt") ?: throw IOException("No output stream")
+                val backup = withContext(cpuDispatcher) { BackupCodec.encode(allPasswords, password) }
+                withContext(ioDispatcher) {
+                    val stream = contentResolver.openOutputStream(uri, "wt") ?: throw IOException("No output stream")
                     stream.use { it.write(backup.toByteArray(Charsets.UTF_8)) }
                 }
                 _operationMessage.value = "export_success"
@@ -135,7 +137,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             val content =
                 try {
-                    withContext(Dispatchers.IO) { readBounded(uri) }
+                    withContext(ioDispatcher) { readBounded(uri) }
                 } catch (_: BackupException.TooLarge) {
                     _operationMessage.value = "import_failed_too_large"
                     return@launch
@@ -164,7 +166,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private suspend fun decodeAndInsert(content: String, password: CharArray?) {
         _backupBusy.value = true
         try {
-            val imported = withContext(Dispatchers.Default) { BackupCodec.decode(content, password) }
+            val imported = withContext(cpuDispatcher) { BackupCodec.decode(content, password) }
             _importPrompt.value = null
             imported
                 .filter { it.siteName.isNotBlank() && it.password.isNotBlank() }
@@ -193,8 +195,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     /** Reads the file as UTF-8, refusing anything larger than [MAX_BACKUP_BYTES]. */
     private fun readBounded(uri: Uri): String {
-        val context = getApplication<Application>()
-        val stream = context.contentResolver.openInputStream(uri) ?: throw IOException("No input stream")
+        val stream = contentResolver.openInputStream(uri) ?: throw IOException("No input stream")
         stream.use { input ->
             // Manual loop: InputStream.readNBytes is API 33+, minSdk is 27.
             val out = java.io.ByteArrayOutputStream()
@@ -221,7 +222,14 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     /** An encrypted backup waiting for its password. [content] is still ciphertext. */
     data class ImportPrompt(val content: String, val wrongPassword: Boolean = false)
 
-    private companion object {
-        const val MAX_BACKUP_BYTES = 32 * 1024 * 1024
+    companion object {
+        private const val MAX_BACKUP_BYTES = 32 * 1024 * 1024
+
+        val Factory: ViewModelProvider.Factory = viewModelFactory {
+            initializer {
+                val container = appContainer()
+                HomeViewModel(container.passwordRepository, container.contentResolver)
+            }
+        }
     }
 }

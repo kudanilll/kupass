@@ -130,7 +130,7 @@ fun MainAppScreen() {
 fun MainPagerScreen(
     onNavigateToEditor: () -> Unit,
     onNavigateToDetail: (Long) -> Unit = {},
-    homeViewModel: HomeViewModel = viewModel()
+    homeViewModel: HomeViewModel = viewModel(factory = HomeViewModel.Factory)
 ) {
     val pagerState = rememberPagerState(pageCount = { 3 })
     val coroutineScope = rememberCoroutineScope()

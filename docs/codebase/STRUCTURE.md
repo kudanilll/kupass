@@ -35,6 +35,7 @@
 com/nielcode/kupass/
 ├── App.kt                         Application: FLAG_SECURE, locale, theme, dynamic colors
 ├── MainActivity.kt                AppCompatActivity host for Compose
+├── di/AppContainer.kt             manual DI: repository, prefs, ContentResolver; `CreationExtras.appContainer()`
 ├── data/
 │   ├── local/db/
 │   │   ├── KupassDatabase.kt      Room singleton "kupass_database", version 1, exportSchema=false

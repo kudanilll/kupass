@@ -48,7 +48,7 @@ import com.nielcode.kupass.ui.components.TextField
 fun PasswordEditorScreen(
     passwordId: Long = -1L,
     onNavigateBack: () -> Unit,
-    viewModel: PasswordEditorViewModel = viewModel()
+    viewModel: PasswordEditorViewModel = viewModel(factory = PasswordEditorViewModel.Factory)
 ) {
     val isEditMode = passwordId > 0
 

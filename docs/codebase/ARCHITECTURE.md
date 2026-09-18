@@ -5,7 +5,7 @@
 ## 1) Architectural Style
 
 - **Primary style:** single-module, layered MVVM (UI → ViewModel → Repository → DAO), with feature folders inside the UI layer.
-- **Why:** each screen has a `*ViewModel : AndroidViewModel` exposing `StateFlow`. All ViewModels go through `PasswordRepository`, which wraps `PasswordDao`. There is no domain/use-case layer and no DI framework.
+- **Why:** each screen has a `*ViewModel : ViewModel` exposing `StateFlow`, constructed through its `Factory` from `App.container` (`di/AppContainer`). All ViewModels go through `PasswordRepository`, which wraps `PasswordDao`. There is no domain/use-case layer and no DI framework.
 - **Primary constraints:**
   1. Offline only: all data lives in the app sandbox (Room + SharedPreferences) with no backend.
   2. Security: secrets are encrypted with a non-exportable Android Keystore key, and the UI is protected by `FLAG_SECURE`.
@@ -51,7 +51,7 @@ User action (Compose) -> ViewModel (viewModelScope) -> PasswordRepository (encry
 | Double-checked-locking singleton                   | `KupassDatabase.getInstance`                             | One Room instance per process                           |
 | Kotlin `object` singleton                          | `CryptoManager`, `BackupCodec`, `AppConfig`         | Stateless utilities                                     |
 | Repository (thin, with a crypto decorator)         | `PasswordRepository`                                     | Keep the DAO and UI unaware of encryption               |
-| `AndroidViewModel` + manual construction           | all 3 ViewModels                                         | No DI; needs `Application` for DB and `ContentResolver` |
+| Manual DI container + `viewModelFactory { initializer { } }` | `di/AppContainer.kt`, `*ViewModel.Factory` | Constructor injection without a DI framework (lightweight, testable) |
 | Sealed interface operation state                   | `SaveState`, `DeleteState`                               | Drive navigation after async work via `LaunchedEffect`  |
 | String-keyed event in `StateFlow<String?>`         | `HomeViewModel.operationMessage` → `MainAppScreen`       | Toast after export/import (weaker variant of the above) |
 | `flatMapLatest` + `stateIn(WhileSubscribed(5000))` | `HomeViewModel.passwords`                                | Reactive search                                         |

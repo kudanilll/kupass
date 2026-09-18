@@ -1,9 +1,11 @@
 package com.nielcode.kupass.ui.screens.detail
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.nielcode.kupass.data.local.db.KupassDatabase
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import com.nielcode.kupass.di.appContainer
 import com.nielcode.kupass.data.local.db.PasswordEntity
 import com.nielcode.kupass.data.repository.PasswordRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,9 +30,7 @@ sealed interface DeleteState {
  * ViewModel for the Password Detail screen.
  * Loads a single password by ID and handles deletion.
  */
-class PasswordDetailViewModel(application: Application) : AndroidViewModel(application) {
-
-    private val repository: PasswordRepository
+class PasswordDetailViewModel(private val repository: PasswordRepository) : ViewModel() {
 
     private var _passwordId: Long = -1L
 
@@ -40,12 +40,6 @@ class PasswordDetailViewModel(application: Application) : AndroidViewModel(appli
     // Will be initialized when loadPassword is called
     private val _password = MutableStateFlow<PasswordEntity?>(null)
     val password: StateFlow<PasswordEntity?> = _password.asStateFlow()
-
-    init {
-        val database = KupassDatabase.getInstance(application)
-        val dao = database.passwordDao()
-        repository = PasswordRepository(dao)
-    }
 
     fun loadPassword(id: Long) {
         _passwordId = id
@@ -76,5 +70,11 @@ class PasswordDetailViewModel(application: Application) : AndroidViewModel(appli
 
     fun resetDeleteState() {
         _deleteState.value = DeleteState.Idle
+    }
+
+    companion object {
+        val Factory: ViewModelProvider.Factory = viewModelFactory {
+            initializer { PasswordDetailViewModel(appContainer().passwordRepository) }
+        }
     }
 }

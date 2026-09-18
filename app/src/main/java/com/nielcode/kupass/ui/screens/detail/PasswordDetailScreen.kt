@@ -62,7 +62,7 @@ fun PasswordDetailScreen(
     passwordId: Long,
     onNavigateBack: () -> Unit,
     onNavigateToEdit: (Long) -> Unit,
-    viewModel: PasswordDetailViewModel = viewModel()
+    viewModel: PasswordDetailViewModel = viewModel(factory = PasswordDetailViewModel.Factory)
 ) {
     val context = LocalContext.current
     val deleteSuccessText = stringResource(R.string.toast_success_delete)

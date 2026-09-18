@@ -24,7 +24,7 @@ import com.nielcode.kupass.ui.screens.home.components.VaultList
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(onNavigateToDetail: (Long) -> Unit = {}, viewModel: HomeViewModel = viewModel()) {
+fun HomeScreen(onNavigateToDetail: (Long) -> Unit = {}, viewModel: HomeViewModel = viewModel(factory = HomeViewModel.Factory)) {
     // Collect state from ViewModel
     val passwords by viewModel.passwords.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
