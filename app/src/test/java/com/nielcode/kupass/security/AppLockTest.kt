@@ -57,12 +57,37 @@ class AppLockTest {
     }
 
     @Test
-    fun `an exempted round trip such as the file picker does not lock`() {
+    fun `an exempted round trip such as the file picker does not lock within the grace period`() {
         timeout = 0
         lock.unlock()
         lock.allowNextBackground()
         lock.onBackground(isChangingConfigurations = false)
-        now += 120_000
+        now += AppLock.EXEMPT_TRIP_GRACE_MILLIS - 1
+        lock.onForeground()
+
+        assertFalse(lock.locked.value)
+    }
+
+    @Test
+    fun `a long absence that started with an exempted trip still locks`() {
+        // Security review finding: the exemption used to skip timing entirely.
+        timeout = 0
+        lock.unlock()
+        lock.allowNextBackground() // e.g. GitHub link opens the browser
+        lock.onBackground(isChangingConfigurations = false)
+        now += AppLock.EXEMPT_TRIP_GRACE_MILLIS
+        lock.onForeground() // back from Recents much later
+
+        assertTrue(lock.locked.value)
+    }
+
+    @Test
+    fun `the exempt grace never shortens a longer user timeout`() {
+        timeout = AppLock.EXEMPT_TRIP_GRACE_MILLIS * 2
+        lock.unlock()
+        lock.allowNextBackground()
+        lock.onBackground(isChangingConfigurations = false)
+        now += AppLock.EXEMPT_TRIP_GRACE_MILLIS + 1
         lock.onForeground()
 
         assertFalse(lock.locked.value)

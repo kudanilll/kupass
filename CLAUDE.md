@@ -22,11 +22,14 @@ MainActivity -> MainAppScreen (NavHost)
   ├─ PasswordDetail(passwordId)
   └─ PasswordEditor(passwordId = -1 for create)
 
-Screen (Compose) -> AndroidViewModel -> PasswordRepository -> PasswordDao (Room)
-                                              └─ CryptoManager (encrypts `password` field)
+MainActivity: AppLock gate (BiometricPrompt) → LockScreen | MainAppScreen
+
+Screen (Compose) -> ViewModel(Factory) -> PasswordRepository -> PasswordDao (Room)
+                                              └─ CryptoManager (Keystore AES-GCM, every field, `kp2:` format)
+Backup: BackupCodec (PBKDF2-HMAC-SHA256 + AES-256-GCM, password-protected, portable)
 ```
 
-No DI framework. ViewModels build their own repository from `KupassDatabase.getInstance()`.
+No DI framework: `App.container` (`di/AppContainer`) provides the repository, prefs, and `AppLock`; each ViewModel exposes a `Factory`.
 
 ## Where To Read More
 

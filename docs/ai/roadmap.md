@@ -4,6 +4,12 @@
 >
 > Each item ID (e.g. `EN-06`) is meant to become one GitHub issue and one branch (`feat/…`, `fix/…`, `chore/…`). Update the checkboxes and IDs here as issues are created and merged.
 
+## 0. Progress (2026-09-18)
+
+Critical path implemented on stacked local branches (not yet pushed or merged): EN-00, EN-01, EN-03, EN-06 (+EN-06b), F-2.1, EN-04, S-3.1, S-3.2, EN-07, EN-05, S-2.4, S-2.5, S-3.3. A security-review fix for S-3.1/S-3.2 was added on top. **M1 Trustworthy Vault is code-complete.** Remaining from M0: EN-02 (formatter). Next up: M2, then F-7.2 Autofill.
+
+Branch stack (each based on the previous): `docs/roadmap` → `ci/github-actions-ci` → `build/room-schema-export` → `refactor/crypto-v2` → `feat/portable-backup` → `refactor/app-container` → `feat/app-lock` → `feat/encrypt-all-fields` → `refactor/typed-events` → `feat/atomic-import` → `fix/backup-exclusion` → `fix/clipboard-autoclear` → `fix/app-lock-exempt-trip`.
+
 ## 1. Overview
 
 **Goal:** turn Kupass v3.1 (a working local vault with known security gaps) into a password manager that is secure, has few bugs, performs well, and stays light, without ever adding telemetry.
