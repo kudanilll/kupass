@@ -16,6 +16,8 @@ import java.io.IOException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -23,6 +25,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -45,9 +48,10 @@ class HomeViewModel(
     @OptIn(ExperimentalCoroutinesApi::class)
     val passwords: StateFlow<List<PasswordEntity>>
 
-    /** Result message for export/import operations */
-    private val _operationMessage = MutableStateFlow<String?>(null)
-    val operationMessage: StateFlow<String?> = _operationMessage.asStateFlow()
+    private val _events = Channel<VaultEvent>(Channel.BUFFERED)
+
+    /** One-shot results for the UI; each event is delivered once. */
+    val events: Flow<VaultEvent> = _events.receiveAsFlow()
 
     init {
         passwords =
@@ -61,7 +65,7 @@ class HomeViewModel(
                         }
                     // Never crash or show ciphertext when the vault can't be decrypted.
                     source.catch {
-                        _operationMessage.value = "vault_read_failed"
+                        _events.trySend(VaultEvent.VaultReadFailed)
                         emit(emptyList())
                     }
                 }
@@ -114,7 +118,7 @@ class HomeViewModel(
             try {
                 val allPasswords = repository.getAllPasswords().first()
                 if (allPasswords.isEmpty()) {
-                    _operationMessage.value = "no_data"
+                    _events.send(VaultEvent.NothingToExport)
                     return@launch
                 }
                 val backup = withContext(cpuDispatcher) { BackupCodec.encode(allPasswords, password) }
@@ -122,9 +126,9 @@ class HomeViewModel(
                     val stream = contentResolver.openOutputStream(uri, "wt") ?: throw IOException("No output stream")
                     stream.use { it.write(backup.toByteArray(Charsets.UTF_8)) }
                 }
-                _operationMessage.value = "export_success"
+                _events.send(VaultEvent.ExportSucceeded)
             } catch (_: Exception) {
-                _operationMessage.value = "export_failed"
+                _events.send(VaultEvent.ExportFailed)
             } finally {
                 password.fill('\u0000')
                 _backupBusy.value = false
@@ -139,10 +143,10 @@ class HomeViewModel(
                 try {
                     withContext(ioDispatcher) { readBounded(uri) }
                 } catch (_: BackupException.TooLarge) {
-                    _operationMessage.value = "import_failed_too_large"
+                    _events.send(VaultEvent.ImportTooLarge)
                     return@launch
                 } catch (_: Exception) {
-                    _operationMessage.value = "import_failed"
+                    _events.send(VaultEvent.ImportFailed)
                     return@launch
                 }
             if (BackupCodec.isPasswordProtected(content)) {
@@ -168,25 +172,25 @@ class HomeViewModel(
         try {
             val imported = withContext(cpuDispatcher) { BackupCodec.decode(content, password) }
             _importPrompt.value = null
-            imported
-                .filter { it.siteName.isNotBlank() && it.password.isNotBlank() }
-                .forEach { repository.insertPassword(it.copy(id = 0)) }
-            _operationMessage.value = "import_success"
+            val valid = imported.filter { it.siteName.isNotBlank() && it.password.isNotBlank() }
+            valid.forEach { repository.insertPassword(it.copy(id = 0)) }
+            _events.send(VaultEvent.ImportSucceeded(imported = valid.size, skipped = imported.size - valid.size))
         } catch (_: BackupException.WrongPassword) {
             // Keep the prompt open so the user can retry.
             _importPrompt.value = _importPrompt.value?.copy(wrongPassword = true)
         } catch (e: BackupException) {
             _importPrompt.value = null
-            _operationMessage.value =
+            _events.send(
                 when (e) {
-                    is BackupException.ForeignDevice -> "backup_foreign_device"
-                    is BackupException.Unsupported -> "backup_unsupported"
-                    is BackupException.TooLarge -> "import_failed_too_large"
-                    else -> "import_failed"
+                    is BackupException.ForeignDevice -> VaultEvent.BackupFromOtherDevice
+                    is BackupException.Unsupported -> VaultEvent.BackupUnsupported
+                    is BackupException.TooLarge -> VaultEvent.ImportTooLarge
+                    else -> VaultEvent.ImportFailed
                 }
+            )
         } catch (_: Exception) {
             _importPrompt.value = null
-            _operationMessage.value = "import_failed"
+            _events.send(VaultEvent.ImportFailed)
         } finally {
             password?.fill('\u0000')
             _backupBusy.value = false
@@ -213,10 +217,6 @@ class HomeViewModel(
     override fun onCleared() {
         cancelExport()
         super.onCleared()
-    }
-
-    fun clearOperationMessage() {
-        _operationMessage.value = null
     }
 
     /** An encrypted backup waiting for its password. [content] is still ciphertext. */

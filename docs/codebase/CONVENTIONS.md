@@ -33,9 +33,9 @@
 
 ## 4) Error and Logging Conventions
 
-- **ViewModels:** `try/catch (e: Exception)` around suspend work, mapped to `SaveState.Error(message)` / `DeleteState.Error`, or to string keys `"export_failed"` / `"import_failed"`. The `Error` states are **never rendered** by the screens (only `Success` is observed).
+- **ViewModels:** `try/catch` around suspend work. Screen state is a `StateFlow` (`SaveState`, `DeleteState`, both `Error` variants rendered as toasts). One-shot results are a `sealed interface` sent through a `Channel` (`VaultEvent`, mapped to text by `VaultEvent.message(context)`).
 - **Crypto:** fail-closed. `CryptoException` (message only, never secret values) is thrown by `CryptoManager` and caught in ViewModels (`.catch {}` on read flows, `try/catch` on writes). No `printStackTrace`/logging in crypto paths.
-- **UI feedback:** `Toast`, with messages taken from `stringResource`.
+- **UI feedback:** `Toast` with text from resources (plurals for counts). Compose collects state with `collectAsStateWithLifecycle()`.
 - **Logging:** there are no `Log.*` calls and no `printStackTrace()` in production code.
 - **Redaction:** no explicit policy in code. Secrets are simply never logged, apart from the stack trace above, which carries no secret value.
 

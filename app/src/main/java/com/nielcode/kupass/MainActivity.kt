@@ -13,7 +13,7 @@ import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
 import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_WEAK
 import androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL
 import androidx.biometric.BiometricPrompt
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -63,7 +63,7 @@ class MainActivity : AppCompatActivity() {
         setContent {
             val prefs = remember { (application as App).container.preferenceManager }
             val isDynamicEnabled = prefs.dynamicColor == AppConfig.DynamicColors.Code.ENABLE
-            val locked by appLock.locked.collectAsState()
+            val locked by appLock.locked.collectAsStateWithLifecycle()
             KupassTheme(dynamicColor = isDynamicEnabled) {
                 if (locked) {
                     LockScreen(

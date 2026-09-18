@@ -9,7 +9,11 @@ import com.nielcode.kupass.ui.screens.detail.PasswordDetailViewModel
 import com.nielcode.kupass.ui.screens.editor.PasswordEditorViewModel
 import com.nielcode.kupass.ui.screens.editor.SaveState
 import com.nielcode.kupass.ui.screens.home.HomeViewModel
+import android.net.Uri
+import com.nielcode.kupass.ui.screens.home.VaultEvent
+import com.nielcode.kupass.utils.CryptoException
 import com.nielcode.kupass.utils.CryptoManager
+import kotlinx.coroutines.flow.first
 import javax.crypto.KeyGenerator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -92,6 +96,27 @@ class ViewModelsTest {
         vm.deletePassword()
 
         assertEquals(DeleteState.Success, vm.deleteState.value)
+        assertTrue(dao.stored.isEmpty())
+    }
+
+    @Test
+    fun `export of an empty vault emits NothingToExport`() = runTest {
+        val vm = HomeViewModel(repository, RuntimeEnvironment.getApplication().contentResolver)
+
+        vm.prepareExport("correct horse".toCharArray())
+        vm.exportPasswords(Uri.parse("content://test/backup.json"))
+
+        assertEquals(VaultEvent.NothingToExport, vm.events.first())
+    }
+
+    @Test
+    fun `editor reports an error instead of crashing when encryption fails`() = runTest {
+        CryptoManager.setKeyProviderForTesting { throw CryptoException("Vault key unavailable") }
+        val vm = PasswordEditorViewModel(repository)
+
+        vm.savePassword(siteName = "X", username = "", password = "y", url = "", notes = "")
+
+        assertTrue(vm.saveState.value is SaveState.Error)
         assertTrue(dao.stored.isEmpty())
     }
 

@@ -23,7 +23,6 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,6 +43,11 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.nielcode.kupass.App
 import com.nielcode.kupass.R
+import com.nielcode.kupass.ui.screens.home.message
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import com.nielcode.kupass.ui.screens.data.BackupProgressDialog
 import com.nielcode.kupass.ui.screens.data.ExportPasswordDialog
 import com.nielcode.kupass.ui.screens.data.ImportPasswordDialog
@@ -171,8 +175,8 @@ fun MainPagerScreen(
     val appContext = LocalContext.current.applicationContext
     val appLock = remember(appContext) { (appContext as App).container.appLock }
     var showExportPasswordDialog by remember { mutableStateOf(false) }
-    val importPrompt by homeViewModel.importPrompt.collectAsState()
-    val backupBusy by homeViewModel.backupBusy.collectAsState()
+    val importPrompt by homeViewModel.importPrompt.collectAsStateWithLifecycle()
+    val backupBusy by homeViewModel.backupBusy.collectAsStateWithLifecycle()
 
     if (showExportPasswordDialog) {
         ExportPasswordDialog(
@@ -196,35 +200,15 @@ fun MainPagerScreen(
     }
     if (backupBusy) BackupProgressDialog()
 
-    // Observe operation messages for toast
-    val operationMessage by homeViewModel.operationMessage.collectAsState()
+    // One-shot export/import results, collected only while the screen is started.
     val context = LocalContext.current
-    val exportSuccessText = stringResource(R.string.toast_success_export)
-    val exportFailedText = stringResource(R.string.toast_failed_export)
-    val importSuccessText = stringResource(R.string.toast_success_import)
-    val importFailedText = stringResource(R.string.toast_failed_import)
-    val noDataText = stringResource(R.string.toast_no_data)
-    val vaultReadFailedText = stringResource(R.string.toast_vault_read_failed)
-    val foreignDeviceText = stringResource(R.string.toast_backup_foreign_device)
-    val unsupportedText = stringResource(R.string.toast_backup_unsupported)
-    val tooLargeText = stringResource(R.string.toast_import_too_large)
-    LaunchedEffect(operationMessage) {
-        val msg = operationMessage ?: return@LaunchedEffect
-        val toastText =
-            when (msg) {
-                "export_success" -> exportSuccessText
-                "export_failed" -> exportFailedText
-                "import_success" -> importSuccessText
-                "import_failed" -> importFailedText
-                "no_data" -> noDataText
-                "vault_read_failed" -> vaultReadFailedText
-                "backup_foreign_device" -> foreignDeviceText
-                "backup_unsupported" -> unsupportedText
-                "import_failed_too_large" -> tooLargeText
-                else -> msg
+    val lifecycleOwner = LocalLifecycleOwner.current
+    LaunchedEffect(homeViewModel, lifecycleOwner) {
+        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            homeViewModel.events.collect { event ->
+                Toast.makeText(context, event.message(context), Toast.LENGTH_LONG).show()
             }
-        Toast.makeText(context, toastText, Toast.LENGTH_LONG).show()
-        homeViewModel.clearOperationMessage()
+        }
     }
 
     Box(modifier = Modifier

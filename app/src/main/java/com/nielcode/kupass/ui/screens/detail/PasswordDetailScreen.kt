@@ -38,7 +38,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -66,8 +66,9 @@ fun PasswordDetailScreen(
 ) {
     val context = LocalContext.current
     val deleteSuccessText = stringResource(R.string.toast_success_delete)
-    val password by viewModel.password.collectAsState()
-    val deleteState by viewModel.deleteState.collectAsState()
+    val deleteFailedText = stringResource(R.string.toast_failed_delete)
+    val password by viewModel.password.collectAsStateWithLifecycle()
+    val deleteState by viewModel.deleteState.collectAsStateWithLifecycle()
 
     var showDeleteDialog by remember { mutableStateOf(false) }
     var passwordVisible by remember { mutableStateOf(false) }
@@ -81,6 +82,9 @@ fun PasswordDetailScreen(
             viewModel.resetDeleteState()
             Toast.makeText(context, deleteSuccessText, Toast.LENGTH_SHORT).show()
             onNavigateBack()
+        } else if (deleteState is DeleteState.Error) {
+            viewModel.resetDeleteState()
+            Toast.makeText(context, deleteFailedText, Toast.LENGTH_LONG).show()
         }
     }
 

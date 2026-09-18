@@ -144,4 +144,14 @@
         <item quantity="one">%1$d minute</item>
         <item quantity="other">%1$d minutes</item>
     </plurals>
+    <string name="toast_failed_save">Could not save the password. Please try again.</string>
+    <string name="toast_failed_delete">Could not delete the password</string>
+    <plurals name="toast_import_result">
+        <item quantity="one">%1$d password imported</item>
+        <item quantity="other">%1$d passwords imported</item>
+    </plurals>
+    <plurals name="toast_import_skipped">
+        <item quantity="one">%1$d skipped</item>
+        <item quantity="other">%1$d skipped</item>
+    </plurals>
 </resources>

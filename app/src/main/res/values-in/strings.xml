@@ -142,4 +142,12 @@
     <plurals name="auto_lock_minutes">
         <item quantity="other">%1$d menit</item>
     </plurals>
+    <string name="toast_failed_save">Kata sandi gagal disimpan. Silakan coba lagi.</string>
+    <string name="toast_failed_delete">Kata sandi gagal dihapus</string>
+    <plurals name="toast_import_result">
+        <item quantity="other">%1$d kata sandi diimpor</item>
+    </plurals>
+    <plurals name="toast_import_skipped">
+        <item quantity="other">%1$d dilewati</item>
+    </plurals>
 </resources>
