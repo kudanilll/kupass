@@ -1,0 +1,266 @@
+
+=== DIRECTORY TREE (max depth 3, source files only) ===
+.gitignore
+.gradle
+.gradle\9.6.1
+.gradle\9.6.1\checksums
+.gradle\9.6.1\checksums\checksums.lock
+.gradle\9.6.1\checksums\md5-checksums.bin
+.gradle\9.6.1\checksums\sha1-checksums.bin
+.gradle\9.6.1\executionHistory
+.gradle\9.6.1\executionHistory\executionHistory.bin
+.gradle\9.6.1\executionHistory\executionHistory.lock
+.gradle\9.6.1\expanded
+.gradle\9.6.1\fileChanges
+.gradle\9.6.1\fileChanges\last-build.bin
+.gradle\9.6.1\fileHashes
+.gradle\9.6.1\fileHashes\fileHashes.bin
+.gradle\9.6.1\fileHashes\fileHashes.lock
+.gradle\9.6.1\fileHashes\resourceHashesCache.bin
+.gradle\9.6.1\gc.properties
+.gradle\9.6.1\kotlin-dsl-plugin-entries
+.gradle\9.6.1\kotlin-dsl-plugin-entries\jar-entries.bin
+.gradle\9.6.1\kotlin-dsl-plugin-entries\kotlin-dsl-plugin-entries.lock
+.gradle\9.6.1\vcsMetadata
+.gradle\buildOutputCleanup
+.gradle\buildOutputCleanup\buildOutputCleanup.lock
+.gradle\buildOutputCleanup\cache.properties
+.gradle\buildOutputCleanup\outputFiles.bin
+.gradle\file-system.probe
+.gradle\vcs-1
+.gradle\vcs-1\gc.properties
+.idea
+.idea\.gitignore
+.idea\AndroidProjectSystem.xml
+.idea\appInsightsSettings.xml
+.idea\caches
+.idea\caches\deviceStreaming.xml
+.idea\codeStyles
+.idea\codeStyles\codeStyleConfig.xml
+.idea\codeStyles\Project.xml
+.idea\compiler.xml
+.idea\deploymentTargetSelector.xml
+.idea\deviceManager.xml
+.idea\dictionaries
+.idea\dictionaries\project.xml
+.idea\google-java-format.xml
+.idea\gradle.xml
+.idea\inspectionProfiles
+.idea\inspectionProfiles\Project_Default.xml
+.idea\kupass-compose.iml
+.idea\markdown.xml
+.idea\misc.xml
+.idea\runConfigurations.xml
+.idea\studiobot.xml
+.idea\vcs.xml
+.idea\workspace.xml
+.kotlin
+.kotlin\sessions
+app
+app\.gitignore
+app\build.gradle.kts
+app\proguard-rules.pro
+app\release
+app\release\app-release.apk
+app\release\baselineProfiles
+app\release\baselineProfiles\0
+app\release\baselineProfiles\1
+app\release\output-metadata.json
+app\src
+app\src\androidTest
+app\src\androidTest\java
+app\src\main
+app\src\main\AndroidManifest.xml
+app\src\main\java
+app\src\main\res
+app\src\test
+app\src\test\java
+build.gradle.kts
+CLAUDE.md
+docs
+docs\ai
+docs\ai\best-practices.md
+docs\ai\prd.md
+docs\ai\rules.md
+docs\codebase
+docs\codebase\.codebase-scan.txt
+docs\codebase\ARCHITECTURE.md
+docs\codebase\CONCERNS.md
+docs\codebase\CONVENTIONS.md
+docs\codebase\INTEGRATIONS.md
+docs\codebase\STACK.md
+docs\codebase\STRUCTURE.md
+docs\codebase\TESTING.md
+gradle
+gradle\gradle-daemon-jvm.properties
+gradle\libs.versions.toml
+gradle\wrapper
+gradle\wrapper\gradle-wrapper.jar
+gradle\wrapper\gradle-wrapper.properties
+gradle.properties
+gradlew
+gradlew.bat
+image
+image\banner.png
+image\dark_accessibility.jpg
+image\dark_home.jpg
+image\dark_password.jpg
+image\light_accessibility.jpg
+image\light_home.jpg
+image\light_password.jpg
+LICENSE
+local.properties
+README.md
+release-key.jks
+secrets.properties
+settings.gradle.kts
+
+=== STACK DETECTION (manifest files) ===
+
+--- build.gradle.kts ---
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+plugins {
+    alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.kotlin.compose) apply false
+    alias(libs.plugins.ksp) apply false
+}
+
+--- gradle.properties ---
+# Project-wide Gradle settings.
+# IDE (e.g. Android Studio) users:
+# Gradle settings configured through the IDE *will override*
+# any settings specified in this file.
+# For more details on how to configure your build environment visit
+# http://www.gradle.org/docs/current/userguide/build_environment.html
+# Specifies the JVM arguments used for the daemon process.
+# The setting is particularly useful for tweaking memory settings.
+org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
+# When configured, Gradle will run in incubating parallel mode.
+# This option should only be used with decoupled projects. For more details, visit
+# https://developer.android.com/r/tools/gradle-multi-project-decoupled-projects
+# org.gradle.parallel=true
+# Kotlin code style for this project: "official" or "obsolete":
+kotlin.code.style=official
+--- settings.gradle.kts ---
+pluginManagement {
+    repositories {
+        google {
+            content {
+                includeGroupByRegex("com\\.android.*")
+                includeGroupByRegex("com\\.google.*")
+                includeGroupByRegex("androidx.*")
+            }
+        }
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+plugins { id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0" }
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+rootProject.name = "kupass"
+
+include(":app")
+
+
+=== ENTRY POINTS ===
+No common entry points found. Check 'main' or 'scripts.start' in manifest files above.
+
+=== LINTING AND FORMATTING CONFIG ===
+No linting or formatting config files found in project root.
+
+=== ENVIRONMENT VARIABLE TEMPLATES ===
+No .env.example or .env.template found. Identify required environment variables by searching the code and config for environment variable reads.
+
+=== TODO / FIXME / HACK (production code only, test dirs excluded) ===
+app\src\main\java\com\nielcode\kupass\ui\screens\home\components\PasswordListItem.kt:61: // TODO: Ganti dengan AsyncImage (Coil) nanti saat narik favicon website
+app\src\main\res\xml\data_extraction_rules.xml:8: <!-- TODO: Use <include> and <exclude> to control what is backed up.
+
+=== GIT RECENT COMMITS (last 20) ===
+8de433b fix CryptoManager for local tests, add unit tests
+6cefede Merge branches 'compose' and 'compose' of https://github.com/kudanilll/kupass into compose
+99feb15 style: format AndroidManifest.xml and fix trailing newline
+a1a5a8e refactor: clean up code and improve app stability and UX
+26a489b feat(crypto): add password encryption using Android Keystore
+baa8421 refactor(ui): clean up compose code and improve animations
+ef285e1 build: upgrade gradle wrapper to 9.6.1 and update dependencies
+a8d06ef refactor: consolidate UI components and optimize navigation state for data and settings screens
+e378085 build: upgrade target SDK to 37, update dependencies via version catalog
+ca216a0 feat: implement password detail screen with view model and delete functionality
+be48c5a feat: implement Room database and view models to support password storage and retrieval
+9525334 chore: upgrade AGP to 9.2.1, update Gradle to 9.4.1, and rename project and application class references
+7cb37a8 chore: remove IDE-specific files and update .gitignore
+e921496 style(ui): add gradient overlays to vault list for visual enhancement
+1284530 style(ui): adjust settings screen spacing and section header color
+d1f7eff docs: change license from MIT to GNU AGPLv3
+3fb7fbf refactor(ui): improve bottom navigation animation and layout
+43f7d74 refactor: rename splash screen theme for consistency
+9c7bbc3 style(splash): set splash screen background to match surface colors
+dfb6958 feat(ui): add smooth animation to bottom navigation FAB
+
+=== HIGH-CHURN FILES (last 90 days, top 20) ===
+   2 app/build.gradle.kts
+   2 app/src/main/java/com/nielcode/kupass/utils/CryptoManager.kt
+   2 app/src/main/java/com/nielcode/kupass/ui/screens/detail/PasswordDetailScreen.kt
+   1 app/src/test/java/com/nielcode/kupass/data/local/json/JsonExportImportTest.kt
+   1 app/src/test/java/com/nielcode/kupass/utils/CryptoManagerTest.kt
+   1 app/src/main/AndroidManifest.xml
+   1 app/src/main/java/com/nielcode/kupass/data/local/db/PasswordDao.kt
+   1 app/src/main/java/com/nielcode/kupass/ui/screens/data/DataScreen.kt
+   1 app/src/main/java/com/nielcode/kupass/ui/screens/home/HomeScreen.kt
+   1 app/src/main/java/com/nielcode/kupass/ui/screens/home/HomeViewModel.kt
+   1 app/src/main/java/com/nielcode/kupass/ui/screens/home/components/VaultList.kt
+   1 app/src/main/java/com/nielcode/kupass/ui/screens/settings/SettingsScreen.kt
+   1 app/src/main/java/com/nielcode/kupass/utils/Util.kt
+   1 app/src/main/res/values-in/strings.xml
+   1 app/src/main/res/values/strings.xml
+   1 app/src/main/java/com/nielcode/kupass/data/local/json/JsonExportImport.kt
+   1 app/src/main/java/com/nielcode/kupass/data/repository/PasswordRepository.kt
+   1 app/src/main/java/com/nielcode/kupass/ui/components/BottomNav.kt
+   1 app/src/main/java/com/nielcode/kupass/ui/screens/MainAppScreen.kt
+   1 gradle/libs.versions.toml
+
+=== MONOREPO SIGNALS ===
+No monorepo signals detected.
+
+=== CODE METRICS ===
+Total files scanned: 161
+Total lines of code: 6434
+
+Files by language:
+  Other: 128
+  Kotlin: 33
+
+Top 10 largest files:
+app\src\main\res\font\googlesansflex.ttf: 3903.5KB
+app\release\app-release.apk: 3888.0KB
+.gradle\9.6.1\executionHistory\executionHistory.bin: 3674.5KB
+.gradle\9.6.1\fileHashes\fileHashes.bin: 233.1KB
+image\dark_home.jpg: 133.7KB
+image\light_home.jpg: 131.3KB
+image\light_password.jpg: 119.7KB
+image\dark_password.jpg: 116.4KB
+.idea\caches\deviceStreaming.xml: 112.7KB
+.gradle\9.6.1\checksums\sha1-checksums.bin: 105.3KB
+
+=== CI/CD PIPELINES ===
+No CI/CD pipelines detected.
+
+=== CONTAINERS & ORCHESTRATION ===
+No containerization configs detected.
+
+=== SECURITY & COMPLIANCE ===
+No security configs detected.
+
+=== PERFORMANCE & TESTING ===
+No performance testing configs detected.
+
+=== SCAN COMPLETE ===
