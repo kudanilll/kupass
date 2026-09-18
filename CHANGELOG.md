@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+
+- Site names, usernames, URLs, and notes are now encrypted on the device like passwords. Existing vaults are upgraded automatically on first launch.
+
 ### Added
 
 - App lock: the vault opens only after fingerprint/face or the device PIN/pattern/password, and locks again after leaving the app (Settings → Security → Auto-lock: immediately, 30 seconds, 1 minute, or 5 minutes). Devices without a screen lock are asked to set one up.

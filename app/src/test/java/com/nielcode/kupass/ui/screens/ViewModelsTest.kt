@@ -47,9 +47,11 @@ class ViewModelsTest {
 
         assertEquals(SaveState.Success, vm.saveState.value)
         val stored = dao.stored.single()
-        assertEquals("GitHub", stored.siteName)
-        assertEquals("me", stored.username)
-        assertTrue(stored.password.startsWith(CryptoManager.PREFIX_V2))
+        assertEquals("GitHub", CryptoManager.decrypt(stored.siteName))
+        assertEquals("me", CryptoManager.decrypt(stored.username))
+        listOf(stored.siteName, stored.username, stored.password).forEach {
+            assertTrue(it.startsWith(CryptoManager.PREFIX_V2))
+        }
     }
 
     @Test
@@ -62,7 +64,7 @@ class ViewModelsTest {
 
         assertEquals(SaveState.Success, vm.saveState.value)
         assertEquals(1, dao.stored.size)
-        assertEquals("New", dao.stored.single().siteName)
+        assertEquals("New", CryptoManager.decrypt(dao.stored.single().siteName))
         assertEquals("b", CryptoManager.decrypt(dao.stored.single().password))
     }
 

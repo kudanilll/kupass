@@ -40,11 +40,11 @@ com/nielcode/kupass/
 ├── data/
 │   ├── local/db/
 │   │   ├── KupassDatabase.kt      Room singleton "kupass_database", version 1, exportSchema=false
-│   │   ├── PasswordDao.kt         Flow getAll/search/getById, suspend insert(REPLACE)/update/delete
+│   │   ├── PasswordDao.kt         Flow getAll/getById, getAllOnce, insert(REPLACE)/update/updateAll/delete (no SQL search: data is ciphertext)
 │   │   └── PasswordEntity.kt      table "passwords"
 │   ├── backup/BackupCodec.kt      portable backup v2 (PBKDF2 + AES-GCM) + strict legacy v1 import
 │   ├── local/prefs/PreferenceManager.kt SharedPreferences "kupass_preferences"
-│   └── repository/PasswordRepository.kt encrypt on write, decrypt on read (password field only)
+│   └── repository/PasswordRepository.kt encrypt/decrypt all text fields, in-memory sort+search, legacy format upgrade
 ├── ui/
 │   ├── components/                BottomNav (194 lines), SectionHeader, SectionItem
 │   ├── screens/
@@ -76,11 +76,11 @@ com/nielcode/kupass/
 | Column                     | Kotlin                 | Stored                                  |
 | -------------------------- | ---------------------- | --------------------------------------- |
 | `id`                       | `Long` PK autoGenerate | plain                                   |
-| `site_name`                | `siteName: String`     | plaintext                               |
-| `username`                 | `String = ""`          | plaintext                               |
-| `password`                 | `String`               | Base64(IV[12] ‖ AES-GCM ciphertext+tag) |
-| `url`                      | `String = ""`          | plaintext                               |
-| `notes`                    | `String = ""`          | plaintext                               |
+| `site_name`                | `siteName: String`     | v2 ciphertext |
+| `username`                 | `String = ""`          | v2 ciphertext |
+| `password`                 | `String`               | v2 ciphertext: `kp2:` + Base64(IV[12] ‖ AES-GCM ciphertext+tag) |
+| `url`                      | `String = ""`          | v2 ciphertext |
+| `notes`                    | `String = ""`          | v2 ciphertext |
 | `created_at`, `updated_at` | `Long` epoch ms        | plain                                   |
 
 ## 4) Module Boundaries

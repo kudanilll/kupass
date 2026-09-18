@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 
-/** In-memory [PasswordDao] that mirrors the Room queries closely enough for ViewModel tests. */
+/** In-memory [PasswordDao] that mirrors the Room queries closely enough for unit tests. */
 class FakePasswordDao : PasswordDao {
     private val rows = MutableStateFlow<List<PasswordEntity>>(emptyList())
     private var nextId = 1L
@@ -15,13 +15,9 @@ class FakePasswordDao : PasswordDao {
     val stored: List<PasswordEntity>
         get() = rows.value
 
-    override fun getAll(): Flow<List<PasswordEntity>> = rows.map { list -> list.sortedBy { it.siteName } }
+    override fun getAll(): Flow<List<PasswordEntity>> = rows
 
-    override fun search(query: String): Flow<List<PasswordEntity>> =
-        rows.map { list ->
-            list.filter { e -> listOf(e.siteName, e.username, e.url, e.notes).any { it.contains(query, ignoreCase = true) } }
-                .sortedBy { it.siteName }
-        }
+    override suspend fun getAllOnce(): List<PasswordEntity> = rows.value
 
     override fun getById(id: Long): Flow<PasswordEntity?> = rows.map { list -> list.firstOrNull { it.id == id } }
 
@@ -33,6 +29,11 @@ class FakePasswordDao : PasswordDao {
 
     override suspend fun update(password: PasswordEntity) {
         rows.value = rows.value.map { if (it.id == password.id) password else it }
+    }
+
+    override suspend fun updateAll(passwords: List<PasswordEntity>) {
+        val byId = passwords.associateBy { it.id }
+        rows.value = rows.value.map { byId[it.id] ?: it }
     }
 
     override suspend fun delete(password: PasswordEntity) = deleteById(password.id)
