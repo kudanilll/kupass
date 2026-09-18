@@ -113,4 +113,5 @@ dependencies {
     implementation(platform(libs.androidx.compose.bom))
     ksp(libs.androidx.room.compiler)
     testImplementation(libs.junit)
+    testImplementation("org.robolectric:robolectric:4.11.1")
 }
