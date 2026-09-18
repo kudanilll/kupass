@@ -11,7 +11,7 @@
 ```bash
 ./gradlew :app:testDebugUnitTest            # all unit tests (verified: BUILD SUCCESSFUL, 9/9 pass, 2026-09-18)
 ./gradlew :app:testDebugUnitTest --tests "com.nielcode.kupass.utils.CryptoManagerTest"
-./gradlew :app:connectedDebugAndroidTest    # instrumented (device/emulator)
+ANDROID_SERIAL=<device> ./gradlew :app:connectedDebugAndroidTest   # instrumented. It UNINSTALLS the app afterwards, so use a dedicated/read-only emulator, never a device with real vault data
 # coverage: [TODO] not configured (no JaCoCo/Kover)
 ```
 
@@ -32,7 +32,7 @@ Results land in `app/build/test-results/testDebugUnitTest/*.xml` and `app/build/
 | Unit: backup format | Yes (4)  | `JsonExportImport` export shape, encryption, import mapping, legacy plaintext | One test asserts the fail-open fallback (see CONCERNS C-1)                                                                 |
 | Unit: ViewModels    | No       | `HomeViewModel`, `PasswordEditorViewModel`, `PasswordDetailViewModel`         | Blocked by the lack of DI (ViewModels construct Room themselves)                                                           |
 | Unit: repository    | No       | `PasswordRepository` encrypt/decrypt wiring                                   | Needs a fake DAO or in-memory Room                                                                                         |
-| Integration: Room   | No       | DAO queries, search, migrations                                               | No `MigrationTestHelper`, and schema export is off                                                                         |
+| Integration: Room | Yes (1) | Schema v1 opens with the current schema + all `MIGRATIONS`, rows preserved | `androidTest/.../KupassDatabaseMigrationTest.kt` via `MigrationTestHelper` (schemas from `app/schemas/`) |
 | UI / E2E            | No       | create/edit/delete/export/import flows                                        | Compose test deps present, unused                                                                                          |
 | Placeholder         | Yes (1)  | `ExampleUnitTest.addition_isCorrect`                                          | Template noise                                                                                                             |
 

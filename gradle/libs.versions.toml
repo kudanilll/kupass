@@ -43,6 +43,7 @@ androidx-navigation-compose = { group = "androidx.navigation", name = "navigatio
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
+androidx-room-testing = { group = "androidx.room", name = "room-testing", version.ref = "room" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
@@ -55,3 +56,4 @@ kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "ko
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlinSerialization" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 oss-licenses = { id = "com.google.android.gms.oss-licenses-plugin", version.ref = "ossLicenses" }
+room = { id = "androidx.room", version.ref = "room" }
