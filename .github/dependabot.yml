@@ -6,7 +6,7 @@ updates:
   # Gradle: version catalog (gradle/libs.versions.toml), plugins, and the Gradle wrapper.
   - package-ecosystem: gradle
     directory: /
-    target-branch: compose
+    target-branch: master
     schedule:
       interval: weekly
       day: monday
@@ -50,7 +50,7 @@ updates:
   # GitHub Actions: keeps the SHA-pinned actions in .github/workflows up to date.
   - package-ecosystem: github-actions
     directory: /
-    target-branch: compose
+    target-branch: master
     schedule:
       interval: weekly
       day: monday

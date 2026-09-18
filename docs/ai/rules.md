@@ -47,7 +47,10 @@ If a skill or MCP server fits the task, use it and name it in the end-of-turn re
 
 ## 4. Git
 
-- Default/main branch: `compose`. Create a feature branch for non-trivial work.
+- Main/default branch: `master` (renamed from `compose` on 2026-09-18). **Never code directly on `master`.**
+- Every change, however small, starts on a new branch from an up-to-date `master`: `git switch master && git pull && git switch -c <type>/<topic>`.
+- Branch names use the commit-type prefixes: `feat/`, `fix/`, `refactor/`, `chore/`, `docs/`, `test/`, `ci/`, `build/` (e.g. `feat/app-lock`, `fix/backup-portability`).
+- Changes reach `master` through a pull request.
 - Commit or push only when asked.
 - Conventional-style messages, as already used in history: `feat(crypto): ...`, `fix: ...`, `refactor: ...`, `style: ...`, `docs: ...`, `test: ...`.
 - Never skip hooks or force-push without explicit instruction.
