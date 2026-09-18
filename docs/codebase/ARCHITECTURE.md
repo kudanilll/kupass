@@ -29,7 +29,7 @@ User action (Compose) -> ViewModel (viewModelScope) -> PasswordRepository (encry
 
 **Export:** `DataScreen` → `ExportPasswordDialog` (backup password ≥ 8 chars, confirmed) → `HomeViewModel.prepareExport(CharArray)` → SAF `CreateDocument` → `exportPasswords(uri)` → `repository.getAllPasswords().first()` → `BackupCodec.encode` on `Dispatchers.Default` (PBKDF2 600k ≈ 2 s on an emulator, with `BackupProgressDialog`) → write → password array zeroed.
 
-**Import:** SAF `OpenDocument` → `HomeViewModel.importPasswords` → bounded read (≤ 32 MB) → `BackupCodec.isPasswordProtected` ? `ImportPasswordDialog` (retry on wrong password) : legacy path → `BackupCodec.decode` → filter blanks → `insertPassword` one by one (atomic import is S-2.4).
+**Import:** SAF `OpenDocument` → `HomeViewModel.importPasswords` → bounded read (≤ 32 MB) → `BackupCodec.isPasswordProtected` ? `ImportPasswordDialog` (retry on wrong password) : legacy path → `BackupCodec.decode` → `repository.importPasswords` (skip invalid + duplicates, encrypt all, single-transaction `insertAll`) → `VaultEvent.ImportSucceeded(imported, skipped)`.
 
 ## 3) Layer/Module Responsibilities
 

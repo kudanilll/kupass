@@ -172,9 +172,8 @@ class HomeViewModel(
         try {
             val imported = withContext(cpuDispatcher) { BackupCodec.decode(content, password) }
             _importPrompt.value = null
-            val valid = imported.filter { it.siteName.isNotBlank() && it.password.isNotBlank() }
-            valid.forEach { repository.insertPassword(it.copy(id = 0)) }
-            _events.send(VaultEvent.ImportSucceeded(imported = valid.size, skipped = imported.size - valid.size))
+            val result = repository.importPasswords(imported)
+            _events.send(VaultEvent.ImportSucceeded(imported = result.imported, skipped = result.skipped))
         } catch (_: BackupException.WrongPassword) {
             // Keep the prompt open so the user can retry.
             _importPrompt.value = _importPrompt.value?.copy(wrongPassword = true)

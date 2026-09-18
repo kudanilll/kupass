@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Importing is now all-or-nothing, skips entries that already exist (or appear twice in the file), and reports how many were imported and skipped.
 - Importing an old backup made on another device no longer imports encrypted text as passwords. The import is refused with an explanation.
 - Encryption failures no longer fall back to storing plaintext, and unreadable entries are no longer shown as ciphertext.
 

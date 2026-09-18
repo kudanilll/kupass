@@ -27,6 +27,8 @@ class FakePasswordDao : PasswordDao {
         return id
     }
 
+    override suspend fun insertAll(passwords: List<PasswordEntity>): List<Long> = passwords.map { insert(it) }
+
     override suspend fun update(password: PasswordEntity) {
         rows.value = rows.value.map { if (it.id == password.id) password else it }
     }

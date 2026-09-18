@@ -30,6 +30,9 @@ interface PasswordDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(password: PasswordEntity): Long
 
+    /** Inserts all rows in one transaction: either every row is stored or none is. */
+    @Insert suspend fun insertAll(passwords: List<PasswordEntity>): List<Long>
+
     @Update suspend fun update(password: PasswordEntity)
 
     /** Updates all rows in one transaction. */

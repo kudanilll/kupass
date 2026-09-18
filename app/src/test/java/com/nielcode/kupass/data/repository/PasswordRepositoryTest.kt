@@ -2,6 +2,7 @@ package com.nielcode.kupass.data.repository
 
 import com.nielcode.kupass.data.local.db.PasswordEntity
 import com.nielcode.kupass.testing.FakePasswordDao
+import com.nielcode.kupass.utils.CryptoException
 import com.nielcode.kupass.utils.CryptoManager
 import javax.crypto.KeyGenerator
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -89,6 +90,43 @@ class PasswordRepositoryTest {
         assertEquals(0, repository.upgradeStoredFormat())
         assertEquals("Plain", dao.stored.single().siteName)
         assertFalse(dao.stored.single().siteName.startsWith(CryptoManager.PREFIX_V2))
+    }
+
+    @Test
+    fun `import skips invalid entries and duplicates of the vault and of the file itself`() = runTest {
+        repository.insertPassword(entry("GitHub", username = "me", password = "pw1"))
+
+        val result = repository.importPasswords(
+            listOf(
+                entry(" github ", username = "me", password = "pw1"), // duplicate of the vault (case/space-insensitive site)
+                entry("GitHub", username = "me", password = "pw2"), // different password: new
+                entry("Bank", password = "b"),
+                entry("Bank", password = "b"), // duplicate within the file
+                entry("", password = "x"), // invalid: no site
+                entry("NoPassword", password = ""), // invalid: no password
+            )
+        )
+
+        assertEquals(ImportResult(imported = 2, skipped = 4), result)
+        assertEquals(3, dao.stored.size)
+        assertTrue(dao.stored.all { it.siteName.startsWith(CryptoManager.PREFIX_V2) })
+    }
+
+    @Test
+    fun `import inserts nothing when encryption fails part way`() = runTest {
+        val key = KeyGenerator.getInstance("AES").apply { init(256) }.generateKey()
+        CryptoManager.setKeyProviderForTesting { key }
+        repository.insertPassword(entry("Existing")) // non-empty fields: site + password
+        // Reading the vault uses 2 key lookups; each imported entry needs 2 more. Fail on the 4th entry.
+        var lookups = 0
+        CryptoManager.setKeyProviderForTesting {
+            if (++lookups > 2 + 3 * 2) throw CryptoException("Vault key unavailable") else key
+        }
+
+        val failure = runCatching { repository.importPasswords((1..5).map { entry("Site$it") }) }.exceptionOrNull()
+
+        assertTrue(failure is CryptoException)
+        assertEquals(listOf("Existing"), dao.stored.map { CryptoManager.run { setKeyProviderForTesting { key }; decrypt(it.siteName) } })
     }
 
     private fun entry(site: String, username: String = "", password: String = "pw", url: String = "", notes: String = "") =
