@@ -44,7 +44,7 @@ Bundled assets that affect APK size: `res/font/googlesansflex.ttf` (**~3.9 MB**,
 | Android Lint                                                                   | Static checks (default config, no `lint.xml`)                                                                                          | [TODO] no lint config found    |
 | google-java-format IDE plugin (enabled in `.idea`, which is gitignored)        | Formatting in the IDE only                                                                                                             | `.idea/google-java-format.xml` |
 | `kotlin.code.style=official`                                                   | Kotlin style hint for the IDE                                                                                                          | `gradle.properties`            |
-| CI/CD                                                                          | Release workflow only (`.github/workflows/release.yml`, tag `v*`). Dependabot (`.github/dependabot.yml`). No PR/push CI yet (PRD QA-2) | `.github/`                     |
+| CI/CD                                                                          | Release workflow only (`.github/workflows/release.yml`, tag `v*`). Dependabot (`.github/dependabot.yml`). `ci.yml`: build + unit tests + lint on push/PR to `master`, and dependency-graph submission on `master` | `.github/`                     |
 
 ## 4) Key Commands
 

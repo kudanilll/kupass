@@ -47,7 +47,7 @@ Results land in `app/build/test-results/testDebugUnitTest/*.xml` and `app/build/
 
 - Coverage tool/threshold: [TODO] none.
 - Current coverage: [TODO] unmeasured. By inspection, only `CryptoManager` and `JsonExportImport` are exercised.
-- CI: none, so tests only run locally.
+- CI: `.github/workflows/ci.yml` runs `assembleDebug`, `testDebugUnitTest`, and `lintDebug` on every push/PR to `master`. Reports are uploaded as an artifact on failure.
 - Gaps to prioritize: instrumented Keystore crypto test, Room DAO + migration tests, ViewModel tests (after introducing a factory/DI), and a regression test for C-1 (a backup from a different key must not import ciphertext as a password).
 
 ## 6) Evidence

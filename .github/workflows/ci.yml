@@ -1,0 +1,76 @@
+# Continuous integration: build, unit tests, and lint for every push to master and every PR.
+# Fork PRs run with a read-only token and no secrets; no job here needs secrets.
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+# Deny everything by default; each job opts into what it needs.
+permissions: {}
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build, test, lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Gradle
+        # Cache is written only from master; PR builds read it (default behavior).
+        uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+
+      - name: Build, unit test, lint
+        run: ./gradlew :app:assembleDebug :app:testDebugUnitTest :app:lintDebug --console=plain
+
+      - name: Upload reports
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: reports
+          path: |
+            app/build/reports/
+            app/build/test-results/
+          retention-days: 7
+
+  dependency-submission:
+    # Feeds the GitHub dependency graph so Dependabot alerts cover Gradle dependencies.
+    name: Submit dependency graph
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write # required by the Dependency Submission API
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Generate and submit dependency graph
+        uses: gradle/actions/dependency-submission@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
