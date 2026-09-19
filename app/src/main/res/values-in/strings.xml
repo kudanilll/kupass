@@ -157,4 +157,7 @@
     <plurals name="backup_password_too_short">
         <item quantity="other">Gunakan minimal %1$d karakter</item>
     </plurals>
+    <string name="menu_edit">Ubah</string>
+    <string name="menu_delete">Hapus</string>
+    <string name="more_options">Opsi lainnya</string>
 </resources>

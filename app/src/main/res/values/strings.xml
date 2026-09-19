@@ -162,4 +162,7 @@
         <item quantity="one">Use at least %1$d character</item>
         <item quantity="other">Use at least %1$d characters</item>
     </plurals>
+    <string name="menu_edit">Edit</string>
+    <string name="menu_delete">Delete</string>
+    <string name="more_options">More options</string>
 </resources>
