@@ -10,7 +10,7 @@
 | `app/src/main/java/com/nielcode/kupass/`                    | All production Kotlin source                                                                                                                | `git ls-files`                            |
 | `app/src/main/res/`                                         | Resources: `values/` (EN), `values-in/` (ID), `values-night/`, `font/`, `xml/` (backup rules), mipmaps, drawables                           | directory listing                         |
 | `app/src/test/`                                             | JVM + Robolectric unit tests                                                                                                                | `git ls-files`                            |
- Instrumented tests: Room migration, Keystore crypto, backup KDF cost, legacy-format upgrade | `app/src/androidTest/` |
+| `app/src/androidTest/` | Instrumented tests: Room migration, Keystore crypto, backup KDF cost, legacy-format upgrade | `app/src/androidTest/` |
 | `app/schemas/` | Room exported schemas (`<version>.json`), committed. Source of truth for migration tests | `app/build.gradle.kts` (`room { schemaDirectory }`) |
 | `gradle/`                                                   | Version catalog, wrapper, daemon JVM toolchain                                                                                              | `libs.versions.toml`                      |
 | `docs/ai/`                                                  | Agent rules, PRD, best practices                                                                                                            | this repo                                 |
