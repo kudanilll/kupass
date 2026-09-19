@@ -54,7 +54,10 @@ fun ExportPasswordDialog(onConfirm: (CharArray) -> Unit, onDismiss: () -> Unit) 
                     label = stringResource(R.string.backup_password_label),
                     error =
                         if (password.isNotEmpty() && tooShort) {
-                            stringResource(R.string.backup_password_too_short, BackupCodec.MIN_PASSWORD_LENGTH)
+                            stringResource(
+                                R.string.backup_password_too_short,
+                                BackupCodec.MIN_PASSWORD_LENGTH,
+                            )
                         } else {
                             null
                         },
@@ -63,7 +66,8 @@ fun ExportPasswordDialog(onConfirm: (CharArray) -> Unit, onDismiss: () -> Unit) 
                     value = confirm,
                     onValueChange = { confirm = it },
                     label = stringResource(R.string.backup_password_confirm_label),
-                    error = if (mismatch) stringResource(R.string.backup_password_mismatch) else null,
+                    error =
+                        if (mismatch) stringResource(R.string.backup_password_mismatch) else null,
                 )
             }
         },
@@ -75,13 +79,19 @@ fun ExportPasswordDialog(onConfirm: (CharArray) -> Unit, onDismiss: () -> Unit) 
                 Text(stringResource(R.string.button_export))
             }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.button_cancel)) } },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.button_cancel)) }
+        },
     )
 }
 
 /** Asks for the password of an encrypted backup being imported. */
 @Composable
-fun ImportPasswordDialog(wrongPassword: Boolean, onConfirm: (CharArray) -> Unit, onDismiss: () -> Unit) {
+fun ImportPasswordDialog(
+    wrongPassword: Boolean,
+    onConfirm: (CharArray) -> Unit,
+    onDismiss: () -> Unit,
+) {
     var password by remember { mutableStateOf("") }
 
     AlertDialog(
@@ -94,16 +104,22 @@ fun ImportPasswordDialog(wrongPassword: Boolean, onConfirm: (CharArray) -> Unit,
                     value = password,
                     onValueChange = { password = it },
                     label = stringResource(R.string.backup_password_label),
-                    error = if (wrongPassword) stringResource(R.string.backup_wrong_password) else null,
+                    error =
+                        if (wrongPassword) stringResource(R.string.backup_wrong_password) else null,
                 )
             }
         },
         confirmButton = {
-            TextButton(onClick = { onConfirm(password.toCharArray()) }, enabled = password.isNotEmpty()) {
+            TextButton(
+                onClick = { onConfirm(password.toCharArray()) },
+                enabled = password.isNotEmpty(),
+            ) {
                 Text(stringResource(R.string.button_import))
             }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.button_cancel)) } },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.button_cancel)) }
+        },
     )
 }
 
@@ -115,7 +131,10 @@ fun BackupProgressDialog() {
         properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false),
         confirmButton = {},
         text = {
-            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
                 CircularProgressIndicator()
                 Text(
                     text = stringResource(R.string.backup_working),
@@ -128,7 +147,12 @@ fun BackupProgressDialog() {
 }
 
 @Composable
-private fun PasswordField(value: String, onValueChange: (String) -> Unit, label: String, error: String?) {
+private fun PasswordField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    error: String?,
+) {
     var visible by remember { mutableStateOf(false) }
     OutlinedTextField(
         value = value,
@@ -137,12 +161,15 @@ private fun PasswordField(value: String, onValueChange: (String) -> Unit, label:
         singleLine = true,
         isError = error != null,
         supportingText = error?.let { { Text(it) } },
-        visualTransformation = if (visible) VisualTransformation.None else PasswordVisualTransformation(),
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, autoCorrectEnabled = false),
+        visualTransformation =
+            if (visible) VisualTransformation.None else PasswordVisualTransformation(),
+        keyboardOptions =
+            KeyboardOptions(keyboardType = KeyboardType.Password, autoCorrectEnabled = false),
         trailingIcon = {
             IconButton(onClick = { visible = !visible }) {
                 Icon(
-                    imageVector = if (visible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                    imageVector =
+                        if (visible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
                     contentDescription = stringResource(R.string.show_password),
                 )
             }

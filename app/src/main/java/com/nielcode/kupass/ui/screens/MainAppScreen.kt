@@ -35,40 +35,34 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.nielcode.kupass.App
-import com.nielcode.kupass.R
-import com.nielcode.kupass.ui.screens.home.message
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.repeatOnLifecycle
+import com.nielcode.kupass.ui.components.BottomNav
 import com.nielcode.kupass.ui.screens.data.BackupProgressDialog
 import com.nielcode.kupass.ui.screens.data.ExportPasswordDialog
 import com.nielcode.kupass.ui.screens.data.ImportPasswordDialog
-import com.nielcode.kupass.ui.components.BottomNav
 import com.nielcode.kupass.ui.screens.detail.PasswordDetailScreen
 import com.nielcode.kupass.ui.screens.editor.PasswordEditorScreen
 import com.nielcode.kupass.ui.screens.home.HomeScreen
 import com.nielcode.kupass.ui.screens.home.HomeViewModel
+import com.nielcode.kupass.ui.screens.home.message
 import com.nielcode.kupass.ui.screens.settings.SettingsScreen
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 
-@OptIn(ExperimentalAnimationApi::class)
-@Serializable
-object HomeBase
+@OptIn(ExperimentalAnimationApi::class) @Serializable object HomeBase
 
-@Serializable
-data class PasswordEditor(val passwordId: Long = -1L)
+@Serializable data class PasswordEditor(val passwordId: Long = -1L)
 
-@Serializable
-data class PasswordDetail(val passwordId: Long)
+@Serializable data class PasswordDetail(val passwordId: Long)
 
 @Composable
 fun MainAppScreen() {
@@ -80,7 +74,7 @@ fun MainAppScreen() {
                 onNavigateToEditor = { navController.navigate(PasswordEditor()) },
                 onNavigateToDetail = { passwordId ->
                     navController.navigate(PasswordDetail(passwordId))
-                }
+                },
             )
         }
 
@@ -88,21 +82,23 @@ fun MainAppScreen() {
             enterTransition = {
                 slideInVertically(
                     initialOffsetY = { fullHeight -> fullHeight },
-                    animationSpec = tween(durationMillis = 400, easing = FastOutSlowInEasing)
+                    animationSpec = tween(durationMillis = 400, easing = FastOutSlowInEasing),
                 ) + fadeIn(animationSpec = tween(durationMillis = 400))
             },
             popExitTransition = {
                 slideOutVertically(
                     targetOffsetY = { fullHeight -> fullHeight },
-                    animationSpec = tween(durationMillis = 400, easing = FastOutSlowInEasing)
+                    animationSpec = tween(durationMillis = 400, easing = FastOutSlowInEasing),
                 ) + fadeOut(animationSpec = tween(durationMillis = 400))
-            }
+            },
         ) { backStackEntry ->
             val route = backStackEntry.toRoute<PasswordDetail>()
             PasswordDetailScreen(
                 passwordId = route.passwordId,
                 onNavigateBack = { navController.popBackStack() },
-                onNavigateToEdit = { id -> navController.navigate(PasswordEditor(passwordId = id)) }
+                onNavigateToEdit = { id ->
+                    navController.navigate(PasswordEditor(passwordId = id))
+                },
             )
         }
 
@@ -110,20 +106,20 @@ fun MainAppScreen() {
             enterTransition = {
                 slideInVertically(
                     initialOffsetY = { fullHeight -> fullHeight },
-                    animationSpec = tween(durationMillis = 400, easing = FastOutSlowInEasing)
+                    animationSpec = tween(durationMillis = 400, easing = FastOutSlowInEasing),
                 ) + fadeIn(animationSpec = tween(durationMillis = 400))
             },
             popExitTransition = {
                 slideOutVertically(
                     targetOffsetY = { fullHeight -> fullHeight },
-                    animationSpec = tween(durationMillis = 400, easing = FastOutSlowInEasing)
+                    animationSpec = tween(durationMillis = 400, easing = FastOutSlowInEasing),
                 ) + fadeOut(animationSpec = tween(durationMillis = 400))
-            }
+            },
         ) { backStackEntry ->
             val route = backStackEntry.toRoute<PasswordEditor>()
             PasswordEditorScreen(
                 passwordId = route.passwordId,
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.popBackStack() },
             )
         }
     }
@@ -135,7 +131,7 @@ fun MainAppScreen() {
 fun MainPagerScreen(
     onNavigateToEditor: () -> Unit,
     onNavigateToDetail: (Long) -> Unit = {},
-    homeViewModel: HomeViewModel = viewModel(factory = HomeViewModel.Factory)
+    homeViewModel: HomeViewModel = viewModel(factory = HomeViewModel.Factory),
 ) {
     val pagerState = rememberPagerState(pageCount = { 3 })
     val coroutineScope = rememberCoroutineScope()
@@ -211,20 +207,18 @@ fun MainPagerScreen(
         }
     }
 
-    Box(modifier = Modifier
-        .fillMaxSize()
-        .nestedScroll(nestedScrollConnection)) {
+    Box(modifier = Modifier.fillMaxSize().nestedScroll(nestedScrollConnection)) {
         HorizontalPager(
             state = pagerState,
             modifier = Modifier.fillMaxSize(),
-            userScrollEnabled = true
+            userScrollEnabled = true,
         ) { page ->
             Box(modifier = Modifier.fillMaxSize()) {
                 when (page) {
                     0 ->
                         HomeScreen(
                             onNavigateToDetail = onNavigateToDetail,
-                            viewModel = homeViewModel
+                            viewModel = homeViewModel,
                         )
 
                     1 ->
@@ -233,7 +227,7 @@ fun MainPagerScreen(
                             onImportClick = {
                                 appLock.allowNextBackground()
                                 importLauncher.launch(arrayOf("application/json"))
-                            }
+                            },
                         )
 
                     2 -> SettingsScreen()
@@ -246,14 +240,14 @@ fun MainPagerScreen(
             enter =
                 slideInVertically(
                     initialOffsetY = { fullWidth -> fullWidth },
-                    animationSpec = tween(durationMillis = 300, easing = LinearEasing)
+                    animationSpec = tween(durationMillis = 300, easing = LinearEasing),
                 ) + fadeIn(animationSpec = tween(durationMillis = 300, easing = LinearEasing)),
             exit =
                 slideOutVertically(
                     targetOffsetY = { fullWidth -> fullWidth },
-                    animationSpec = tween(durationMillis = 300, easing = LinearEasing)
+                    animationSpec = tween(durationMillis = 300, easing = LinearEasing),
                 ) + fadeOut(animationSpec = tween(durationMillis = 300, easing = LinearEasing)),
-            modifier = Modifier.align(Alignment.BottomCenter)
+            modifier = Modifier.align(Alignment.BottomCenter),
         ) {
             BottomNav(
                 currentRoute = currentTab,
@@ -269,7 +263,7 @@ fun MainPagerScreen(
                         pagerState.animateScrollToPage(
                             page = targetPage,
                             animationSpec =
-                                tween(durationMillis = 400, easing = FastOutSlowInEasing)
+                                tween(durationMillis = 400, easing = FastOutSlowInEasing),
                         )
                     }
                 },
@@ -278,7 +272,7 @@ fun MainPagerScreen(
                     Modifier.padding(
                         bottom =
                             WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-                    )
+                    ),
             )
         }
     }

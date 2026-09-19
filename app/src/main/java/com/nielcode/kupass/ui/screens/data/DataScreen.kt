@@ -26,14 +26,14 @@ fun DataScreen(onExportClick: () -> Unit, onImportClick: () -> Unit) {
                 icon = Icons.Default.FileUpload,
                 title = stringResource(R.string.nav_export),
                 subtitle = stringResource(R.string.data_export_subtitle),
-                onClick = onExportClick
+                onClick = onExportClick,
             )
 
             SectionItem(
                 icon = Icons.Default.FileDownload,
                 title = stringResource(R.string.nav_import),
                 subtitle = stringResource(R.string.data_import_subtitle),
-                onClick = onImportClick
+                onClick = onImportClick,
             )
         }
     }

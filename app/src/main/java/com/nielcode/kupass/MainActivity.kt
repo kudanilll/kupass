@@ -13,12 +13,12 @@ import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
 import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_WEAK
 import androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL
 import androidx.biometric.BiometricPrompt
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nielcode.kupass.security.AppLock
 import com.nielcode.kupass.ui.screens.MainAppScreen
 import com.nielcode.kupass.ui.screens.lock.LockScreen
@@ -46,14 +46,17 @@ class MainActivity : AppCompatActivity() {
                 this,
                 ContextCompat.getMainExecutor(this),
                 object : BiometricPrompt.AuthenticationCallback() {
-                    override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                    override fun onAuthenticationSucceeded(
+                        result: BiometricPrompt.AuthenticationResult
+                    ) {
                         authenticating = false
                         appLock.unlock()
                     }
 
                     override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
                         authenticating = false
-                        if (errorCode == BiometricPrompt.ERROR_NO_DEVICE_CREDENTIAL) deviceSecure.value = false
+                        if (errorCode == BiometricPrompt.ERROR_NO_DEVICE_CREDENTIAL)
+                            deviceSecure.value = false
                         // Any other error (cancel, lockout, …) keeps the vault locked.
                     }
                 },

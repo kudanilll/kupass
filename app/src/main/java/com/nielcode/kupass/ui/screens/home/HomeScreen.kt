@@ -10,13 +10,13 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nielcode.kupass.R
 import com.nielcode.kupass.data.local.db.PasswordEntity
@@ -24,7 +24,10 @@ import com.nielcode.kupass.ui.screens.home.components.VaultList
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(onNavigateToDetail: (Long) -> Unit = {}, viewModel: HomeViewModel = viewModel(factory = HomeViewModel.Factory)) {
+fun HomeScreen(
+    onNavigateToDetail: (Long) -> Unit = {},
+    viewModel: HomeViewModel = viewModel(factory = HomeViewModel.Factory),
+) {
     // Collect state from ViewModel
     val passwords by viewModel.passwords.collectAsStateWithLifecycle()
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
@@ -52,7 +55,7 @@ fun HomeScreen(onNavigateToDetail: (Long) -> Unit = {}, viewModel: HomeViewModel
                 ) {
                     Text(
                         stringResource(R.string.button_delete),
-                        color = MaterialTheme.colorScheme.error
+                        color = MaterialTheme.colorScheme.error,
                     )
                 }
             },
@@ -60,13 +63,11 @@ fun HomeScreen(onNavigateToDetail: (Long) -> Unit = {}, viewModel: HomeViewModel
                 TextButton(onClick = { passwordToDelete = null }) {
                     Text(stringResource(R.string.button_cancel))
                 }
-            }
+            },
         )
     }
 
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-    ) { innerPadding ->
+    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         Box(modifier = Modifier.fillMaxSize()) {
             VaultList(
                 modifier = Modifier.fillMaxSize().padding(top = innerPadding.calculateTopPadding()),
@@ -77,7 +78,7 @@ fun HomeScreen(onNavigateToDetail: (Long) -> Unit = {}, viewModel: HomeViewModel
                 active = isSearchActive,
                 onActiveChange = { isSearchActive = it },
                 onItemClick = { password: PasswordEntity -> onNavigateToDetail(password.id) },
-                onDeleteItem = { password: PasswordEntity -> passwordToDelete = password }
+                onDeleteItem = { password: PasswordEntity -> passwordToDelete = password },
             )
         }
     }

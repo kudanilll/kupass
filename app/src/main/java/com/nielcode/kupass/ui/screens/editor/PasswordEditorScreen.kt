@@ -1,7 +1,6 @@
 package com.nielcode.kupass.ui.screens.editor
 
 import android.widget.Toast
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -29,18 +28,19 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nielcode.kupass.R
 import com.nielcode.kupass.ui.components.TextField
@@ -50,7 +50,7 @@ import com.nielcode.kupass.ui.components.TextField
 fun PasswordEditorScreen(
     passwordId: Long = -1L,
     onNavigateBack: () -> Unit,
-    viewModel: PasswordEditorViewModel = viewModel(factory = PasswordEditorViewModel.Factory)
+    viewModel: PasswordEditorViewModel = viewModel(factory = PasswordEditorViewModel.Factory),
 ) {
     val isEditMode = passwordId > 0
 
@@ -118,17 +118,18 @@ fun PasswordEditorScreen(
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        text = stringResource(
-                            if (isEditMode) R.string.edit_password
-                            else R.string.create_new_password
-                        ),
-                        fontWeight = FontWeight.Bold
+                        text =
+                            stringResource(
+                                if (isEditMode) R.string.edit_password
+                                else R.string.create_new_password
+                            ),
+                        fontWeight = FontWeight.Bold,
                     )
                 },
                 navigationIcon = {
                     FilledTonalIconButton(
                         onClick = onNavigateBack,
-                        modifier = Modifier.padding(start = 8.dp)
+                        modifier = Modifier.padding(start = 8.dp),
                     ) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
                     }
@@ -141,33 +142,35 @@ fun PasswordEditorScreen(
                                 username = username,
                                 password = password,
                                 url = url,
-                                notes = notes
+                                notes = notes,
                             )
                         },
                         enabled = isFormValid && !isSaving,
-                        modifier = Modifier.padding(end = 8.dp)
+                        modifier = Modifier.padding(end = 8.dp),
                     ) {
-                        Icon(Icons.Default.Check, contentDescription = stringResource(R.string.button_save))
+                        Icon(
+                            Icons.Default.Check,
+                            contentDescription = stringResource(R.string.button_save),
+                        )
                     }
-                }
+                },
             )
         }
     ) { innerPadding ->
         Column(
             modifier =
-                Modifier
-                    .fillMaxSize()
+                Modifier.fillMaxSize()
                     .padding(innerPadding)
                     .padding(horizontal = 20.dp)
                     .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             TextField(
                 value = siteName,
                 onValueChange = { siteName = it },
                 label = stringResource(R.string.site_or_app_hint),
                 icon = Icons.Default.Language,
-                placeholder = "Cth: Netflix, Google"
+                placeholder = "Cth: Netflix, Google",
             )
 
             TextField(
@@ -175,7 +178,7 @@ fun PasswordEditorScreen(
                 onValueChange = { username = it },
                 label = stringResource(R.string.username_hint),
                 icon = Icons.Default.Person,
-                keyboardType = KeyboardType.Email
+                keyboardType = KeyboardType.Email,
             )
 
             TextField(
@@ -192,9 +195,12 @@ fun PasswordEditorScreen(
                         if (passwordVisible) Icons.Default.Visibility
                         else Icons.Default.VisibilityOff
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                        Icon(imageVector = image, contentDescription = stringResource(R.string.show_password))
+                        Icon(
+                            imageVector = image,
+                            contentDescription = stringResource(R.string.show_password),
+                        )
                     }
-                }
+                },
             )
 
             TextField(
@@ -203,7 +209,7 @@ fun PasswordEditorScreen(
                 label = stringResource(R.string.url_label),
                 icon = Icons.Default.Link,
                 placeholder = "https://...",
-                keyboardType = KeyboardType.Uri
+                keyboardType = KeyboardType.Uri,
             )
 
             TextField(
@@ -212,7 +218,7 @@ fun PasswordEditorScreen(
                 label = stringResource(R.string.note_hint),
                 icon = Icons.AutoMirrored.Filled.Notes,
                 singleLine = false,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             )
         }
     }

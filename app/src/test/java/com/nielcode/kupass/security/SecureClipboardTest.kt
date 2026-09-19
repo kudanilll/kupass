@@ -4,6 +4,7 @@ import android.content.ClipData
 import android.content.ClipDescription
 import android.content.ClipboardManager
 import android.content.Context
+import android.os.Looper
 import java.time.Duration
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -13,7 +14,6 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
-import android.os.Looper
 
 @RunWith(RobolectricTestRunner::class)
 class SecureClipboardTest {
@@ -21,9 +21,11 @@ class SecureClipboardTest {
     private val context: Context = RuntimeEnvironment.getApplication()
     private val clipboard = context.getSystemService(ClipboardManager::class.java)
 
-    private fun text(): String? = clipboard.primaryClip?.takeIf { it.itemCount > 0 }?.getItemAt(0)?.text?.toString()
+    private fun text(): String? =
+        clipboard.primaryClip?.takeIf { it.itemCount > 0 }?.getItemAt(0)?.text?.toString()
 
-    private fun advance(millis: Long) = shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(millis))
+    private fun advance(millis: Long) =
+        shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(millis))
 
     @Test
     @Config(sdk = [33])
@@ -31,7 +33,12 @@ class SecureClipboardTest {
         SecureClipboard.copy(context, "Password", "hunter2", sensitive = true)
 
         assertEquals("hunter2", text())
-        assertTrue(clipboard.primaryClip!!.description.extras!!.getBoolean(ClipDescription.EXTRA_IS_SENSITIVE))
+        assertTrue(
+            clipboard.primaryClip!!
+                .description
+                .extras!!
+                .getBoolean(ClipDescription.EXTRA_IS_SENSITIVE)
+        )
         advance(SecureClipboard.CLEAR_AFTER_MILLIS - 1)
         assertEquals("hunter2", text())
         advance(1)

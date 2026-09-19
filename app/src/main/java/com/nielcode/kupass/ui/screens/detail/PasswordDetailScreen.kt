@@ -34,7 +34,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,6 +45,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nielcode.kupass.R
 import com.nielcode.kupass.security.SecureClipboard
@@ -59,7 +59,7 @@ fun PasswordDetailScreen(
     passwordId: Long,
     onNavigateBack: () -> Unit,
     onNavigateToEdit: (Long) -> Unit,
-    viewModel: PasswordDetailViewModel = viewModel(factory = PasswordDetailViewModel.Factory)
+    viewModel: PasswordDetailViewModel = viewModel(factory = PasswordDetailViewModel.Factory),
 ) {
     val context = LocalContext.current
     val deleteSuccessText = stringResource(R.string.toast_success_delete)
@@ -102,7 +102,7 @@ fun PasswordDetailScreen(
                 ) {
                     Text(
                         stringResource(R.string.button_delete),
-                        color = MaterialTheme.colorScheme.error
+                        color = MaterialTheme.colorScheme.error,
                     )
                 }
             },
@@ -110,7 +110,7 @@ fun PasswordDetailScreen(
                 TextButton(onClick = { showDeleteDialog = false }) {
                     Text(stringResource(R.string.button_cancel))
                 }
-            }
+            },
         )
     }
 
@@ -120,13 +120,13 @@ fun PasswordDetailScreen(
                 title = {
                     Text(
                         text = stringResource(R.string.password_detail),
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
                     )
                 },
                 navigationIcon = {
                     FilledTonalIconButton(
                         onClick = onNavigateBack,
-                        modifier = Modifier.padding(start = 8.dp)
+                        modifier = Modifier.padding(start = 8.dp),
                     ) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
                     }
@@ -135,17 +135,17 @@ fun PasswordDetailScreen(
                     IconButton(onClick = { password?.let { onNavigateToEdit(it.id) } }) {
                         Icon(
                             Icons.Default.Edit,
-                            contentDescription = stringResource(R.string.button_edit)
+                            contentDescription = stringResource(R.string.button_edit),
                         )
                     }
                     IconButton(onClick = { showDeleteDialog = true }) {
                         Icon(
                             Icons.Default.Delete,
                             contentDescription = stringResource(R.string.button_delete),
-                            tint = MaterialTheme.colorScheme.error
+                            tint = MaterialTheme.colorScheme.error,
                         )
                     }
-                }
+                },
             )
         }
     ) { innerPadding ->
@@ -153,18 +153,17 @@ fun PasswordDetailScreen(
         if (currentPassword != null) {
             Column(
                 modifier =
-                    Modifier
-                        .fillMaxSize()
+                    Modifier.fillMaxSize()
                         .padding(innerPadding)
                         .padding(horizontal = 20.dp)
                         .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 // Site Name
                 DetailField(
                     label = stringResource(R.string.site_or_app_hint),
                     value = currentPassword.siteName,
-                    onCopy = { copyToClipboard(context, "Site", currentPassword.siteName) }
+                    onCopy = { copyToClipboard(context, "Site", currentPassword.siteName) },
                 )
 
                 // Username
@@ -172,7 +171,7 @@ fun PasswordDetailScreen(
                     DetailField(
                         label = stringResource(R.string.username_hint),
                         value = currentPassword.username,
-                        onCopy = { copyToClipboard(context, "Username", currentPassword.username) }
+                        onCopy = { copyToClipboard(context, "Username", currentPassword.username) },
                     )
                 }
 
@@ -185,7 +184,7 @@ fun PasswordDetailScreen(
                             context,
                             "Password",
                             currentPassword.password,
-                            isSensitive = true
+                            isSensitive = true,
                         )
                     },
                     trailingAction = {
@@ -194,10 +193,10 @@ fun PasswordDetailScreen(
                                 imageVector =
                                     if (passwordVisible) Icons.Default.Visibility
                                     else Icons.Default.VisibilityOff,
-                                contentDescription = stringResource(R.string.show_password)
+                                contentDescription = stringResource(R.string.show_password),
                             )
                         }
-                    }
+                    },
                 )
 
                 // URL
@@ -205,7 +204,7 @@ fun PasswordDetailScreen(
                     DetailField(
                         label = stringResource(R.string.url_label),
                         value = currentPassword.url,
-                        onCopy = { copyToClipboard(context, "URL", currentPassword.url) }
+                        onCopy = { copyToClipboard(context, "URL", currentPassword.url) },
                     )
                 }
 
@@ -214,7 +213,7 @@ fun PasswordDetailScreen(
                     DetailField(
                         label = stringResource(R.string.notes_label),
                         value = currentPassword.notes,
-                        onCopy = { copyToClipboard(context, "Notes", currentPassword.notes) }
+                        onCopy = { copyToClipboard(context, "Notes", currentPassword.notes) },
                     )
                 }
 
@@ -234,7 +233,7 @@ fun PasswordDetailScreen(
                             )
                         }",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Text(
                     text =
@@ -246,7 +245,7 @@ fun PasswordDetailScreen(
                             )
                         }",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -260,28 +259,27 @@ private fun DetailField(
     label: String,
     value: String,
     onCopy: () -> Unit,
-    trailingAction: @Composable (() -> Unit)? = null
+    trailingAction: @Composable (() -> Unit)? = null,
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors =
-            CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
+            CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
     ) {
         Column(
             modifier =
-                Modifier
-                    .fillMaxWidth()
+                Modifier.fillMaxWidth()
                     .padding(start = 16.dp, top = 12.dp, end = 4.dp, bottom = 4.dp)
         ) {
             Text(
                 text = label,
                 style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.primary,
             )
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
                     text = value,
@@ -289,7 +287,7 @@ private fun DetailField(
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.weight(1f),
                     maxLines = 3,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
                 )
                 if (trailingAction != null) {
                     trailingAction()
@@ -298,7 +296,7 @@ private fun DetailField(
                     Icon(
                         Icons.Default.ContentCopy,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             }
@@ -310,7 +308,7 @@ private fun copyToClipboard(
     context: Context,
     label: String,
     text: String,
-    isSensitive: Boolean = false
+    isSensitive: Boolean = false,
 ) {
     SecureClipboard.copy(context, label, text, sensitive = isSensitive)
     Toast.makeText(context, context.getString(R.string.copied), Toast.LENGTH_SHORT).show()

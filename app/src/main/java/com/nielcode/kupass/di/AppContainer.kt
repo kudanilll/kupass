@@ -30,11 +30,14 @@ class AppContainer(context: Context) {
     val preferenceManager: PreferenceManager by lazy { PreferenceManager(appContext) }
 
     /** Process-wide vault lock; survives activity recreation, resets (locked) with the process. */
-    val appLock: AppLock by lazy { AppLock(timeoutMillis = { preferenceManager.autoLockSeconds * 1000L }) }
+    val appLock: AppLock by lazy {
+        AppLock(timeoutMillis = { preferenceManager.autoLockSeconds * 1000L })
+    }
 
     val contentResolver: ContentResolver
         get() = appContext.contentResolver
 }
 
 /** Resolves the [AppContainer] inside a `viewModelFactory { initializer { … } }` block. */
-fun CreationExtras.appContainer(): AppContainer = (checkNotNull(this[APPLICATION_KEY]) as App).container
+fun CreationExtras.appContainer(): AppContainer =
+    (checkNotNull(this[APPLICATION_KEY]) as App).container

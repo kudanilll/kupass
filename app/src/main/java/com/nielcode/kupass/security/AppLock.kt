@@ -8,9 +8,9 @@ import kotlinx.coroutines.flow.asStateFlow
 /**
  * UI-level vault lock (decision Q3: the Keystore key is not bound to user authentication).
  *
- * The vault starts locked in every new process and re-locks when the app has been in the
- * background for at least [timeoutMillis]. Leaving the app on purpose (file picker, device
- * credential screen, browser, licenses) can be exempted with [allowNextBackground].
+ * The vault starts locked in every new process and re-locks when the app has been in the background
+ * for at least [timeoutMillis]. Leaving the app on purpose (file picker, device credential screen,
+ * browser, licenses) can be exempted with [allowNextBackground].
  *
  * Driven by [MainActivity][com.nielcode.kupass.MainActivity] lifecycle callbacks. Pure Kotlin so it
  * can be unit tested with a fake [clock].
@@ -28,7 +28,9 @@ class AppLock(
 
     /** The current absence started from one of our own screens (file picker, browser, …). */
     private var exemptTrip = false
-    /** When [allowNextBackground] was called; the exemption expires after [ALLOWANCE_WINDOW_MILLIS]. */
+    /**
+     * When [allowNextBackground] was called; the exemption expires after [ALLOWANCE_WINDOW_MILLIS].
+     */
     private var backgroundAllowedAt: Long? = null
 
     fun unlock() {
@@ -66,7 +68,8 @@ class AppLock(
     fun onForeground() {
         val since = backgroundedAt ?: return
         backgroundedAt = null
-        val timeout = if (exemptTrip) maxOf(timeoutMillis(), EXEMPT_TRIP_GRACE_MILLIS) else timeoutMillis()
+        val timeout =
+            if (exemptTrip) maxOf(timeoutMillis(), EXEMPT_TRIP_GRACE_MILLIS) else timeoutMillis()
         exemptTrip = false
         if (clock() - since >= timeout) lock()
     }

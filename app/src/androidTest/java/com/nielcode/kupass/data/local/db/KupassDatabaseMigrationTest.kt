@@ -23,8 +23,7 @@ class KupassDatabaseMigrationTest {
 
     private val instrumentation = InstrumentationRegistry.getInstrumentation()
 
-    @get:Rule
-    val helper = MigrationTestHelper(instrumentation, KupassDatabase::class.java)
+    @get:Rule val helper = MigrationTestHelper(instrumentation, KupassDatabase::class.java)
 
     @Test
     fun migrateAllFromVersion1() {

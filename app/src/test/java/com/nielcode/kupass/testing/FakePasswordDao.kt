@@ -19,7 +19,9 @@ class FakePasswordDao : PasswordDao {
 
     override suspend fun getAllOnce(): List<PasswordEntity> = rows.value
 
-    override fun getById(id: Long): Flow<PasswordEntity?> = rows.map { list -> list.firstOrNull { it.id == id } }
+    override fun getById(id: Long): Flow<PasswordEntity?> = rows.map { list ->
+        list.firstOrNull { it.id == id }
+    }
 
     override suspend fun insert(password: PasswordEntity): Long {
         val id = if (password.id == 0L) nextId++ else password.id
@@ -27,7 +29,9 @@ class FakePasswordDao : PasswordDao {
         return id
     }
 
-    override suspend fun insertAll(passwords: List<PasswordEntity>): List<Long> = passwords.map { insert(it) }
+    override suspend fun insertAll(passwords: List<PasswordEntity>): List<Long> = passwords.map {
+        insert(it)
+    }
 
     override suspend fun update(password: PasswordEntity) {
         rows.value = rows.value.map { if (it.id == password.id) password else it }

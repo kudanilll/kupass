@@ -7,8 +7,8 @@ import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 
 /**
- * Room database for the Kupass app.
- * Uses a singleton pattern to prevent multiple database instances.
+ * Room database for the Kupass app. Uses a singleton pattern to prevent multiple database
+ * instances.
  *
  * Schema changes MUST bump [version], add a [Migration] to [MIGRATIONS], and extend
  * `KupassDatabaseMigrationTest`. Destructive fallback is never allowed: it would wipe the vault.
@@ -24,21 +24,22 @@ abstract class KupassDatabase : RoomDatabase() {
         /** Every migration, in order. Empty while the schema is still at version 1. */
         val MIGRATIONS: Array<Migration> = arrayOf()
 
-        @Volatile
-        private var INSTANCE: KupassDatabase? = null
+        @Volatile private var INSTANCE: KupassDatabase? = null
 
         fun getInstance(context: Context): KupassDatabase {
-            return INSTANCE ?: synchronized(this) {
-                val instance = Room.databaseBuilder(
-                    context.applicationContext,
-                    KupassDatabase::class.java,
-                    DATABASE_NAME
-                )
-                    .addMigrations(*MIGRATIONS)
-                    .build()
-                INSTANCE = instance
-                instance
-            }
+            return INSTANCE
+                ?: synchronized(this) {
+                    val instance =
+                        Room.databaseBuilder(
+                                context.applicationContext,
+                                KupassDatabase::class.java,
+                                DATABASE_NAME,
+                            )
+                            .addMigrations(*MIGRATIONS)
+                            .build()
+                    INSTANCE = instance
+                    instance
+                }
         }
     }
 }

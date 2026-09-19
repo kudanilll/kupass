@@ -26,7 +26,7 @@ fun TextField(
     singleLine: Boolean = true,
     keyboardType: KeyboardType = KeyboardType.Text,
     visualTransformation: VisualTransformation = VisualTransformation.None,
-    trailingIcon: @Composable (() -> Unit)? = null
+    trailingIcon: @Composable (() -> Unit)? = null,
 ) {
     OutlinedTextField(
         value = value,
@@ -37,7 +37,7 @@ fun TextField(
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary
+                tint = MaterialTheme.colorScheme.primary,
             )
         },
         trailingIcon = trailingIcon,
@@ -50,6 +50,6 @@ fun TextField(
             OutlinedTextFieldDefaults.colors(
                 unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
-            )
+            ),
     )
 }

@@ -32,18 +32,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.os.LocaleListCompat
 import com.google.android.gms.oss.licenses.v2.OssLicensesMenuActivity
 import com.google.android.material.color.DynamicColors
+import com.nielcode.kupass.App
 import com.nielcode.kupass.BuildConfig
 import com.nielcode.kupass.MainActivity
 import com.nielcode.kupass.R
-import com.nielcode.kupass.App
 import com.nielcode.kupass.security.AppLock
 import com.nielcode.kupass.ui.components.SectionHeader
 import com.nielcode.kupass.ui.components.SectionItem
@@ -94,7 +94,7 @@ fun SettingsScreen() {
                 subtitle =
                     languageList.getOrNull(currentLanguageIndex)
                         ?: stringResource(R.string.lang_en),
-                onClick = { showLanguageDialog = true }
+                onClick = { showLanguageDialog = true },
             )
 
             // Section: Security
@@ -103,7 +103,7 @@ fun SettingsScreen() {
                 icon = Icons.Default.Lock,
                 title = stringResource(R.string.settings_auto_lock_title),
                 subtitle = autoLockLabel(currentAutoLockSeconds),
-                onClick = { showAutoLockDialog = true }
+                onClick = { showAutoLockDialog = true },
             )
 
             // Section: Appearance
@@ -112,13 +112,13 @@ fun SettingsScreen() {
                 icon = Icons.Default.Contrast,
                 title = stringResource(R.string.settings_theme_title),
                 subtitle = themeList.getOrNull(currentThemeIndex) ?: "System Default",
-                onClick = { showThemeDialog = true }
+                onClick = { showThemeDialog = true },
             )
             SectionItem(
                 icon = Icons.Default.ColorLens,
                 title = stringResource(R.string.settings_dynamic_colors_title),
                 subtitle = dynamicColorStatus,
-                onClick = { if (isDynamicColorSupported) showDynamicColorsDialog = true }
+                onClick = { if (isDynamicColorSupported) showDynamicColorsDialog = true },
             )
 
             // Section: About
@@ -130,7 +130,7 @@ fun SettingsScreen() {
                 onClick = {
                     appLock.allowNextBackground()
                     openUrl(context, BuildConfig.DEV_URL)
-                }
+                },
             )
             SectionItem(
                 icon = Icons.Default.Gavel,
@@ -140,7 +140,7 @@ fun SettingsScreen() {
                     appLock.allowNextBackground()
                     val intent = Intent(context, OssLicensesMenuActivity::class.java)
                     context.startActivity(intent)
-                }
+                },
             )
             SectionItem(
                 icon = Icons.Default.Code,
@@ -149,7 +149,7 @@ fun SettingsScreen() {
                 onClick = {
                     appLock.allowNextBackground()
                     openUrl(context, BuildConfig.GIT_URL)
-                }
+                },
             )
         }
 
@@ -157,14 +157,16 @@ fun SettingsScreen() {
             SingleChoiceDialog(
                 title = stringResource(R.string.settings_auto_lock_title),
                 options = autoLockLabels,
-                selectedIndex = AppLock.TIMEOUT_OPTIONS_SECONDS.indexOf(currentAutoLockSeconds).coerceAtLeast(0),
+                selectedIndex =
+                    AppLock.TIMEOUT_OPTIONS_SECONDS.indexOf(currentAutoLockSeconds)
+                        .coerceAtLeast(0),
                 onDismiss = { showAutoLockDialog = false },
                 onConfirm = { index ->
                     val seconds = AppLock.TIMEOUT_OPTIONS_SECONDS[index]
                     prefs.autoLockSeconds = seconds
                     currentAutoLockSeconds = seconds
                     showAutoLockDialog = false
-                }
+                },
             )
         }
 
@@ -188,7 +190,7 @@ fun SettingsScreen() {
                         )
                     }
                     showLanguageDialog = false
-                }
+                },
             )
         }
 
@@ -211,7 +213,7 @@ fun SettingsScreen() {
                         AppCompatDelegate.setDefaultNightMode(nightMode)
                     }
                     showThemeDialog = false
-                }
+                },
             )
         }
 
@@ -235,7 +237,7 @@ fun SettingsScreen() {
                         showRestartDialog = true
                     }
                     showDynamicColorsDialog = false
-                }
+                },
             )
         }
 
@@ -260,7 +262,7 @@ fun SettingsScreen() {
                     ) {
                         Text(stringResource(R.string.button_restart))
                     }
-                }
+                },
             )
         }
     }
@@ -272,7 +274,7 @@ fun SingleChoiceDialog(
     options: List<String>,
     selectedIndex: Int,
     onDismiss: () -> Unit,
-    onConfirm: (Int) -> Unit
+    onConfirm: (Int) -> Unit,
 ) {
     var tempSelectedIndex by remember { mutableIntStateOf(selectedIndex) }
 
@@ -287,13 +289,13 @@ fun SingleChoiceDialog(
                             Modifier.fillMaxWidth()
                                 .selectable(
                                     selected = (index == tempSelectedIndex),
-                                    onClick = { tempSelectedIndex = index }
+                                    onClick = { tempSelectedIndex = index },
                                 ),
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
                         RadioButton(
                             selected = (index == tempSelectedIndex),
-                            onClick = { tempSelectedIndex = index }
+                            onClick = { tempSelectedIndex = index },
                         )
                         Text(text = option, style = MaterialTheme.typography.bodyLarge)
                     }
@@ -307,7 +309,7 @@ fun SingleChoiceDialog(
         },
         dismissButton = {
             TextButton(onClick = onDismiss) { Text(stringResource(R.string.button_cancel)) }
-        }
+        },
     )
 }
 

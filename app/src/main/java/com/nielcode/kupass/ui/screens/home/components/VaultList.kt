@@ -56,7 +56,7 @@ fun VaultList(
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
             modifier = modifier.fillMaxSize(),
-            contentPadding = PaddingValues(bottom = bottomPadding)
+            contentPadding = PaddingValues(bottom = bottomPadding),
         ) {
             item {
                 if (!active) {
@@ -64,9 +64,7 @@ fun VaultList(
                         text = stringResource(R.string.headline),
                         style = MaterialTheme.typography.displaySmall,
                         color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier
-                            .fillMaxWidth(0.8f)
-                            .padding(start = 16.dp, top = 32.dp)
+                        modifier = Modifier.fillMaxWidth(0.8f).padding(start = 16.dp, top = 32.dp),
                     )
                 }
             }
@@ -74,8 +72,7 @@ fun VaultList(
             stickyHeader {
                 Box(
                     modifier =
-                        Modifier
-                            .fillMaxWidth()
+                        Modifier.fillMaxWidth()
                             .background(
                                 brush =
                                     Brush.verticalGradient(
@@ -85,7 +82,7 @@ fun VaultList(
                                                 MaterialTheme.colorScheme.surface.copy(
                                                     alpha = 0.7f
                                                 ),
-                                                Color.Transparent
+                                                Color.Transparent,
                                             )
                                     )
                             )
@@ -110,15 +107,13 @@ fun VaultList(
                                             imageVector = Icons.Default.Close,
                                             contentDescription = "Close Search",
                                             modifier =
-                                                Modifier
-                                                    .padding(8.dp)
-                                                    .clickable {
-                                                        if (query.isNotEmpty()) {
-                                                            onQueryChange("")
-                                                        } else {
-                                                            onActiveChange(false)
-                                                        }
+                                                Modifier.padding(8.dp).clickable {
+                                                    if (query.isNotEmpty()) {
+                                                        onQueryChange("")
+                                                    } else {
+                                                        onActiveChange(false)
                                                     }
+                                                },
                                         )
                                     }
                                 },
@@ -131,9 +126,7 @@ fun VaultList(
                         colors = SearchBarDefaults.colors(),
                         tonalElevation = SearchBarDefaults.TonalElevation,
                         shadowElevation = SearchBarDefaults.ShadowElevation,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 16.dp, bottom = 8.dp),
+                        modifier = Modifier.fillMaxWidth().padding(top = 16.dp, bottom = 8.dp),
                         content = {
                             if (active) {
                                 if (query.isNotEmpty()) {
@@ -149,7 +142,7 @@ fun VaultList(
                 item {
                     Text(
                         text = stringResource(R.string.empty_vault),
-                        modifier = Modifier.padding(16.dp)
+                        modifier = Modifier.padding(16.dp),
                     )
                 }
             } else {
@@ -161,17 +154,16 @@ fun VaultList(
                         backgroundContent = {
                             Box(
                                 modifier =
-                                    Modifier
-                                        .fillMaxSize()
+                                    Modifier.fillMaxSize()
                                         .padding(vertical = 2.dp)
                                         .background(MaterialTheme.colorScheme.errorContainer),
-                                contentAlignment = Alignment.CenterEnd
+                                contentAlignment = Alignment.CenterEnd,
                             ) {
                                 Icon(
                                     Icons.Default.Delete,
                                     contentDescription = stringResource(R.string.button_delete),
                                     tint = MaterialTheme.colorScheme.onErrorContainer,
-                                    modifier = Modifier.padding(end = 24.dp)
+                                    modifier = Modifier.padding(end = 24.dp),
                                 )
                             }
                         },
@@ -184,13 +176,13 @@ fun VaultList(
                                 onDeleteItem(password)
                                 coroutineScope.launch { dismissState.reset() }
                             }
-                        }
+                        },
                     ) {
                         PasswordListItem(
                             title = password.siteName,
                             subtitle = password.username.ifBlank { password.url },
                             fallbackChar = password.siteName.firstOrNull()?.uppercase() ?: "?",
-                            onClick = { onItemClick(password) }
+                            onClick = { onItemClick(password) },
                         )
                     }
                 }
@@ -200,8 +192,7 @@ fun VaultList(
         // Bottom gradient overlay
         Box(
             modifier =
-                Modifier
-                    .fillMaxWidth()
+                Modifier.fillMaxWidth()
                     .align(Alignment.BottomCenter)
                     .background(
                         brush =
@@ -210,8 +201,8 @@ fun VaultList(
                                     arrayOf(
                                         0f to Color.Transparent,
                                         0.6f to
-                                                MaterialTheme.colorScheme.surface.copy(alpha = 0.7f),
-                                        1f to MaterialTheme.colorScheme.surface
+                                            MaterialTheme.colorScheme.surface.copy(alpha = 0.7f),
+                                        1f to MaterialTheme.colorScheme.surface,
                                     )
                             )
                     )

@@ -5,9 +5,9 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import com.nielcode.kupass.di.appContainer
 import com.nielcode.kupass.data.local.db.PasswordEntity
 import com.nielcode.kupass.data.repository.PasswordRepository
+import com.nielcode.kupass.di.appContainer
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -16,20 +16,18 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-/**
- * Represents the state of a delete operation.
- */
+/** Represents the state of a delete operation. */
 sealed interface DeleteState {
     data object Idle : DeleteState
+
     data object Deleting : DeleteState
+
     data object Success : DeleteState
+
     data class Error(val message: String) : DeleteState
 }
 
-/**
- * ViewModel for the Password Detail screen.
- * Loads a single password by ID and handles deletion.
- */
+/** ViewModel for the Password Detail screen. Loads a single password by ID and handles deletion. */
 class PasswordDetailViewModel(private val repository: PasswordRepository) : ViewModel() {
 
     private var _passwordId: Long = -1L
@@ -44,12 +42,13 @@ class PasswordDetailViewModel(private val repository: PasswordRepository) : View
     fun loadPassword(id: Long) {
         _passwordId = id
         viewModelScope.launch {
-            repository.getPasswordById(id)
+            repository
+                .getPasswordById(id)
                 .catch { emit(null) } // undecryptable entry: show nothing rather than ciphertext
                 .stateIn(
                     scope = viewModelScope,
                     started = SharingStarted.WhileSubscribed(5000),
-                    initialValue = null
+                    initialValue = null,
                 )
                 .collect { _password.value = it }
         }

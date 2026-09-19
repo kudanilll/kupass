@@ -46,23 +46,36 @@ fun LockScreen(deviceSecure: Boolean, onUnlock: () -> Unit, onOpenSecuritySettin
                 modifier = Modifier.size(64.dp),
             )
             Text(
-                text = stringResource(if (deviceSecure) R.string.lock_title else R.string.lock_no_credential_title),
+                text =
+                    stringResource(
+                        if (deviceSecure) R.string.lock_title else R.string.lock_no_credential_title
+                    ),
                 style = MaterialTheme.typography.headlineSmall,
                 textAlign = TextAlign.Center,
             )
             Text(
-                text = stringResource(if (deviceSecure) R.string.lock_message else R.string.lock_no_credential_message),
+                text =
+                    stringResource(
+                        if (deviceSecure) R.string.lock_message
+                        else R.string.lock_no_credential_message
+                    ),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
             )
             if (deviceSecure) {
                 Button(onClick = onUnlock) {
-                    Icon(Icons.Default.LockOpen, contentDescription = null, modifier = Modifier.padding(end = 8.dp))
+                    Icon(
+                        Icons.Default.LockOpen,
+                        contentDescription = null,
+                        modifier = Modifier.padding(end = 8.dp),
+                    )
                     Text(stringResource(R.string.lock_button_unlock))
                 }
             } else {
-                Button(onClick = onOpenSecuritySettings) { Text(stringResource(R.string.lock_open_settings)) }
+                Button(onClick = onOpenSecuritySettings) {
+                    Text(stringResource(R.string.lock_open_settings))
+                }
             }
         }
     }

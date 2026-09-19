@@ -17,8 +17,8 @@ class CryptoException(message: String, cause: Throwable? = null) : Exception(mes
 /**
  * Encrypts vault fields with a non-exportable AES-256-GCM key in the Android Keystore.
  *
- * Stored format (v2): `kp2:` + Base64(IV[12] || ciphertext || tag[16]).
- * Legacy formats are still readable so existing vaults keep working:
+ * Stored format (v2): `kp2:` + Base64(IV[12] || ciphertext || tag[16]). Legacy formats are still
+ * readable so existing vaults keep working:
  * - v1: Base64(IV || ciphertext || tag) without a prefix (builds before the v2 format).
  * - plaintext: rows written before encryption existed.
  *
@@ -58,7 +58,11 @@ object CryptoManager {
             cipher.init(Cipher.ENCRYPT_MODE, keyProvider())
             val iv = cipher.iv
             check(iv.size == IV_SIZE) { "Unexpected IV size" }
-            PREFIX_V2 + Base64.encodeToString(iv + cipher.doFinal(plaintext.toByteArray(Charsets.UTF_8)), Base64.NO_WRAP)
+            PREFIX_V2 +
+                Base64.encodeToString(
+                    iv + cipher.doFinal(plaintext.toByteArray(Charsets.UTF_8)),
+                    Base64.NO_WRAP,
+                )
         } catch (e: GeneralSecurityException) {
             throw CryptoException("Encryption failed", e)
         } catch (e: IllegalStateException) {
@@ -75,8 +79,9 @@ object CryptoManager {
     fun decrypt(stored: String): String {
         if (stored.isEmpty()) return stored
         if (stored.startsWith(PREFIX_V2)) {
-            val payload = decodeBase64(stored.substring(PREFIX_V2.length))
-                ?: throw CryptoException("Malformed ciphertext")
+            val payload =
+                decodeBase64(stored.substring(PREFIX_V2.length))
+                    ?: throw CryptoException("Malformed ciphertext")
             return decryptPayload(payload)
         }
         // Legacy value without a prefix: v1 ciphertext or pre-encryption plaintext.
@@ -105,12 +110,14 @@ object CryptoManager {
     }
 
     /**
-     * v1 ciphertext was always canonical, unwrapped Base64 whose length is a multiple of 4.
-     * A legacy plaintext password rarely satisfies that and also decodes to >= 28 bytes, so
-     * a failed decrypt of such a value is treated as corruption rather than silently accepted.
+     * v1 ciphertext was always canonical, unwrapped Base64 whose length is a multiple of 4. A
+     * legacy plaintext password rarely satisfies that and also decodes to >= 28 bytes, so a failed
+     * decrypt of such a value is treated as corruption rather than silently accepted.
      */
     private fun looksLikeV1Ciphertext(value: String): Boolean =
-        value.length % 4 == 0 && value.length >= 40 && value.all { it.isLetterOrDigit() || it == '+' || it == '/' || it == '=' }
+        value.length % 4 == 0 &&
+            value.length >= 40 &&
+            value.all { it.isLetterOrDigit() || it == '+' || it == '/' || it == '=' }
 
     private fun decodeBase64(value: String): ByteArray? =
         try {
@@ -123,10 +130,16 @@ object CryptoManager {
     private fun keystoreKey(): SecretKey {
         try {
             val keyStore = KeyStore.getInstance(ANDROID_KEYSTORE).apply { load(null) }
-            (keyStore.getEntry(ALIAS, null) as? KeyStore.SecretKeyEntry)?.let { return it.secretKey }
-            val generator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, ANDROID_KEYSTORE)
+            (keyStore.getEntry(ALIAS, null) as? KeyStore.SecretKeyEntry)?.let {
+                return it.secretKey
+            }
+            val generator =
+                KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, ANDROID_KEYSTORE)
             generator.init(
-                KeyGenParameterSpec.Builder(ALIAS, KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT)
+                KeyGenParameterSpec.Builder(
+                        ALIAS,
+                        KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT,
+                    )
                     .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
                     .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
                     .setKeySize(256)

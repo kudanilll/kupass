@@ -96,7 +96,8 @@ room {
 }
 
 detekt {
-    // Default rules plus the overrides in config/detekt/detekt.yml. No baseline: findings get fixed.
+    // Default rules plus the overrides in config/detekt/detekt.yml. No baseline: findings get
+    // fixed.
     config.setFrom(rootProject.file("config/detekt/detekt.yml"))
     buildUponDefaultConfig = true
     parallel = true

@@ -7,11 +7,11 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import com.nielcode.kupass.di.appContainer
-import com.nielcode.kupass.data.local.db.PasswordEntity
 import com.nielcode.kupass.data.backup.BackupCodec
 import com.nielcode.kupass.data.backup.BackupException
+import com.nielcode.kupass.data.local.db.PasswordEntity
 import com.nielcode.kupass.data.repository.PasswordRepository
+import com.nielcode.kupass.di.appContainer
 import java.io.IOException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -45,8 +45,7 @@ class HomeViewModel(
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    val passwords: StateFlow<List<PasswordEntity>>
+    @OptIn(ExperimentalCoroutinesApi::class) val passwords: StateFlow<List<PasswordEntity>>
 
     private val _events = Channel<VaultEvent>(Channel.BUFFERED)
 
@@ -72,7 +71,7 @@ class HomeViewModel(
                 .stateIn(
                     scope = viewModelScope,
                     started = SharingStarted.WhileSubscribed(5000),
-                    initialValue = emptyList()
+                    initialValue = emptyList(),
                 )
     }
 
@@ -121,9 +120,12 @@ class HomeViewModel(
                     _events.send(VaultEvent.NothingToExport)
                     return@launch
                 }
-                val backup = withContext(cpuDispatcher) { BackupCodec.encode(allPasswords, password) }
+                val backup =
+                    withContext(cpuDispatcher) { BackupCodec.encode(allPasswords, password) }
                 withContext(ioDispatcher) {
-                    val stream = contentResolver.openOutputStream(uri, "wt") ?: throw IOException("No output stream")
+                    val stream =
+                        contentResolver.openOutputStream(uri, "wt")
+                            ?: throw IOException("No output stream")
                     stream.use { it.write(backup.toByteArray(Charsets.UTF_8)) }
                 }
                 _events.send(VaultEvent.ExportSucceeded)
@@ -173,7 +175,9 @@ class HomeViewModel(
             val imported = withContext(cpuDispatcher) { BackupCodec.decode(content, password) }
             _importPrompt.value = null
             val result = repository.importPasswords(imported)
-            _events.send(VaultEvent.ImportSucceeded(imported = result.imported, skipped = result.skipped))
+            _events.send(
+                VaultEvent.ImportSucceeded(imported = result.imported, skipped = result.skipped)
+            )
         } catch (_: BackupException.WrongPassword) {
             // Keep the prompt open so the user can retry.
             _importPrompt.value = _importPrompt.value?.copy(wrongPassword = true)

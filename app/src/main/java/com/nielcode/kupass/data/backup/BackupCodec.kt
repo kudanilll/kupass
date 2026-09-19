@@ -21,15 +21,18 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
 /** Why a backup couldn't be read. Messages never contain secret values. */
-sealed class BackupException(message: String, cause: Throwable? = null) : Exception(message, cause) {
+sealed class BackupException(message: String, cause: Throwable? = null) :
+    Exception(message, cause) {
     /** The file is an encrypted v2 backup and no password was supplied. */
     class PasswordRequired : BackupException("Backup password required")
 
     /** Wrong backup password, or the file was modified. AES-GCM can't tell these apart. */
-    class WrongPassword(cause: Throwable? = null) : BackupException("Wrong password or damaged file", cause)
+    class WrongPassword(cause: Throwable? = null) :
+        BackupException("Wrong password or damaged file", cause)
 
     /** A legacy (v1) backup whose passwords were encrypted with another install's device key. */
-    class ForeignDevice(cause: Throwable? = null) : BackupException("Legacy backup from another device", cause)
+    class ForeignDevice(cause: Throwable? = null) :
+        BackupException("Legacy backup from another device", cause)
 
     class Unsupported(detail: String) : BackupException("Unsupported backup: $detail")
 
@@ -43,13 +46,12 @@ sealed class BackupException(message: String, cause: Throwable? = null) : Except
  *
  * Format v2 is a JSON envelope. The whole vault (every field of every entry) is one AES-256-GCM
  * ciphertext. The key comes from the user's backup password via PBKDF2-HMAC-SHA256 with a random
- * salt, so the file can be restored on any device. The envelope header is authenticated as AAD,
- * so the KDF parameters can't be changed without detection.
+ * salt, so the file can be restored on any device. The envelope header is authenticated as AAD, so
+ * the KDF parameters can't be changed without detection.
  *
- * Legacy v1 files (a JSON array whose `password` fields were encrypted with the exporting
- * device's Keystore key, or plaintext) are still importable, but only when this device can
- * decrypt them. Otherwise [BackupException.ForeignDevice] is thrown; ciphertext is never imported
- * as a password.
+ * Legacy v1 files (a JSON array whose `password` fields were encrypted with the exporting device's
+ * Keystore key, or plaintext) are still importable, but only when this device can decrypt them.
+ * Otherwise [BackupException.ForeignDevice] is thrown; ciphertext is never imported as a password.
  */
 object BackupCodec {
     const val FORMAT = "kupass-backup"
@@ -98,11 +100,22 @@ object BackupCodec {
 
         val salt = ByteArray(SALT_SIZE).also(random::nextBytes)
         val iv = ByteArray(IV_SIZE).also(random::nextBytes)
-        val header = Header(kdf = Kdf(KDF_ALGORITHM, iterations, b64(salt)), cipher = CipherParams(CIPHER_ALGORITHM, b64(iv)))
-        val payload = json.encodeToString(Payload.serializer(), Payload(entries.map { it.toBackupEntry() })).toByteArray(Charsets.UTF_8)
+        val header =
+            Header(
+                kdf = Kdf(KDF_ALGORITHM, iterations, b64(salt)),
+                cipher = CipherParams(CIPHER_ALGORITHM, b64(iv)),
+            )
+        val payload =
+            json
+                .encodeToString(Payload.serializer(), Payload(entries.map { it.toBackupEntry() }))
+                .toByteArray(Charsets.UTF_8)
         try {
             val cipher = Cipher.getInstance(CIPHER_ALGORITHM)
-            cipher.init(Cipher.ENCRYPT_MODE, deriveKey(password, salt, iterations), GCMParameterSpec(TAG_BITS, iv))
+            cipher.init(
+                Cipher.ENCRYPT_MODE,
+                deriveKey(password, salt, iterations),
+                GCMParameterSpec(TAG_BITS, iv),
+            )
             cipher.updateAAD(header.aad())
             val data = cipher.doFinal(payload)
             return json.encodeToString(Envelope.serializer(), Envelope(header, b64(data)))
@@ -146,10 +159,14 @@ object BackupCodec {
             }
         val header = envelope.header
         if (header.format != FORMAT) throw BackupException.Unsupported("format ${header.format}")
-        if (header.version != VERSION) throw BackupException.Unsupported("version ${header.version}")
-        if (header.kdf.algorithm != KDF_ALGORITHM) throw BackupException.Unsupported("kdf ${header.kdf.algorithm}")
-        if (header.cipher.algorithm != CIPHER_ALGORITHM) throw BackupException.Unsupported("cipher ${header.cipher.algorithm}")
-        if (header.kdf.iterations !in MIN_ITERATIONS..MAX_ITERATIONS) throw BackupException.Unsupported("iterations")
+        if (header.version != VERSION)
+            throw BackupException.Unsupported("version ${header.version}")
+        if (header.kdf.algorithm != KDF_ALGORITHM)
+            throw BackupException.Unsupported("kdf ${header.kdf.algorithm}")
+        if (header.cipher.algorithm != CIPHER_ALGORITHM)
+            throw BackupException.Unsupported("cipher ${header.cipher.algorithm}")
+        if (header.kdf.iterations !in MIN_ITERATIONS..MAX_ITERATIONS)
+            throw BackupException.Unsupported("iterations")
 
         val salt = unb64(header.kdf.salt)
         val iv = unb64(header.cipher.iv)
@@ -159,7 +176,11 @@ object BackupCodec {
         val plain =
             try {
                 val cipher = Cipher.getInstance(CIPHER_ALGORITHM)
-                cipher.init(Cipher.DECRYPT_MODE, deriveKey(password, salt, header.kdf.iterations), GCMParameterSpec(TAG_BITS, iv))
+                cipher.init(
+                    Cipher.DECRYPT_MODE,
+                    deriveKey(password, salt, header.kdf.iterations),
+                    GCMParameterSpec(TAG_BITS, iv),
+                )
                 cipher.updateAAD(header.aad())
                 cipher.doFinal(data)
             } catch (e: AEADBadTagException) {
@@ -168,7 +189,8 @@ object BackupCodec {
                 throw BackupException.Malformed(e)
             }
         try {
-            val payload = json.decodeFromString(Payload.serializer(), plain.toString(Charsets.UTF_8))
+            val payload =
+                json.decodeFromString(Payload.serializer(), plain.toString(Charsets.UTF_8))
             if (payload.entries.size > MAX_ENTRIES) throw BackupException.TooLarge()
             return payload.entries.map { it.toEntity(it.password) }
         } catch (e: SerializationException) {
@@ -182,7 +204,10 @@ object BackupCodec {
         if (root.size > MAX_ENTRIES) throw BackupException.TooLarge()
         val entries =
             try {
-                json.decodeFromJsonElement(kotlinx.serialization.builtins.ListSerializer(BackupEntry.serializer()), root)
+                json.decodeFromJsonElement(
+                    kotlinx.serialization.builtins.ListSerializer(BackupEntry.serializer()),
+                    root,
+                )
             } catch (e: SerializationException) {
                 throw BackupException.Malformed(e)
             } catch (e: IllegalArgumentException) {
@@ -223,10 +248,10 @@ object BackupCodec {
         }
 
     private fun Header.aad(): ByteArray =
-        "$format|$version|${kdf.algorithm}|${kdf.iterations}|${kdf.salt}|${cipher.algorithm}|${cipher.iv}".toByteArray(Charsets.UTF_8)
+        "$format|$version|${kdf.algorithm}|${kdf.iterations}|${kdf.salt}|${cipher.algorithm}|${cipher.iv}"
+            .toByteArray(Charsets.UTF_8)
 
-    @Serializable
-    private data class Envelope(val header: Header, val data: String)
+    @Serializable private data class Envelope(val header: Header, val data: String)
 
     @Serializable
     private data class Header(
@@ -239,11 +264,9 @@ object BackupCodec {
     @Serializable
     private data class Kdf(val algorithm: String, val iterations: Int, val salt: String)
 
-    @Serializable
-    private data class CipherParams(val algorithm: String, val iv: String)
+    @Serializable private data class CipherParams(val algorithm: String, val iv: String)
 
-    @Serializable
-    private data class Payload(val entries: List<BackupEntry>)
+    @Serializable private data class Payload(val entries: List<BackupEntry>)
 }
 
 /** One vault entry inside a backup. Field names match the legacy v1 array format. */

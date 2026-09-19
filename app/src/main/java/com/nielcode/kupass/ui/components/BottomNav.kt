@@ -50,7 +50,7 @@ fun BottomNav(
     currentRoute: String,
     onNavigate: (String) -> Unit,
     onAddClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val isDarkMode = isSystemInDarkTheme()
     val fabVisible = !(currentRoute == "settings" || currentRoute == "data")
@@ -60,13 +60,13 @@ fun BottomNav(
         animateDpAsState(
             targetValue = if (fabVisible) -(spacing / 2 + spacing / 2) else 0.dp,
             animationSpec = tween(durationMillis = 250, easing = LinearEasing),
-            label = "nav_offset"
+            label = "nav_offset",
         )
 
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Row(
             modifier =
@@ -78,27 +78,27 @@ fun BottomNav(
                     )
                     .padding(8.dp),
             horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             NavItem(
                 title = "Home",
                 icon = Icons.Default.Home,
                 isSelected = currentRoute == "home",
-                onClick = { onNavigate("home") }
+                onClick = { onNavigate("home") },
             )
 
             NavItem(
                 title = "Data",
                 icon = Icons.Default.Storage,
                 isSelected = currentRoute == "data",
-                onClick = { onNavigate("data") }
+                onClick = { onNavigate("data") },
             )
 
             NavItem(
                 title = "Settings",
                 icon = Icons.Default.Settings,
                 isSelected = currentRoute == "settings",
-                onClick = { onNavigate("settings") }
+                onClick = { onNavigate("settings") },
             )
         }
 
@@ -107,13 +107,13 @@ fun BottomNav(
             enter =
                 slideInHorizontally(
                     initialOffsetX = { fullWidth -> fullWidth / 2 },
-                    animationSpec = tween(durationMillis = 250, easing = LinearEasing)
+                    animationSpec = tween(durationMillis = 250, easing = LinearEasing),
                 ) + fadeIn(animationSpec = tween(durationMillis = 250, easing = LinearEasing)),
             exit =
                 slideOutHorizontally(
                     targetOffsetX = { fullWidth -> fullWidth / 2 },
-                    animationSpec = tween(durationMillis = 250, easing = LinearEasing)
-                ) + fadeOut(animationSpec = tween(durationMillis = 250, easing = LinearEasing))
+                    animationSpec = tween(durationMillis = 250, easing = LinearEasing),
+                ) + fadeOut(animationSpec = tween(durationMillis = 250, easing = LinearEasing)),
         ) {
             Surface(
                 modifier =
@@ -123,12 +123,12 @@ fun BottomNav(
                 shape = RoundedCornerShape(16.dp),
                 color = MaterialTheme.colorScheme.secondary,
                 contentColor = MaterialTheme.colorScheme.onSecondary,
-                tonalElevation = 4.dp
+                tonalElevation = 4.dp,
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
                     contentDescription = stringResource(R.string.fab_open),
-                    modifier = Modifier.padding(16.dp)
+                    modifier = Modifier.padding(16.dp),
                 )
             }
         }
@@ -140,20 +140,20 @@ private fun NavItem(
     title: String,
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     isSelected: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     val targetScale = if (isSelected) 1.1f else 1.0f
     val scale by
         animateFloatAsState(
             targetValue = targetScale,
-            animationSpec = tween(durationMillis = 200, easing = LinearEasing)
+            animationSpec = tween(durationMillis = 200, easing = LinearEasing),
         )
 
     val targetAlpha = if (isSelected) 1.0f else 0.6f
     val alpha by
         animateFloatAsState(
             targetValue = targetAlpha,
-            animationSpec = tween(durationMillis = 200, easing = LinearEasing)
+            animationSpec = tween(durationMillis = 200, easing = LinearEasing),
         )
 
     Row(
@@ -174,20 +174,20 @@ private fun NavItem(
                     this.alpha = alpha
                 },
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center
+        horizontalArrangement = Arrangement.Center,
     ) {
         Icon(
             imageVector = icon,
             contentDescription = title,
             modifier = Modifier.size(24.dp),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = alpha)
+            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = alpha),
         )
         if (isSelected) {
             Text(
                 text = title,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.labelLarge,
-                modifier = Modifier.padding(horizontal = 8.dp)
+                modifier = Modifier.padding(horizontal = 8.dp),
             )
         }
     }

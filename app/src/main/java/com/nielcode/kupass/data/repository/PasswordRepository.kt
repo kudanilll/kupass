@@ -17,10 +17,10 @@ import kotlinx.coroutines.withContext
  * ViewModels.
  *
  * Every text field (`siteName`, `username`, `password`, `url`, `notes`) is encrypted at rest and
- * transparently decrypted here; callers only ever see plaintext entities. Because the database holds
- * ciphertext, sorting and search happen in memory after decryption (decision Q1). All crypto runs
- * on [cryptoDispatcher], never on the main thread. Read flows fail with [CryptoException] if stored
- * data can't be decrypted.
+ * transparently decrypted here; callers only ever see plaintext entities. Because the database
+ * holds ciphertext, sorting and search happen in memory after decryption (decision Q1). All crypto
+ * runs on [cryptoDispatcher], never on the main thread. Read flows fail with [CryptoException] if
+ * stored data can't be decrypted.
  */
 class PasswordRepository(
     private val passwordDao: PasswordDao,
@@ -28,12 +28,17 @@ class PasswordRepository(
 ) {
 
     fun getAllPasswords(): Flow<List<PasswordEntity>> =
-        passwordDao.getAll().map { rows -> rows.map { it.decrypted() }.sortedForDisplay() }.flowOn(cryptoDispatcher)
+        passwordDao
+            .getAll()
+            .map { rows -> rows.map { it.decrypted() }.sortedForDisplay() }
+            .flowOn(cryptoDispatcher)
 
     /** Case-insensitive match on site name, username, URL, and notes. */
     fun searchPasswords(query: String): Flow<List<PasswordEntity>> {
         val needle = query.trim()
-        return getAllPasswords().map { list -> list.filter { it.matches(needle) } }.flowOn(cryptoDispatcher)
+        return getAllPasswords()
+            .map { list -> list.filter { it.matches(needle) } }
+            .flowOn(cryptoDispatcher)
     }
 
     fun getPasswordById(id: Long): Flow<PasswordEntity?> =
@@ -47,15 +52,17 @@ class PasswordRepository(
 
     /**
      * Adds backup entries to the vault atomically. Entries without a site name or password, and
-     * duplicates of an existing entry or of an earlier entry in the same backup, are skipped.
-     * A duplicate has the same site name (ignoring case and surrounding spaces), username, URL, and
+     * duplicates of an existing entry or of an earlier entry in the same backup, are skipped. A
+     * duplicate has the same site name (ignoring case and surrounding spaces), username, URL, and
      * password.
      */
     suspend fun importPasswords(entries: List<PasswordEntity>): ImportResult {
         val existing = getAllPasswords().first()
         return withContext(cryptoDispatcher) {
             val seen = existing.mapTo(HashSet()) { it.identity() }
-            val toInsert = entries.filter { it.siteName.isNotBlank() && it.password.isNotBlank() && seen.add(it.identity()) }
+            val toInsert = entries.filter {
+                it.siteName.isNotBlank() && it.password.isNotBlank() && seen.add(it.identity())
+            }
             // Encrypt everything before touching the database so a crypto failure inserts nothing.
             val encrypted = toInsert.map { it.copy(id = 0).encrypted() }
             if (encrypted.isNotEmpty()) passwordDao.insertAll(encrypted)
@@ -77,7 +84,8 @@ class PasswordRepository(
     suspend fun upgradeStoredFormat(): Int =
         withContext(cryptoDispatcher) {
             val upgraded =
-                passwordDao.getAllOnce()
+                passwordDao
+                    .getAllOnce()
                     .filterNot { it.isCurrentFormat() }
                     .mapNotNull { row ->
                         try {
@@ -111,10 +119,12 @@ class PasswordRepository(
     private fun PasswordEntity.isCurrentFormat() =
         listOf(siteName, username, password, url, notes).all(CryptoManager::isCurrentFormat)
 
-    private fun PasswordEntity.identity() = listOf(siteName.trim().lowercase(), username, url, password)
+    private fun PasswordEntity.identity() =
+        listOf(siteName.trim().lowercase(), username, url, password)
 
     private fun PasswordEntity.matches(needle: String) =
-        needle.isEmpty() || listOf(siteName, username, url, notes).any { it.contains(needle, ignoreCase = true) }
+        needle.isEmpty() ||
+            listOf(siteName, username, url, notes).any { it.contains(needle, ignoreCase = true) }
 
     private fun List<PasswordEntity>.sortedForDisplay() =
         sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.siteName })
