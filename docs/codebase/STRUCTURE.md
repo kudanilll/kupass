@@ -10,7 +10,7 @@
 | `app/src/main/java/com/nielcode/kupass/`                    | All production Kotlin source                                                                                                                | `git ls-files`                            |
 | `app/src/main/res/`                                         | Resources: `values/` (EN), `values-in/` (ID), `values-night/`, `font/`, `xml/` (backup rules), mipmaps, drawables                           | directory listing                         |
 | `app/src/test/`                                             | JVM + Robolectric unit tests                                                                                                                | `git ls-files`                            |
-| `app/src/androidTest/`                                      | Instrumented tests (placeholder only)                                                                                                       | `ExampleInstrumentedTest.kt`              |
+ Instrumented tests: Room migration, Keystore crypto, backup KDF cost, legacy-format upgrade | `app/src/androidTest/` |
 | `app/schemas/` | Room exported schemas (`<version>.json`), committed. Source of truth for migration tests | `app/build.gradle.kts` (`room { schemaDirectory }`) |
 | `gradle/`                                                   | Version catalog, wrapper, daemon JVM toolchain                                                                                              | `libs.versions.toml`                      |
 | `docs/ai/`                                                  | Agent rules, PRD, best practices                                                                                                            | this repo                                 |
@@ -25,7 +25,7 @@
 ## 2) Entry Points
 
 - Process entry: `App.kt` (`android:name=".App"`). It blocks screenshots on every Activity (`FLAG_SECURE`) and applies the saved locale, night mode, and dynamic colors.
-- UI entry: `MainActivity.kt`, the only Activity, exported with the LAUNCHER intent filter. It runs `installSplashScreen()`, `enableEdgeToEdge()`, then `KupassTheme { MainAppScreen() }`.
+- UI entry: `MainActivity.kt`, the only Activity, exported with the LAUNCHER intent filter. It runs `installSplashScreen()`, `enableEdgeToEdge()`, creates the `BiometricPrompt`, then shows `LockScreen` or `MainAppScreen` depending on `AppLock.locked`.
 - Navigation root: `ui/screens/MainAppScreen.kt` (`NavHost`, start destination `HomeBase`).
 - Secondary entry points: none (no services, receivers, providers, or workers in `AndroidManifest.xml`).
 
@@ -40,7 +40,7 @@ com/nielcode/kupass/
 ├── security/SecureClipboard.kt   sensitive clipboard copy + 45 s auto-clear on every API level
 ├── data/
 │   ├── local/db/
-│   │   ├── KupassDatabase.kt      Room singleton "kupass_database", version 1, exportSchema=false
+│   │   ├── KupassDatabase.kt      Room singleton "kupass_database", version 1, exportSchema=true, `MIGRATIONS` registry
 │   │   ├── PasswordDao.kt         Flow getAll/getById, getAllOnce, insert(REPLACE)/update/updateAll/delete (no SQL search: data is ciphertext)
 │   │   └── PasswordEntity.kt      table "passwords"
 │   ├── backup/BackupCodec.kt      portable backup v2 (PBKDF2 + AES-GCM) + strict legacy v1 import

@@ -25,12 +25,12 @@ Branch stack (each based on the previous): `docs/roadmap` → `ci/github-actions
 
 **Milestones** (the app version stays `3.1.0`; milestones are not releases, see the Decision Log)
 
-| Milestone                | Theme                                                      | Exit criteria                                              |
-| ------------------------ | ---------------------------------------------------------- | ---------------------------------------------------------- |
-| **M0 Foundation**        | Tooling and safety nets that every later change depends on | CI + format + migration harness + DI + typed errors merged |
-| **M1 Trustworthy Vault** | Crypto hardening, portable backups, app lock               | C-1…C-4, C-6, C-7 closed                                   |
-| **M2 Polish & Light**    | Reliability, UX, performance, APK size, feedback           | REL-3/4, QA-3, FEAT-5, perf items done                     |
-| **M3 Features**          | Autofill (first), generator, favicons, organization, adaptive UI | Per feature                                          |
+| Milestone                | Theme                                                            | Exit criteria                                              |
+| ------------------------ | ---------------------------------------------------------------- | ---------------------------------------------------------- |
+| **M0 Foundation**        | Tooling and safety nets that every later change depends on       | CI + format + migration harness + DI + typed errors merged |
+| **M1 Trustworthy Vault** | Crypto hardening, portable backups, app lock                     | C-1…C-4, C-6, C-7 closed                                   |
+| **M2 Polish & Light**    | Reliability, UX, performance, APK size, feedback                 | REL-3/4, QA-3, FEAT-5, perf items done                     |
+| **M3 Features**          | Autofill (first), generator, favicons, organization, adaptive UI | Per feature                                                |
 
 **Top risks**
 
@@ -92,17 +92,17 @@ Enablers only. They make every later change safer and cheaper.
 
 ### Epic E2: Data Protection (M1, size L)
 
-| ID        | Type    | Title                                                                                                                                                                                                                                                          | Pts | Pri | Blocked by    | Source          |
-| --------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- | --- | ------------- | --------------- |
-| EN-06     | Enabler | **CryptoManager v2**: fail-closed (typed `CryptoException`, no plaintext fallback, no `printStackTrace`), versioned ciphertext prefix (`v2:`), legacy read path for existing rows, run crypto off the main thread                                              | 5   | P0  | EN-01         | C-2, SEC-4      |
-| EN-06b    | Test    | Instrumented test for the real AndroidKeyStore path (encrypt/decrypt/versioning) on an emulator                                                                                                                                                                | 2   | P0  | EN-06         | TESTING gaps    |
-| **F-2.1** | Feature | **Portable encrypted backup** (confirmed decision)                                                                                                                                                                                                             | 11  | P0  | EN-06         | SEC-1, C-1      |
+| ID        | Type    | Title                                                                                                                                                                                                                                                              | Pts | Pri | Blocked by    | Source          |
+| --------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --- | --- | ------------- | --------------- |
+| EN-06     | Enabler | **CryptoManager v2**: fail-closed (typed `CryptoException`, no plaintext fallback, no `printStackTrace`), versioned ciphertext prefix (`v2:`), legacy read path for existing rows, run crypto off the main thread                                                  | 5   | P0  | EN-01         | C-2, SEC-4      |
+| EN-06b    | Test    | Instrumented test for the real AndroidKeyStore path (encrypt/decrypt/versioning) on an emulator                                                                                                                                                                    | 2   | P0  | EN-06         | TESTING gaps    |
+| **F-2.1** | Feature | **Portable encrypted backup** (confirmed decision)                                                                                                                                                                                                                 | 11  | P0  | EN-06         | SEC-1, C-1      |
 | EN-2.1a   | Enabler | Backup format v2: JSON envelope `{format, version, kdf, iterations, salt, iv, ciphertext}`, key from backup password via **PBKDF2-HMAC-SHA256** (platform API, no new dependency, decided Q2), AES-256-GCM over the whole payload (all fields, not just passwords) | 5   | P0  | EN-06         | SEC-1           |
-| S-2.1b    | Story   | As a user, I set a backup password when exporting (confirm field, strength hint, "can't be recovered" warning) so that I can restore on another phone                                                                                                          | 3   | P0  | EN-2.1a       | SEC-1           |
-| S-2.1c    | Story   | As a user, I enter the backup password when importing. A wrong password shows a clear error, and a legacy v1 file imports only if this device can decrypt it, otherwise it's rejected (never imported as ciphertext)                                           | 3   | P0  | EN-2.1a       | C-1             |
-| S-2.4     | Story   | As a user, import is all-or-nothing (`withTransaction`), skips duplicates, and shows "X imported, Y skipped". The file size is checked before parsing                                                                                                          | 3   | P1  | EN-05, S-2.1c | REL-2, C-7, C-8 |
-| EN-07     | Enabler | Encrypt `site_name`, `username`, `url`, `notes` at rest. Room migration v1→v2 re-encrypts existing rows. Search moves to in-memory over decrypted rows (decided, Q1)                                                                                                    | 8   | P0  | EN-03, EN-06  | SEC-3, C-3      |
-| S-2.5     | Story   | Exclude `database` and `sharedpref` from `cloud-backup` and `device-transfer` in `data_extraction_rules.xml`. Tidy `backup_rules.xml`                                                                                                                          | 1   | P1  | none          | SEC-5, C-6      |
+| S-2.1b    | Story   | As a user, I set a backup password when exporting (confirm field, strength hint, "can't be recovered" warning) so that I can restore on another phone                                                                                                              | 3   | P0  | EN-2.1a       | SEC-1           |
+| S-2.1c    | Story   | As a user, I enter the backup password when importing. A wrong password shows a clear error, and a legacy v1 file imports only if this device can decrypt it, otherwise it's rejected (never imported as ciphertext)                                               | 3   | P0  | EN-2.1a       | C-1             |
+| S-2.4     | Story   | As a user, import is all-or-nothing (`withTransaction`), skips duplicates, and shows "X imported, Y skipped". The file size is checked before parsing                                                                                                              | 3   | P1  | EN-05, S-2.1c | REL-2, C-7, C-8 |
+| EN-07     | Enabler | Encrypt `site_name`, `username`, `url`, `notes` at rest. Room migration v1→v2 re-encrypts existing rows. Search moves to in-memory over decrypted rows (decided, Q1)                                                                                               | 8   | P0  | EN-03, EN-06  | SEC-3, C-3      |
+| S-2.5     | Story   | Exclude `database` and `sharedpref` from `cloud-backup` and `device-transfer` in `data_extraction_rules.xml`. Tidy `backup_rules.xml`                                                                                                                              | 1   | P1  | none          | SEC-5, C-6      |
 
 **Acceptance:** a phone-A → phone-B restore works. A wrong password never imports garbage. No plaintext vault field in the DB file or the backup. The migration test passes from a v1 DB with real data.
 
@@ -191,7 +191,7 @@ graph LR
 
 1. **Q1 Search after full-field encryption:** decrypt in memory and filter in Kotlin. No SQLCipher.
 2. **Q2 Backup KDF:** PBKDF2-HMAC-SHA256 (platform API). No Argon2 or native library.
-3. **Q3 Key binding:** app lock at the **UI level only** for now. The vault key is *not* bound to user authentication.
+3. **Q3 Key binding:** app lock at the **UI level only** for now. The vault key is _not_ bound to user authentication.
 4. **Q4 Autofill:** an important Kupass feature. F-7.2 is P1 and is the first M3 item.
 5. **Q5 Versioning:** **the app version stays `3.1.0`.** Milestones are not tied to version numbers, and agents never bump `versionName`/`versionCode`.
 
