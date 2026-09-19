@@ -33,12 +33,8 @@ class PasswordRepository(
             .flowOn(cryptoDispatcher)
 
     /** Case-insensitive match on site name, username, URL, and notes. */
-    fun searchPasswords(query: String): Flow<List<PasswordEntity>> {
-        val needle = query.trim()
-        return getAllPasswords()
-            .map { list -> list.filter { it.matches(needle) } }
-            .flowOn(cryptoDispatcher)
-    }
+    fun searchPasswords(query: String): Flow<List<PasswordEntity>> =
+        getAllPasswords().map { it.filterByQuery(query) }.flowOn(cryptoDispatcher)
 
     fun getPasswordById(id: Long): Flow<PasswordEntity?> =
         passwordDao.getById(id).map { it?.decrypted() }.flowOn(cryptoDispatcher)

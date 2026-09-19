@@ -86,7 +86,7 @@ class ViewModelsTest {
         repository.insertPassword(
             PasswordEntity(siteName = "GitHub", username = "bob", password = "p2")
         )
-        val vm = HomeViewModel(repository)
+        val vm = HomeViewModel(repository, filterDispatcher = mainDispatcher.dispatcher)
         backgroundScope.launchCollect(vm)
 
         assertEquals(listOf("GitHub", "Google"), vm.passwords.value.map { it.siteName })
