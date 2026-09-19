@@ -1,0 +1,90 @@
+# Overrides on top of detekt's default config (buildUponDefaultConfig = true).
+# Only Compose-driven adjustments live here; everything else keeps the defaults.
+
+naming:
+  FunctionNaming:
+    # Composables are PascalCase by convention.
+    ignoreAnnotated: ['Composable']
+  TopLevelPropertyNaming:
+    # Compose theme/color tokens are PascalCase or camelCase top-level vals.
+    constantPattern: '[A-Z][A-Za-z0-9]*|[a-z][A-Za-z0-9]*'
+
+style:
+  MagicNumber:
+    # Dimensions (16.dp), durations, and colors are literal by design in UI code.
+    ignoreAnnotated: ['Composable', 'Preview']
+    ignorePropertyDeclaration: true
+    ignoreCompanionObjectPropertyDeclaration: true
+  UnusedPrivateFunction:
+    ignoreAnnotated: ['Preview']
+
+complexity:
+  LongParameterList:
+    # Composables take many slots/state parameters by design (state hoisting).
+    ignoreAnnotated: ['Composable']
+  LongMethod:
+    ignoreAnnotated: ['Preview']
+
+Compose:
+  ComposableAnnotationNaming:
+    active: true
+  ComposableNaming:
+    active: true
+  ComposableParamOrder:
+    active: true
+  CompositionLocalAllowlist:
+    active: true
+  CompositionLocalNaming:
+    active: true
+  ContentEmitterReturningValues:
+    active: true
+  ContentTrailingLambda:
+    active: true
+  ContentSlotReused:
+    active: true
+  DefaultsVisibility:
+    active: true
+  LambdaParameterEventTrailing:
+    active: true
+  LambdaParameterInRestartableEffect:
+    active: true
+  Material2:
+    active: true
+  ModifierClickableOrder:
+    active: true
+  ModifierComposed:
+    active: true
+  ModifierMissing:
+    active: true
+  ModifierNaming:
+    active: true
+  ModifierNotUsedAtRoot:
+    active: true
+  ModifierReused:
+    active: true
+  ModifierWithoutDefault:
+    active: true
+  MultipleEmitters:
+    active: true
+  MutableParams:
+    active: true
+  MutableStateAutoboxing:
+    active: true
+  MutableStateParam:
+    active: true
+  ParameterNaming:
+    active: true
+  PreviewAnnotationNaming:
+    active: true
+  PreviewPublic:
+    active: true
+  RememberMissing:
+    active: true
+  RememberContentMissing:
+    active: true
+  UnstableCollections:
+    active: true
+  ViewModelForwarding:
+    active: true
+  ViewModelInjection:
+    active: true
