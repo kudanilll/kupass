@@ -3,6 +3,7 @@ package com.nielcode.kupass.ui.screens.settings
 import android.content.Context
 import android.content.Intent
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -44,6 +45,7 @@ import com.nielcode.kupass.security.AppLock
 import com.nielcode.kupass.ui.components.SectionHeader
 import com.nielcode.kupass.ui.components.SectionItem
 import com.nielcode.kupass.ui.components.SingleChoiceDialog
+import com.nielcode.kupass.ui.screens.pagerPageInsets
 import com.nielcode.kupass.ui.theme.AppearanceSettings
 import com.nielcode.kupass.utils.AppConfig
 import com.nielcode.kupass.utils.openUrl
@@ -60,19 +62,21 @@ private enum class SettingsDialog {
 
 /** App settings: language, auto-lock, theme, dynamic color, and about links. */
 @Composable
-fun SettingsScreen(modifier: Modifier = Modifier) {
+fun SettingsScreen(modifier: Modifier = Modifier, contentPadding: PaddingValues = PaddingValues()) {
     val context = LocalContext.current
     val container = remember(context) { (context.applicationContext as App).container }
     val settings = remember(container) { SettingsController(context, container.preferenceManager) }
     var openDialog by remember { mutableStateOf<SettingsDialog?>(null) }
 
-    Scaffold(modifier = modifier.fillMaxSize()) { innerPadding ->
+    Scaffold(modifier = modifier.fillMaxSize(), contentWindowInsets = pagerPageInsets()) {
+        innerPadding ->
         Column(
             modifier =
                 Modifier.fillMaxSize()
                     .padding(innerPadding)
-                    .padding(vertical = 16.dp)
                     .verticalScroll(rememberScrollState())
+                    // Inside the scroll: the last item can scroll above the floating navigation.
+                    .padding(top = 16.dp, bottom = 16.dp + contentPadding.calculateBottomPadding())
         ) {
             GeneralSection(
                 languageIndex = settings.language,

@@ -11,7 +11,6 @@
     <string name="edit_password">Edit password</string>
     <string name="password_detail">Password detail</string>
     <string name="show_password">Show password</string>
-    <string name="empty_vault">No password saved</string>
     <string name="copied">Copied to clipboard</string>
     <string name="copy">Copy</string>
     
@@ -165,4 +164,9 @@
     <string name="menu_edit">Edit</string>
     <string name="menu_delete">Delete</string>
     <string name="more_options">More options</string>
+    <string name="empty_vault_title">Your vault is empty</string>
+    <string name="empty_vault_body">Save your first password. Everything stays encrypted on this device.</string>
+    <string name="empty_vault_action">Add password</string>
+    <string name="empty_search_title">No results</string>
+    <string name="empty_search_body">Nothing in your vault matches “%1$s”.</string>
 </resources>

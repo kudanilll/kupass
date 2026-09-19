@@ -2,6 +2,7 @@ package com.nielcode.kupass.ui.screens
 
 import android.net.Uri
 import android.widget.Toast
+import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -14,6 +15,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -45,7 +47,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.nielcode.kupass.App
+import com.nielcode.kupass.security.AppLock
 import com.nielcode.kupass.ui.components.BottomNav
+import com.nielcode.kupass.ui.components.BottomNavHeight
 import com.nielcode.kupass.ui.components.MainTab
 import com.nielcode.kupass.ui.components.navSpring
 import com.nielcode.kupass.ui.screens.data.BackupProgressDialog
@@ -129,19 +133,14 @@ fun MainPagerScreen(
     val importPrompt by backupViewModel.importPrompt.collectAsStateWithLifecycle()
     val backupBusy by backupViewModel.backupBusy.collectAsStateWithLifecycle()
 
-    val appContext = LocalContext.current.applicationContext
-    val appLock = remember(appContext) { (appContext as App).container.appLock }
-    val exportLauncher =
-        rememberLauncherForActivityResult(
-            ActivityResultContracts.CreateDocument(BACKUP_MIME_TYPE)
-        ) { uri: Uri? ->
-            if (uri != null) backupViewModel.exportPasswords(uri)
-            else backupViewModel.cancelExport()
-        }
-    val importLauncher =
-        rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? ->
-            uri?.let(backupViewModel::importPasswords)
-        }
+    val filePickers =
+        rememberBackupFilePickers(
+            onExportFilePick = { uri ->
+                if (uri != null) backupViewModel.exportPasswords(uri)
+                else backupViewModel.cancelExport()
+            },
+            onImportFilePick = backupViewModel::importPasswords,
+        )
     var showExportDialog by remember { mutableStateOf(false) }
 
     BackupDialogs(
@@ -151,8 +150,7 @@ fun MainPagerScreen(
         onExportConfirm = { password ->
             showExportDialog = false
             backupViewModel.prepareExport(password)
-            appLock.allowNextBackground() // the file picker must not lock the vault
-            exportLauncher.launch(BACKUP_FILE_NAME)
+            filePickers.pickExportFile()
         },
         onExportDismiss = { showExportDialog = false },
         onImportPassword = backupViewModel::submitImportPassword,
@@ -164,7 +162,7 @@ fun MainPagerScreen(
     MainPager(
         onAddClick = onNavigateToEditor,
         modifier = modifier,
-    ) { tab ->
+    ) { tab, contentPadding ->
         when (tab) {
             MainTab.Home ->
                 HomeScreen(
@@ -173,17 +171,58 @@ fun MainPagerScreen(
                     onSearchQueryChange = homeViewModel::onSearchQueryChange,
                     onDeletePassword = homeViewModel::deletePassword,
                     onNavigateToDetail = onNavigateToDetail,
+                    onAddPassword = onNavigateToEditor,
+                    contentPadding = contentPadding,
                 )
             MainTab.Data ->
                 DataScreen(
                     onExportClick = { showExportDialog = true },
-                    onImportClick = {
-                        appLock.allowNextBackground()
-                        importLauncher.launch(arrayOf(BACKUP_MIME_TYPE))
-                    },
+                    onImportClick = filePickers::pickImportFile,
+                    contentPadding = contentPadding,
                 )
-            MainTab.Settings -> SettingsScreen()
+            MainTab.Settings -> SettingsScreen(contentPadding = contentPadding)
         }
+    }
+}
+
+/** Storage Access Framework pickers for backups. Leaving for the picker never locks the vault. */
+private class BackupFilePickers(
+    private val appLock: AppLock,
+    private val exportLauncher: ManagedActivityResultLauncher<String, Uri?>,
+    private val importLauncher: ManagedActivityResultLauncher<Array<String>, Uri?>,
+) {
+    fun pickExportFile() {
+        appLock.allowNextBackground()
+        exportLauncher.launch(BACKUP_FILE_NAME)
+    }
+
+    fun pickImportFile() {
+        appLock.allowNextBackground()
+        importLauncher.launch(arrayOf(BACKUP_MIME_TYPE))
+    }
+}
+
+/**
+ * @param onExportFilePick receives null when the user backs out of the picker.
+ * @param onImportFilePick only called when a file was chosen.
+ */
+@Composable
+private fun rememberBackupFilePickers(
+    onExportFilePick: (Uri?) -> Unit,
+    onImportFilePick: (Uri) -> Unit,
+): BackupFilePickers {
+    val appContext = LocalContext.current.applicationContext
+    val exportLauncher =
+        rememberLauncherForActivityResult(
+            ActivityResultContracts.CreateDocument(BACKUP_MIME_TYPE),
+            onExportFilePick,
+        )
+    val importLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+            uri?.let(onImportFilePick)
+        }
+    return remember(appContext, exportLauncher, importLauncher) {
+        BackupFilePickers((appContext as App).container.appLock, exportLauncher, importLauncher)
     }
 }
 
@@ -196,16 +235,21 @@ fun MainPagerScreen(
 private fun MainPager(
     onAddClick: () -> Unit,
     modifier: Modifier = Modifier,
-    page: @Composable (MainTab) -> Unit,
+    page: @Composable (tab: MainTab, contentPadding: PaddingValues) -> Unit,
 ) {
     val pagerState = rememberPagerState(pageCount = { MainTab.entries.size })
     val coroutineScope = rememberCoroutineScope()
     var bottomBarVisible by remember { mutableStateOf(true) }
     val hideOnScroll = remember { HideOnScrollConnection { bottomBarVisible = it } }
 
+    val navigationBar = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    val pageContentPadding = PaddingValues(bottom = BottomNavHeight + navigationBar)
+
     Box(modifier = modifier.fillMaxSize().nestedScroll(hideOnScroll)) {
         HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) { index ->
-            Box(modifier = Modifier.fillMaxSize()) { page(MainTab.entries[index]) }
+            Box(modifier = Modifier.fillMaxSize()) {
+                page(MainTab.entries[index], pageContentPadding)
+            }
         }
         AnimatedVisibility(
             visible = bottomBarVisible,

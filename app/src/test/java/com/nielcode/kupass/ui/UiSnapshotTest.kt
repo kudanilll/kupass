@@ -80,6 +80,19 @@ class UiSnapshotTest {
 
     @Test fun homeEmpty() = snapshot("home_empty") { home(emptyList()) }
 
+    @Test
+    fun homeNoResults() =
+        snapshot("home_no_results") {
+            HomeScreen(
+                passwords = emptyList(),
+                searchQuery = "bank",
+                onSearchQueryChange = {},
+                onDeletePassword = {},
+                onNavigateToDetail = {},
+                onAddPassword = {},
+            )
+        }
+
     @Test fun data() = snapshot("data") { DataScreen(onExportClick = {}, onImportClick = {}) }
 
     @Test fun settings() = snapshot("settings") { SettingsScreen() }
@@ -132,6 +145,7 @@ class UiSnapshotTest {
             onSearchQueryChange = {},
             onDeletePassword = {},
             onNavigateToDetail = {},
+            onAddPassword = {},
         )
 
     private fun snapshot(

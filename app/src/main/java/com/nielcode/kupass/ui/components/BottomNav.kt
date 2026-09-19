@@ -50,6 +50,9 @@ import com.nielcode.kupass.ui.theme.KupassTheme
 internal fun <T> navSpring() =
     spring<T>(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessMediumLow)
 
+/** Height the floating navigation occupies (FAB plus vertical padding); pages pad by this. */
+val BottomNavHeight = 80.dp
+
 private val NavShadow = 8.dp
 private val PillToAddSpacing = 12.dp
 

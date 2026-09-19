@@ -1,8 +1,11 @@
 package com.nielcode.kupass.ui.screens.data
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.FileUpload
@@ -15,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import com.nielcode.kupass.R
 import com.nielcode.kupass.ui.components.SectionHeader
 import com.nielcode.kupass.ui.components.SectionItem
+import com.nielcode.kupass.ui.screens.pagerPageInsets
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -22,9 +26,17 @@ fun DataScreen(
     onExportClick: () -> Unit,
     onImportClick: () -> Unit,
     modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues(),
 ) {
-    Scaffold(modifier = modifier.fillMaxSize()) { innerPadding ->
-        Column(modifier = Modifier.fillMaxSize().padding(innerPadding).padding(vertical = 16.dp)) {
+    Scaffold(modifier = modifier.fillMaxSize(), contentWindowInsets = pagerPageInsets()) {
+        innerPadding ->
+        Column(
+            modifier =
+                Modifier.fillMaxSize()
+                    .padding(innerPadding)
+                    .verticalScroll(rememberScrollState())
+                    .padding(top = 16.dp, bottom = 16.dp + contentPadding.calculateBottomPadding())
+        ) {
             SectionHeader(title = stringResource(R.string.data_export_import_title))
             SectionItem(
                 icon = Icons.Default.FileUpload,
