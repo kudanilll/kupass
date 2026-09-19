@@ -15,13 +15,14 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 
+/** Outlined text field with a leading icon, used by the password editor form. */
 @Composable
-fun TextField(
+fun VaultTextField(
     value: String,
     onValueChange: (String) -> Unit,
     label: String,
     icon: ImageVector,
-    modifier: Modifier = Modifier.fillMaxWidth(),
+    modifier: Modifier = Modifier,
     placeholder: String = "",
     singleLine: Boolean = true,
     keyboardType: KeyboardType = KeyboardType.Text,
@@ -41,7 +42,7 @@ fun TextField(
             )
         },
         trailingIcon = trailingIcon,
-        modifier = modifier,
+        modifier = modifier.fillMaxWidth(),
         singleLine = singleLine,
         keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
         visualTransformation = visualTransformation,

@@ -3,7 +3,6 @@ package com.nielcode.kupass.data.repository
 import com.nielcode.kupass.data.local.db.PasswordDao
 import com.nielcode.kupass.data.local.db.PasswordEntity
 import com.nielcode.kupass.utils.CryptoException
-import com.nielcode.kupass.utils.CryptoManager
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -97,37 +96,6 @@ class PasswordRepository(
             if (upgraded.isNotEmpty()) passwordDao.updateAll(upgraded)
             upgraded.size
         }
-
-    private fun PasswordEntity.decrypted() =
-        copy(
-            siteName = CryptoManager.decrypt(siteName),
-            username = CryptoManager.decrypt(username),
-            password = CryptoManager.decrypt(password),
-            url = CryptoManager.decrypt(url),
-            notes = CryptoManager.decrypt(notes),
-        )
-
-    private fun PasswordEntity.encrypted() =
-        copy(
-            siteName = CryptoManager.encrypt(siteName),
-            username = CryptoManager.encrypt(username),
-            password = CryptoManager.encrypt(password),
-            url = CryptoManager.encrypt(url),
-            notes = CryptoManager.encrypt(notes),
-        )
-
-    private fun PasswordEntity.isCurrentFormat() =
-        listOf(siteName, username, password, url, notes).all(CryptoManager::isCurrentFormat)
-
-    private fun PasswordEntity.identity() =
-        listOf(siteName.trim().lowercase(), username, url, password)
-
-    private fun PasswordEntity.matches(needle: String) =
-        needle.isEmpty() ||
-            listOf(siteName, username, url, notes).any { it.contains(needle, ignoreCase = true) }
-
-    private fun List<PasswordEntity>.sortedForDisplay() =
-        sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.siteName })
 }
 
 /** Outcome of [PasswordRepository.importPasswords]. */

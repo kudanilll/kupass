@@ -47,6 +47,8 @@
     <!-- Navigation Drawer -->
     <string name="nav_export">Ekspor Kata Sandi</string>
     <string name="nav_import">Impor Kata Sandi</string>
+    <string name="nav_home">Beranda</string>
+    <string name="nav_data">Data</string>
     <string name="nav_settings">Pengaturan</string>
 
     <!-- Settings -->
@@ -66,7 +68,6 @@
     <string name="backup_export_dialog_message">Buat kata sandi cadangan. Kata sandi ini dibutuhkan untuk memulihkan cadangan di perangkat mana pun dan tidak dapat dipulihkan jika lupa.</string>
     <string name="backup_password_label">Kata sandi cadangan</string>
     <string name="backup_password_confirm_label">Konfirmasi kata sandi</string>
-    <string name="backup_password_too_short">Gunakan minimal %1$d karakter</string>
     <string name="backup_password_mismatch">Kata sandi tidak cocok</string>
     <string name="backup_import_dialog_title">Masukkan kata sandi cadangan</string>
     <string name="backup_import_dialog_message">Cadangan ini terenkripsi. Masukkan kata sandi yang kamu buat saat mengekspornya.</string>
@@ -149,5 +150,11 @@
     </plurals>
     <plurals name="toast_import_skipped">
         <item quantity="other">%1$d dilewati</item>
+    </plurals>
+    <string name="search_close">Tutup pencarian</string>
+    <string name="search_searching_for">Mencari: %1$s</string>
+    <string name="site_placeholder">Cth: Netflix, Google</string>
+    <plurals name="backup_password_too_short">
+        <item quantity="other">Gunakan minimal %1$d karakter</item>
     </plurals>
 </resources>

@@ -18,8 +18,12 @@ import com.nielcode.kupass.ui.components.SectionItem
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DataScreen(onExportClick: () -> Unit, onImportClick: () -> Unit) {
-    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+fun DataScreen(
+    onExportClick: () -> Unit,
+    onImportClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Scaffold(modifier = modifier.fillMaxSize()) { innerPadding ->
         Column(modifier = Modifier.fillMaxSize().padding(innerPadding).padding(vertical = 16.dp)) {
             SectionHeader(title = stringResource(R.string.data_export_import_title))
             SectionItem(

@@ -32,6 +32,13 @@ object CryptoManager {
     private const val IV_SIZE = 12
     private const val TAG_BITS = 128
     private const val TAG_SIZE = TAG_BITS / 8
+    private const val KEY_SIZE_BITS = 256
+
+    /**
+     * v1 ciphertext is canonical Base64 of at least IV + tag + 1 byte: 40+ chars, length % 4 == 0.
+     */
+    private const val BASE64_BLOCK = 4
+    private const val MIN_V1_CIPHERTEXT_CHARS = 40
 
     const val PREFIX_V2 = "kp2:"
 
@@ -76,15 +83,19 @@ object CryptoManager {
      * @throws CryptoException if a v2 value can't be decrypted, or a value that looks like v1
      *   ciphertext fails authentication (wrong key or corruption).
      */
-    fun decrypt(stored: String): String {
-        if (stored.isEmpty()) return stored
-        if (stored.startsWith(PREFIX_V2)) {
-            val payload =
-                decodeBase64(stored.substring(PREFIX_V2.length))
-                    ?: throw CryptoException("Malformed ciphertext")
-            return decryptPayload(payload)
+    fun decrypt(stored: String): String =
+        when {
+            stored.isEmpty() -> stored
+            stored.startsWith(PREFIX_V2) ->
+                decryptPayload(
+                    decodeBase64(stored.removePrefix(PREFIX_V2))
+                        ?: throw CryptoException("Malformed ciphertext")
+                )
+            else -> decryptLegacy(stored)
         }
-        // Legacy value without a prefix: v1 ciphertext or pre-encryption plaintext.
+
+    /** A value without a prefix: v1 ciphertext, or plaintext written before encryption existed. */
+    private fun decryptLegacy(stored: String): String {
         val payload = decodeBase64(stored)
         if (payload == null || payload.size < IV_SIZE + TAG_SIZE) return stored
         return try {
@@ -115,8 +126,8 @@ object CryptoManager {
      * decrypt of such a value is treated as corruption rather than silently accepted.
      */
     private fun looksLikeV1Ciphertext(value: String): Boolean =
-        value.length % 4 == 0 &&
-            value.length >= 40 &&
+        value.length % BASE64_BLOCK == 0 &&
+            value.length >= MIN_V1_CIPHERTEXT_CHARS &&
             value.all { it.isLetterOrDigit() || it == '+' || it == '/' || it == '=' }
 
     private fun decodeBase64(value: String): ByteArray? =
@@ -142,7 +153,7 @@ object CryptoManager {
                     )
                     .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
                     .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
-                    .setKeySize(256)
+                    .setKeySize(KEY_SIZE_BITS)
                     .build()
             )
             return generator.generateKey()

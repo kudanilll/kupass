@@ -8,6 +8,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.nielcode.kupass.data.local.db.PasswordEntity
 import com.nielcode.kupass.data.repository.PasswordRepository
 import com.nielcode.kupass.di.appContainer
+import com.nielcode.kupass.ui.screens.recoverable
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -24,7 +25,7 @@ sealed interface SaveState {
 
     data object Success : SaveState
 
-    data class Error(val message: String) : SaveState
+    data object Error : SaveState
 }
 
 /**
@@ -76,7 +77,7 @@ class PasswordEditorViewModel(private val repository: PasswordRepository) : View
     ) {
         viewModelScope.launch {
             _saveState.value = SaveState.Saving
-            try {
+            val saved = recoverable {
                 val existing = _existingPassword.value
                 if (existing != null) {
                     // Edit mode: update existing password
@@ -102,10 +103,8 @@ class PasswordEditorViewModel(private val repository: PasswordRepository) : View
                         )
                     repository.insertPassword(entity)
                 }
-                _saveState.value = SaveState.Success
-            } catch (e: Exception) {
-                _saveState.value = SaveState.Error(e.message ?: "Unknown error")
             }
+            _saveState.value = if (saved != null) SaveState.Success else SaveState.Error
         }
     }
 

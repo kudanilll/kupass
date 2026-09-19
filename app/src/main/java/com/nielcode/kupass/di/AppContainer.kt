@@ -9,6 +9,7 @@ import com.nielcode.kupass.data.local.db.KupassDatabase
 import com.nielcode.kupass.data.local.prefs.PreferenceManager
 import com.nielcode.kupass.data.repository.PasswordRepository
 import com.nielcode.kupass.security.AppLock
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -17,11 +18,14 @@ import kotlinx.coroutines.SupervisorJob
  * Manual dependency container, created once in [App.onCreate]. Kept deliberately small instead of
  * adding a DI framework, to keep the app light.
  */
-class AppContainer(context: Context) {
+class AppContainer(
+    context: Context,
+    backgroundDispatcher: CoroutineDispatcher = Dispatchers.Default,
+) {
     private val appContext = context.applicationContext
 
     /** Process-lifetime scope for background maintenance (never tied to a screen). */
-    val applicationScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    val applicationScope: CoroutineScope = CoroutineScope(SupervisorJob() + backgroundDispatcher)
 
     val passwordRepository: PasswordRepository by lazy {
         PasswordRepository(KupassDatabase.getInstance(appContext).passwordDao())

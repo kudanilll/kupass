@@ -1,6 +1,5 @@
 package com.nielcode.kupass.ui.screens.home.components
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -36,30 +35,26 @@ import com.nielcode.kupass.R
 import com.nielcode.kupass.data.local.db.PasswordEntity
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+/** Scrollable vault: headline, sticky search bar, and swipe-to-delete rows. */
 @Composable
 fun VaultList(
-    modifier: Modifier = Modifier,
-    contentPadding: PaddingValues = PaddingValues(0.dp),
     passwords: List<PasswordEntity>,
     query: String,
     onQueryChange: (String) -> Unit,
-    active: Boolean,
-    onActiveChange: (Boolean) -> Unit,
-    onItemClick: (PasswordEntity) -> Unit = {},
-    onDeleteItem: (PasswordEntity) -> Unit = {},
+    searchActive: Boolean,
+    onSearchActiveChange: (Boolean) -> Unit,
+    onItemClick: (PasswordEntity) -> Unit,
+    onDeleteItem: (PasswordEntity) -> Unit,
+    modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues(0.dp),
 ) {
-    val bottomPadding = contentPadding.calculateBottomPadding()
-    val coroutineScope = rememberCoroutineScope()
-    val isEmpty = passwords.isEmpty()
-
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = modifier.fillMaxSize()) {
         LazyColumn(
-            modifier = modifier.fillMaxSize(),
-            contentPadding = PaddingValues(bottom = bottomPadding),
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(bottom = contentPadding.calculateBottomPadding()),
         ) {
             item {
-                if (!active) {
+                if (!searchActive) {
                     Text(
                         text = stringResource(R.string.headline),
                         style = MaterialTheme.typography.displaySmall,
@@ -68,77 +63,15 @@ fun VaultList(
                     )
                 }
             }
-
             stickyHeader {
-                Box(
-                    modifier =
-                        Modifier.fillMaxWidth()
-                            .background(
-                                brush =
-                                    Brush.verticalGradient(
-                                        colors =
-                                            listOf(
-                                                MaterialTheme.colorScheme.surface,
-                                                MaterialTheme.colorScheme.surface.copy(
-                                                    alpha = 0.7f
-                                                ),
-                                                Color.Transparent,
-                                            )
-                                    )
-                            )
-                            .padding(horizontal = 16.dp)
-                ) {
-                    DockedSearchBar(
-                        inputField = {
-                            SearchBarDefaults.InputField(
-                                query = query,
-                                onQueryChange = onQueryChange,
-                                onSearch = { onActiveChange(false) },
-                                expanded = active,
-                                onExpandedChange = onActiveChange,
-                                enabled = true,
-                                placeholder = { Text(stringResource(R.string.search_hint)) },
-                                leadingIcon = {
-                                    Icon(Icons.Default.Search, contentDescription = null)
-                                },
-                                trailingIcon = {
-                                    if (active) {
-                                        Icon(
-                                            imageVector = Icons.Default.Close,
-                                            contentDescription = "Close Search",
-                                            modifier =
-                                                Modifier.padding(8.dp).clickable {
-                                                    if (query.isNotEmpty()) {
-                                                        onQueryChange("")
-                                                    } else {
-                                                        onActiveChange(false)
-                                                    }
-                                                },
-                                        )
-                                    }
-                                },
-                                modifier = Modifier.fillMaxWidth(),
-                            )
-                        },
-                        expanded = active,
-                        onExpandedChange = onActiveChange,
-                        shape = SearchBarDefaults.dockedShape,
-                        colors = SearchBarDefaults.colors(),
-                        tonalElevation = SearchBarDefaults.TonalElevation,
-                        shadowElevation = SearchBarDefaults.ShadowElevation,
-                        modifier = Modifier.fillMaxWidth().padding(top = 16.dp, bottom = 8.dp),
-                        content = {
-                            if (active) {
-                                if (query.isNotEmpty()) {
-                                    Text("Mencari: $query", modifier = Modifier.padding(16.dp))
-                                }
-                            }
-                        },
-                    )
-                }
+                VaultSearchBar(
+                    query = query,
+                    onQueryChange = onQueryChange,
+                    active = searchActive,
+                    onActiveChange = onSearchActiveChange,
+                )
             }
-
-            if (isEmpty) {
+            if (passwords.isEmpty()) {
                 item {
                     Text(
                         text = stringResource(R.string.empty_vault),
@@ -147,66 +80,143 @@ fun VaultList(
                 }
             } else {
                 items(items = passwords, key = { it.id }) { password ->
-                    val dismissState = rememberSwipeToDismissBoxState()
-
-                    SwipeToDismissBox(
-                        state = dismissState,
-                        backgroundContent = {
-                            Box(
-                                modifier =
-                                    Modifier.fillMaxSize()
-                                        .padding(vertical = 2.dp)
-                                        .background(MaterialTheme.colorScheme.errorContainer),
-                                contentAlignment = Alignment.CenterEnd,
-                            ) {
-                                Icon(
-                                    Icons.Default.Delete,
-                                    contentDescription = stringResource(R.string.button_delete),
-                                    tint = MaterialTheme.colorScheme.onErrorContainer,
-                                    modifier = Modifier.padding(end = 24.dp),
-                                )
-                            }
-                        },
-                        enableDismissFromStartToEnd = false,
-                        enableDismissFromEndToStart = true,
-                        onDismiss = { dismissValue ->
-                            if (dismissValue == SwipeToDismissBoxValue.EndToStart) {
-                                // Ask for confirmation instead of deleting right away, then
-                                // slide the row back; deletion happens only from the dialog.
-                                onDeleteItem(password)
-                                coroutineScope.launch { dismissState.reset() }
-                            }
-                        },
-                    ) {
-                        PasswordListItem(
-                            title = password.siteName,
-                            subtitle = password.username.ifBlank { password.url },
-                            fallbackChar = password.siteName.firstOrNull()?.uppercase() ?: "?",
-                            onClick = { onItemClick(password) },
-                        )
-                    }
+                    SwipeToDeleteRow(
+                        password = password,
+                        onClick = { onItemClick(password) },
+                        onDelete = { onDeleteItem(password) },
+                    )
                 }
             }
         }
+        BottomFade(modifier = Modifier.align(Alignment.BottomCenter))
+    }
+}
 
-        // Bottom gradient overlay
-        Box(
-            modifier =
-                Modifier.fillMaxWidth()
-                    .align(Alignment.BottomCenter)
-                    .background(
-                        brush =
-                            Brush.verticalGradient(
-                                colorStops =
-                                    arrayOf(
-                                        0f to Color.Transparent,
-                                        0.6f to
-                                            MaterialTheme.colorScheme.surface.copy(alpha = 0.7f),
-                                        1f to MaterialTheme.colorScheme.surface,
-                                    )
-                            )
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun VaultSearchBar(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    active: Boolean,
+    onActiveChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val surface = MaterialTheme.colorScheme.surface
+    Box(
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .background(
+                    Brush.verticalGradient(
+                        listOf(surface, surface.copy(alpha = 0.7f), Color.Transparent)
                     )
-                    .height(80.dp)
+                )
+                .padding(horizontal = 16.dp)
+    ) {
+        DockedSearchBar(
+            inputField = {
+                SearchBarDefaults.InputField(
+                    query = query,
+                    onQueryChange = onQueryChange,
+                    onSearch = { onActiveChange(false) },
+                    expanded = active,
+                    onExpandedChange = onActiveChange,
+                    placeholder = { Text(stringResource(R.string.search_hint)) },
+                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                    trailingIcon = {
+                        if (active) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = stringResource(R.string.search_close),
+                                modifier =
+                                    Modifier.padding(8.dp).clickable {
+                                        // First tap clears the query, second tap closes search.
+                                        if (query.isNotEmpty()) onQueryChange("")
+                                        else onActiveChange(false)
+                                    },
+                            )
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            },
+            expanded = active,
+            onExpandedChange = onActiveChange,
+            modifier = Modifier.fillMaxWidth().padding(top = 16.dp, bottom = 8.dp),
+        ) {
+            if (active && query.isNotEmpty()) {
+                Text(
+                    text = stringResource(R.string.search_searching_for, query),
+                    modifier = Modifier.padding(16.dp),
+                )
+            }
+        }
+    }
+}
+
+/** A vault row. Swiping it asks for confirmation (via [onDelete]) and slides back. */
+@Composable
+private fun SwipeToDeleteRow(
+    password: PasswordEntity,
+    onClick: () -> Unit,
+    onDelete: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val dismissState = rememberSwipeToDismissBoxState()
+    val coroutineScope = rememberCoroutineScope()
+    SwipeToDismissBox(
+        state = dismissState,
+        modifier = modifier,
+        backgroundContent = {
+            Box(
+                modifier =
+                    Modifier.fillMaxSize()
+                        .padding(vertical = 2.dp)
+                        .background(MaterialTheme.colorScheme.errorContainer),
+                contentAlignment = Alignment.CenterEnd,
+            ) {
+                Icon(
+                    Icons.Default.Delete,
+                    contentDescription = stringResource(R.string.button_delete),
+                    tint = MaterialTheme.colorScheme.onErrorContainer,
+                    modifier = Modifier.padding(end = 24.dp),
+                )
+            }
+        },
+        enableDismissFromStartToEnd = false,
+        enableDismissFromEndToStart = true,
+        onDismiss = { dismissValue ->
+            if (dismissValue == SwipeToDismissBoxValue.EndToStart) {
+                // Deletion happens only from the confirmation dialog; the row slides back.
+                onDelete()
+                coroutineScope.launch { dismissState.reset() }
+            }
+        },
+    ) {
+        PasswordListItem(
+            title = password.siteName,
+            subtitle = password.username.ifBlank { password.url },
+            fallbackChar = password.siteName.firstOrNull()?.uppercase() ?: "?",
+            onClick = onClick,
         )
     }
+}
+
+/** Fades list content out behind the floating bottom navigation. */
+@Composable
+private fun BottomFade(modifier: Modifier = Modifier) {
+    val surface = MaterialTheme.colorScheme.surface
+    Box(
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .height(80.dp)
+                .background(
+                    Brush.verticalGradient(
+                        0f to Color.Transparent,
+                        0.6f to surface.copy(alpha = 0.7f),
+                        1f to surface,
+                    )
+                )
+    )
 }

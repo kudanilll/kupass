@@ -22,6 +22,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -54,8 +55,9 @@ fun ExportPasswordDialog(onConfirm: (CharArray) -> Unit, onDismiss: () -> Unit) 
                     label = stringResource(R.string.backup_password_label),
                     error =
                         if (password.isNotEmpty() && tooShort) {
-                            stringResource(
-                                R.string.backup_password_too_short,
+                            pluralStringResource(
+                                R.plurals.backup_password_too_short,
+                                BackupCodec.MIN_PASSWORD_LENGTH,
                                 BackupCodec.MIN_PASSWORD_LENGTH,
                             )
                         } else {

@@ -1,13 +1,15 @@
 # Overrides on top of detekt's default config (buildUponDefaultConfig = true).
 # Only Compose-driven adjustments live here; everything else keeps the defaults.
 
+empty-blocks:
+  EmptyFunctionBlock:
+    # Required no-op overrides of platform interfaces (e.g. ActivityLifecycleCallbacks on API 27).
+    ignoreOverridden: true
+
 naming:
   FunctionNaming:
     # Composables are PascalCase by convention.
     ignoreAnnotated: ['Composable']
-  TopLevelPropertyNaming:
-    # Compose theme/color tokens are PascalCase or camelCase top-level vals.
-    constantPattern: '[A-Z][A-Za-z0-9]*|[a-z][A-Za-z0-9]*'
 
 style:
   MagicNumber:
@@ -83,7 +85,9 @@ Compose:
   RememberContentMissing:
     active: true
   UnstableCollections:
-    active: true
+    # Off by default upstream. Strong skipping (default since Kotlin 2.0.20) already skips
+    # recomposition for unstable parameters by instance equality.
+    active: false
   ViewModelForwarding:
     active: true
   ViewModelInjection:

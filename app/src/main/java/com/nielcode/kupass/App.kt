@@ -4,12 +4,11 @@ import android.app.Activity
 import android.app.Application
 import android.os.Bundle
 import android.view.WindowManager
-import androidx.appcompat.app.AppCompatDelegate
-import androidx.core.os.LocaleListCompat
 import com.google.android.material.color.DynamicColors
 import com.nielcode.kupass.data.local.prefs.PreferenceManager
 import com.nielcode.kupass.di.AppContainer
 import com.nielcode.kupass.utils.AppConfig
+import com.nielcode.kupass.utils.AppearanceSettings
 import kotlinx.coroutines.launch
 
 class App : Application() {
@@ -54,29 +53,9 @@ class App : Application() {
         val prefs = container.preferenceManager
 
         // Apply user settings on app startup
-        applyLanguage(prefs.language)
-        applyTheme(prefs.theme)
+        AppearanceSettings.applyLanguage(this, prefs.language)
+        AppearanceSettings.applyTheme(prefs.theme)
         applyDynamicColors(prefs)
-    }
-
-    private fun applyLanguage(languageIndex: Int) {
-        val languageTags = resources.getStringArray(R.array.language_values)
-        // Ensure index is valid to prevent crashes
-        if (languageIndex in languageTags.indices) {
-            val localeTag = languageTags[languageIndex]
-            val appLocale = LocaleListCompat.forLanguageTags(localeTag)
-            AppCompatDelegate.setApplicationLocales(appLocale)
-        }
-    }
-
-    private fun applyTheme(themeCode: Int) {
-        val nightMode =
-            when (themeCode) {
-                AppConfig.Theme.Code.LIGHT -> AppCompatDelegate.MODE_NIGHT_NO
-                AppConfig.Theme.Code.DARK -> AppCompatDelegate.MODE_NIGHT_YES
-                else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
-            }
-        AppCompatDelegate.setDefaultNightMode(nightMode)
     }
 
     private fun applyDynamicColors(prefs: PreferenceManager) {

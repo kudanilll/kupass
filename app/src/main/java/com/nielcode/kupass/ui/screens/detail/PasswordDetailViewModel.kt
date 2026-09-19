@@ -8,8 +8,9 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.nielcode.kupass.data.local.db.PasswordEntity
 import com.nielcode.kupass.data.repository.PasswordRepository
 import com.nielcode.kupass.di.appContainer
+import com.nielcode.kupass.ui.screens.WhileUiSubscribed
+import com.nielcode.kupass.ui.screens.recoverable
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
@@ -24,7 +25,7 @@ sealed interface DeleteState {
 
     data object Success : DeleteState
 
-    data class Error(val message: String) : DeleteState
+    data object Error : DeleteState
 }
 
 /** ViewModel for the Password Detail screen. Loads a single password by ID and handles deletion. */
@@ -47,7 +48,7 @@ class PasswordDetailViewModel(private val repository: PasswordRepository) : View
                 .catch { emit(null) } // undecryptable entry: show nothing rather than ciphertext
                 .stateIn(
                     scope = viewModelScope,
-                    started = SharingStarted.WhileSubscribed(5000),
+                    started = WhileUiSubscribed,
                     initialValue = null,
                 )
                 .collect { _password.value = it }
@@ -58,12 +59,12 @@ class PasswordDetailViewModel(private val repository: PasswordRepository) : View
         val currentPassword = _password.value ?: return
         viewModelScope.launch {
             _deleteState.value = DeleteState.Deleting
-            try {
-                repository.deletePassword(currentPassword)
-                _deleteState.value = DeleteState.Success
-            } catch (e: Exception) {
-                _deleteState.value = DeleteState.Error(e.message ?: "Unknown error")
-            }
+            _deleteState.value =
+                if (recoverable { repository.deletePassword(currentPassword) } != null) {
+                    DeleteState.Success
+                } else {
+                    DeleteState.Error
+                }
         }
     }
 

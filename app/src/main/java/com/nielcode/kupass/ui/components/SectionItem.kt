@@ -27,6 +27,7 @@ fun SectionItem(
     title: String,
     subtitle: String,
     onClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     Card(
         onClick = onClick,
@@ -35,7 +36,7 @@ fun SectionItem(
             CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f)
             ),
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
+        modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
         Row(
@@ -43,8 +44,8 @@ fun SectionItem(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
-                imageVector = icon, // Eksekusi ImageVector
-                contentDescription = title,
+                imageVector = icon,
+                contentDescription = null, // decorative: the title is read instead
                 modifier = Modifier.size(24.dp),
                 tint = MaterialTheme.colorScheme.onSurface,
             )
@@ -66,7 +67,7 @@ fun SectionItem(
 
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                contentDescription = "Go",
+                contentDescription = null, // decorative chevron
                 modifier = Modifier.size(24.dp),
                 tint = MaterialTheme.colorScheme.onSurface,
             )

@@ -12,7 +12,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -28,13 +27,13 @@ fun PasswordListItem(
     title: String,
     subtitle: String,
     fallbackChar: String,
-    itemCount: Int = 0,
-    imageUrl: String? = null,
     onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    imageUrl: String? = null,
 ) {
     Card(
         onClick = onClick,
-        modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
+        modifier = modifier.fillMaxWidth().padding(vertical = 2.dp),
         shape = RectangleShape,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(0.dp),
@@ -50,10 +49,10 @@ fun PasswordListItem(
                         .background(MaterialTheme.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center,
             ) {
-                if (imageUrl != null) {
-                    // TODO: Ganti dengan AsyncImage (Coil) nanti saat narik favicon website
-                    // AsyncImage(model = imageUrl, contentDescription = null, ...)
-                } else {
+                // imageUrl is reserved for site favicons (roadmap FEAT-2, opt-in Favget). Until
+                // that
+                // ships, rows without one show the site's initial.
+                if (imageUrl == null) {
                     Text(
                         text = fallbackChar.uppercase(),
                         style = MaterialTheme.typography.titleLarge,
@@ -77,17 +76,6 @@ fun PasswordListItem(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
-            }
-
-            if (itemCount > 0) {
-                Surface(color = MaterialTheme.colorScheme.secondaryContainer) {
-                    Text(
-                        text = itemCount.toString(),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                    )
-                }
             }
         }
     }

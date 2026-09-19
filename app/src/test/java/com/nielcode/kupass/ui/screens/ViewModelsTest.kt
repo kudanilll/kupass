@@ -5,6 +5,7 @@ import com.nielcode.kupass.data.local.db.PasswordEntity
 import com.nielcode.kupass.data.repository.PasswordRepository
 import com.nielcode.kupass.testing.FakePasswordDao
 import com.nielcode.kupass.testing.MainDispatcherRule
+import com.nielcode.kupass.ui.screens.data.BackupViewModel
 import com.nielcode.kupass.ui.screens.detail.DeleteState
 import com.nielcode.kupass.ui.screens.detail.PasswordDetailViewModel
 import com.nielcode.kupass.ui.screens.editor.PasswordEditorViewModel
@@ -86,7 +87,7 @@ class ViewModelsTest {
         repository.insertPassword(
             PasswordEntity(siteName = "GitHub", username = "bob", password = "p2")
         )
-        val vm = HomeViewModel(repository, RuntimeEnvironment.getApplication().contentResolver)
+        val vm = HomeViewModel(repository)
         backgroundScope.launchCollect(vm)
 
         assertEquals(listOf("GitHub", "Google"), vm.passwords.value.map { it.siteName })
@@ -111,7 +112,7 @@ class ViewModelsTest {
 
     @Test
     fun `export of an empty vault emits NothingToExport`() = runTest {
-        val vm = HomeViewModel(repository, RuntimeEnvironment.getApplication().contentResolver)
+        val vm = BackupViewModel(repository, RuntimeEnvironment.getApplication().contentResolver)
 
         vm.prepareExport("correct horse".toCharArray())
         vm.exportPasswords(Uri.parse("content://test/backup.json"))

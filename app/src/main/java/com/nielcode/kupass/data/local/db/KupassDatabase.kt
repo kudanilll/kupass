@@ -26,6 +26,8 @@ abstract class KupassDatabase : RoomDatabase() {
 
         @Volatile private var INSTANCE: KupassDatabase? = null
 
+        // The spread copies MIGRATIONS once per process, when the database is first opened.
+        @Suppress("SpreadOperator")
         fun getInstance(context: Context): KupassDatabase {
             return INSTANCE
                 ?: synchronized(this) {

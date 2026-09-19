@@ -20,7 +20,6 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -31,12 +30,12 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,221 +47,210 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nielcode.kupass.R
+import com.nielcode.kupass.data.local.db.PasswordEntity
 import com.nielcode.kupass.security.SecureClipboard
+import com.nielcode.kupass.ui.components.DeletePasswordDialog
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-@OptIn(ExperimentalMaterial3Api::class)
+private const val MASKED_PASSWORD = "••••••••"
+private const val FIELD_MAX_LINES = 3
+
+/** One vault entry: copy any field, reveal the password, edit, or delete. */
 @Composable
 fun PasswordDetailScreen(
     passwordId: Long,
     onNavigateBack: () -> Unit,
     onNavigateToEdit: (Long) -> Unit,
+    modifier: Modifier = Modifier,
     viewModel: PasswordDetailViewModel = viewModel(factory = PasswordDetailViewModel.Factory),
 ) {
     val context = LocalContext.current
-    val deleteSuccessText = stringResource(R.string.toast_success_delete)
-    val deleteFailedText = stringResource(R.string.toast_failed_delete)
     val password by viewModel.password.collectAsStateWithLifecycle()
     val deleteState by viewModel.deleteState.collectAsStateWithLifecycle()
-
+    val currentOnNavigateBack by rememberUpdatedState(onNavigateBack)
     var showDeleteDialog by remember { mutableStateOf(false) }
-    var passwordVisible by remember { mutableStateOf(false) }
+    val deletedText = stringResource(R.string.toast_success_delete)
+    val deleteFailedText = stringResource(R.string.toast_failed_delete)
 
-    // Load password on first composition
-    LaunchedEffect(passwordId) { viewModel.loadPassword(passwordId) }
-
-    // Navigate back on successful delete
-    LaunchedEffect(deleteState) {
-        if (deleteState is DeleteState.Success) {
-            viewModel.resetDeleteState()
-            Toast.makeText(context, deleteSuccessText, Toast.LENGTH_SHORT).show()
-            onNavigateBack()
-        } else if (deleteState is DeleteState.Error) {
-            viewModel.resetDeleteState()
-            Toast.makeText(context, deleteFailedText, Toast.LENGTH_LONG).show()
+    SideEffect(passwordId) { viewModel.loadPassword(passwordId) }
+    SideEffect(deleteState) {
+        when (deleteState) {
+            DeleteState.Success -> {
+                viewModel.resetDeleteState()
+                Toast.makeText(context, deletedText, Toast.LENGTH_SHORT).show()
+                currentOnNavigateBack()
+            }
+            DeleteState.Error -> {
+                viewModel.resetDeleteState()
+                Toast.makeText(context, deleteFailedText, Toast.LENGTH_LONG).show()
+            }
+            else -> Unit
         }
     }
 
-    // Delete confirmation dialog
-    if (showDeleteDialog) {
-        AlertDialog(
-            onDismissRequest = { showDeleteDialog = false },
-            title = { Text(stringResource(R.string.dialog_title_delete)) },
-            text = {
-                Text("${stringResource(R.string.dialog_message_delete)} \"${password?.siteName}\"?")
+    val current = password
+    if (showDeleteDialog && current != null) {
+        DeletePasswordDialog(
+            siteName = current.siteName,
+            onConfirm = {
+                showDeleteDialog = false
+                viewModel.deletePassword()
             },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        showDeleteDialog = false
-                        viewModel.deletePassword()
-                    }
-                ) {
-                    Text(
-                        stringResource(R.string.button_delete),
-                        color = MaterialTheme.colorScheme.error,
-                    )
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false }) {
-                    Text(stringResource(R.string.button_cancel))
-                }
-            },
+            onDismiss = { showDeleteDialog = false },
         )
     }
 
     Scaffold(
+        modifier = modifier,
         topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Text(
-                        text = stringResource(R.string.password_detail),
-                        fontWeight = FontWeight.Bold,
-                    )
-                },
-                navigationIcon = {
-                    FilledTonalIconButton(
-                        onClick = onNavigateBack,
-                        modifier = Modifier.padding(start = 8.dp),
-                    ) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { password?.let { onNavigateToEdit(it.id) } }) {
-                        Icon(
-                            Icons.Default.Edit,
-                            contentDescription = stringResource(R.string.button_edit),
-                        )
-                    }
-                    IconButton(onClick = { showDeleteDialog = true }) {
-                        Icon(
-                            Icons.Default.Delete,
-                            contentDescription = stringResource(R.string.button_delete),
-                            tint = MaterialTheme.colorScheme.error,
-                        )
-                    }
-                },
+            DetailTopBar(
+                onBack = onNavigateBack,
+                onEdit = { current?.let { onNavigateToEdit(it.id) } },
+                onDelete = { showDeleteDialog = true },
             )
-        }
+        },
     ) { innerPadding ->
-        val currentPassword = password
-        if (currentPassword != null) {
-            Column(
-                modifier =
-                    Modifier.fillMaxSize()
-                        .padding(innerPadding)
-                        .padding(horizontal = 20.dp)
-                        .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                // Site Name
-                DetailField(
-                    label = stringResource(R.string.site_or_app_hint),
-                    value = currentPassword.siteName,
-                    onCopy = { copyToClipboard(context, "Site", currentPassword.siteName) },
-                )
-
-                // Username
-                if (currentPassword.username.isNotBlank()) {
-                    DetailField(
-                        label = stringResource(R.string.username_hint),
-                        value = currentPassword.username,
-                        onCopy = { copyToClipboard(context, "Username", currentPassword.username) },
-                    )
-                }
-
-                // Password
-                DetailField(
-                    label = stringResource(R.string.password_hint),
-                    value = if (passwordVisible) currentPassword.password else "••••••••",
-                    onCopy = {
-                        copyToClipboard(
-                            context,
-                            "Password",
-                            currentPassword.password,
-                            isSensitive = true,
-                        )
-                    },
-                    trailingAction = {
-                        IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                            Icon(
-                                imageVector =
-                                    if (passwordVisible) Icons.Default.Visibility
-                                    else Icons.Default.VisibilityOff,
-                                contentDescription = stringResource(R.string.show_password),
-                            )
-                        }
-                    },
-                )
-
-                // URL
-                if (currentPassword.url.isNotBlank()) {
-                    DetailField(
-                        label = stringResource(R.string.url_label),
-                        value = currentPassword.url,
-                        onCopy = { copyToClipboard(context, "URL", currentPassword.url) },
-                    )
-                }
-
-                // Notes
-                if (currentPassword.notes.isNotBlank()) {
-                    DetailField(
-                        label = stringResource(R.string.notes_label),
-                        value = currentPassword.notes,
-                        onCopy = { copyToClipboard(context, "Notes", currentPassword.notes) },
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Timestamps
-                val dateFormat = remember {
-                    SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault())
-                }
-                Text(
-                    text =
-                        "${stringResource(R.string.created_at)}: ${
-                            dateFormat.format(
-                                Date(
-                                    currentPassword.createdAt
-                                )
-                            )
-                        }",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Text(
-                    text =
-                        "${stringResource(R.string.updated_at)}: ${
-                            dateFormat.format(
-                                Date(
-                                    currentPassword.updatedAt
-                                )
-                            )
-                        }",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-            }
+        if (current != null) {
+            DetailContent(password = current, modifier = Modifier.padding(innerPadding))
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DetailTopBar(
+    onBack: () -> Unit,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    CenterAlignedTopAppBar(
+        modifier = modifier,
+        title = { Text(stringResource(R.string.password_detail), fontWeight = FontWeight.Bold) },
+        navigationIcon = {
+            FilledTonalIconButton(onClick = onBack, modifier = Modifier.padding(start = 8.dp)) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+            }
+        },
+        actions = {
+            IconButton(onClick = onEdit) {
+                Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.button_edit))
+            }
+            IconButton(onClick = onDelete) {
+                Icon(
+                    Icons.Default.Delete,
+                    contentDescription = stringResource(R.string.button_delete),
+                    tint = MaterialTheme.colorScheme.error,
+                )
+            }
+        },
+    )
+}
+
+@Composable
+private fun DetailContent(password: PasswordEntity, modifier: Modifier = Modifier) {
+    val clipboard = rememberClipboardCopier()
+    Column(
+        modifier =
+            modifier
+                .fillMaxSize()
+                .padding(horizontal = 20.dp)
+                .verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        DetailField(
+            label = stringResource(R.string.site_or_app_hint),
+            value = password.siteName,
+            onCopy = { clipboard.copy("Site", password.siteName) },
+        )
+        OptionalDetailField(
+            R.string.username_hint,
+            password.username,
+            onCopy = { clipboard.copy("Username", password.username) },
+        )
+        PasswordField(
+            password = password.password,
+            onCopy = { clipboard.copy("Password", password.password, sensitive = true) },
+        )
+        OptionalDetailField(
+            R.string.url_label,
+            password.url,
+            onCopy = { clipboard.copy("URL", password.url) },
+        )
+        OptionalDetailField(
+            R.string.notes_label,
+            password.notes,
+            onCopy = { clipboard.copy("Notes", password.notes) },
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Timestamp(labelRes = R.string.created_at, epochMillis = password.createdAt)
+        Timestamp(labelRes = R.string.updated_at, epochMillis = password.updatedAt)
+        Spacer(modifier = Modifier.height(16.dp))
+    }
+}
+
+/** The password, masked until the user reveals it. */
+@Composable
+private fun PasswordField(password: String, onCopy: () -> Unit, modifier: Modifier = Modifier) {
+    var visible by remember { mutableStateOf(false) }
+    DetailField(
+        label = stringResource(R.string.password_hint),
+        value = if (visible) password else MASKED_PASSWORD,
+        onCopy = onCopy,
+        modifier = modifier,
+    ) {
+        IconButton(onClick = { visible = !visible }) {
+            Icon(
+                imageVector =
+                    if (visible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                contentDescription = stringResource(R.string.show_password),
+            )
+        }
+    }
+}
+
+/** A [DetailField] that is omitted when [value] is blank. */
+@Composable
+private fun OptionalDetailField(
+    labelRes: Int,
+    value: String,
+    onCopy: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    if (value.isNotBlank()) {
+        DetailField(
+            label = stringResource(labelRes),
+            value = value,
+            onCopy = onCopy,
+            modifier = modifier,
+        )
+    }
+}
+
+@Composable
+private fun Timestamp(labelRes: Int, epochMillis: Long, modifier: Modifier = Modifier) {
+    val dateFormat = remember { SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault()) }
+    Text(
+        text = "${stringResource(labelRes)}: ${dateFormat.format(Date(epochMillis))}",
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = modifier,
+    )
+}
+
+/** A labeled value with a copy button and an optional extra action before it. */
 @Composable
 private fun DetailField(
     label: String,
     value: String,
     onCopy: () -> Unit,
-    trailingAction: @Composable (() -> Unit)? = null,
+    modifier: Modifier = Modifier,
+    trailingAction: (@Composable () -> Unit)? = null,
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors =
             CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
@@ -286,12 +274,10 @@ private fun DetailField(
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.weight(1f),
-                    maxLines = 3,
+                    maxLines = FIELD_MAX_LINES,
                     overflow = TextOverflow.Ellipsis,
                 )
-                if (trailingAction != null) {
-                    trailingAction()
-                }
+                trailingAction?.invoke()
                 IconButton(onClick = onCopy) {
                     Icon(
                         Icons.Default.ContentCopy,
@@ -304,12 +290,17 @@ private fun DetailField(
     }
 }
 
-private fun copyToClipboard(
-    context: Context,
-    label: String,
-    text: String,
-    isSensitive: Boolean = false,
-) {
-    SecureClipboard.copy(context, label, text, sensitive = isSensitive)
-    Toast.makeText(context, context.getString(R.string.copied), Toast.LENGTH_SHORT).show()
+/** Copies vault values and confirms with a toast; sensitive values auto-clear. */
+private class ClipboardCopier(private val context: Context, private val copiedText: String) {
+    fun copy(label: String, text: String, sensitive: Boolean = false) {
+        SecureClipboard.copy(context, label, text, sensitive = sensitive)
+        Toast.makeText(context, copiedText, Toast.LENGTH_SHORT).show()
+    }
+}
+
+@Composable
+private fun rememberClipboardCopier(): ClipboardCopier {
+    val context = LocalContext.current
+    val copiedText = stringResource(R.string.copied)
+    return remember(context, copiedText) { ClipboardCopier(context, copiedText) }
 }

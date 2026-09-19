@@ -15,6 +15,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -29,11 +31,21 @@ import com.nielcode.kupass.R
  *   protected, so the user is guided to set one up.
  */
 @Composable
-fun LockScreen(deviceSecure: Boolean, onUnlock: () -> Unit, onOpenSecuritySettings: () -> Unit) {
-    // Prompt automatically once each time the lock screen appears.
-    LaunchedEffect(deviceSecure) { if (deviceSecure) onUnlock() }
+fun LockScreen(
+    deviceSecure: Boolean,
+    onUnlock: () -> Unit,
+    onOpenSecuritySettings: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val currentOnUnlock by rememberUpdatedState(onUnlock)
+    // Prompt automatically once each time the lock screen appears. This stays a LaunchedEffect on
+    // purpose: BiometricPrompt commits a fragment, which must not run in the composition apply
+    // phase
+    // that a keyed SideEffect would use.
+    @Suppress("UnnecessaryLaunchedEffect")
+    LaunchedEffect(deviceSecure) { if (deviceSecure) currentOnUnlock() }
 
-    Scaffold { innerPadding ->
+    Scaffold(modifier = modifier) { innerPadding ->
         Column(
             modifier = Modifier.fillMaxSize().padding(innerPadding).padding(32.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
