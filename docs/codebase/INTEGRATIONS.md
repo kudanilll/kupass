@@ -46,7 +46,7 @@ No analytics, crash reporting, network client, or push service is present. The `
 
 ## 6) Evidence
 
-- `app/src/main/java/com/nielcode/kupass/utils/CryptoManager.kt`
+- `app/src/main/java/com/nielcode/kupass/security/CryptoManager.kt`
 - `app/src/main/java/com/nielcode/kupass/ui/screens/home/HomeViewModel.kt`, `ui/screens/MainAppScreen.kt`
 - `app/src/main/java/com/nielcode/kupass/ui/screens/detail/PasswordDetailScreen.kt`
 - `app/src/main/AndroidManifest.xml`, `app/build.gradle.kts`

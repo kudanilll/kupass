@@ -1,9 +1,10 @@
-package com.nielcode.kupass.utils
+package com.nielcode.kupass.ui.theme
 
 import android.content.Context
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
 import com.nielcode.kupass.R
+import com.nielcode.kupass.utils.AppConfig
 
 /** Applies the saved language and theme, shared by app startup and the Settings screen. */
 object AppearanceSettings {

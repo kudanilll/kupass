@@ -1,7 +1,7 @@
 package com.nielcode.kupass.data.repository
 
 import com.nielcode.kupass.data.local.db.PasswordEntity
-import com.nielcode.kupass.utils.CryptoManager
+import com.nielcode.kupass.security.CryptoManager
 
 /*
  * Field-level mapping between stored rows (every text field encrypted) and plaintext entities,

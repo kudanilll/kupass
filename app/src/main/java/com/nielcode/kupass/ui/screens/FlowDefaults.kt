@@ -1,7 +1,7 @@
 package com.nielcode.kupass.ui.screens
 
 import android.database.SQLException
-import com.nielcode.kupass.utils.CryptoException
+import com.nielcode.kupass.security.CryptoException
 import java.io.IOException
 import kotlinx.coroutines.flow.SharingStarted
 

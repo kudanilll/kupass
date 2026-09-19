@@ -44,8 +44,8 @@ import com.nielcode.kupass.security.AppLock
 import com.nielcode.kupass.ui.components.SectionHeader
 import com.nielcode.kupass.ui.components.SectionItem
 import com.nielcode.kupass.ui.components.SingleChoiceDialog
+import com.nielcode.kupass.ui.theme.AppearanceSettings
 import com.nielcode.kupass.utils.AppConfig
-import com.nielcode.kupass.utils.AppearanceSettings
 import com.nielcode.kupass.utils.openUrl
 
 private const val SECONDS_PER_MINUTE = 60

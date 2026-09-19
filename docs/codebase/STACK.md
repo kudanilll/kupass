@@ -29,7 +29,7 @@
 | `play-services-oss-licenses` (+ `oss-licenses` plugin 0.13.0)                                   | 17.5.2                       | `OssLicensesMenuActivity`                           | `SettingsScreen.kt`                   |
 | **AppCompat** (`AppCompatActivity`, `AppCompatDelegate`)                                        | 1.8.0 (declared)             | Per-app locale, night mode                          | `MainActivity.kt`, `App.kt`           |
 | **Material Components** (`com.google.android.material.color.DynamicColors`)                     | 1.14.0 (declared)            | Dynamic color check/apply                           | `App.kt`, `SettingsScreen.kt`         |
-| Android Keystore / `javax.crypto` (platform)                                                    | platform                     | AES-GCM encryption of every vault field (`kp2:` format)        | `utils/CryptoManager.kt`              |
+| Android Keystore / `javax.crypto` (platform)                                                    | platform                     | AES-GCM encryption of every vault field (`kp2:` format)        | `security/CryptoManager.kt`              |
 | `androidx.biometric` | 1.1.0 | `BiometricPrompt` for the UI-level app lock | `MainActivity.kt` |
 | `lifecycle-runtime-compose` | 2.11.0 | `collectAsStateWithLifecycle` | `ui/screens/**` |
 

@@ -10,7 +10,7 @@
 
 ```bash
 ./gradlew :app:testDebugUnitTest            # all unit tests (verified: BUILD SUCCESSFUL, 9/9 pass, 2026-09-18)
-./gradlew :app:testDebugUnitTest --tests "com.nielcode.kupass.utils.CryptoManagerTest"
+./gradlew :app:testDebugUnitTest --tests "com.nielcode.kupass.security.CryptoManagerTest"
 ANDROID_SERIAL=<device> ./gradlew :app:connectedDebugAndroidTest   # instrumented. It UNINSTALLS the app afterwards, so use a dedicated/read-only emulator, never a device with real vault data
 # coverage: [TODO] not configured (no JaCoCo/Kover)
 ```
@@ -19,7 +19,7 @@ Results land in `app/build/test-results/testDebugUnitTest/*.xml` and `app/build/
 
 ## 2) Test Layout
 
-- Unit tests: `app/src/test/java/` mirroring the source package (`utils/CryptoManagerTest.kt`, `data/backup/BackupCodecTest.kt`).
+- Unit tests: `app/src/test/java/` mirroring the source package (`security/CryptoManagerTest.kt`, `data/backup/BackupCodecTest.kt`).
 - Instrumented: `app/src/androidTest/java/.../ExampleInstrumentedTest.kt` (template only).
 - Naming: `<ClassUnderTest>Test`, with backtick sentence method names and Arrange/Act/Assert comments.
 - Setup files: none (no shared rules, fixtures, or `robolectric.properties`).
@@ -55,7 +55,7 @@ Results land in `app/build/test-results/testDebugUnitTest/*.xml` and `app/build/
 ## 6) Evidence
 
 - `app/build.gradle.kts` (test dependencies)
-- `app/src/test/java/com/nielcode/kupass/utils/CryptoManagerTest.kt`
+- `app/src/test/java/com/nielcode/kupass/security/CryptoManagerTest.kt`
 - `app/src/test/java/com/nielcode/kupass/data/backup/BackupCodecTest.kt`
-- `app/src/main/java/com/nielcode/kupass/utils/CryptoManager.kt` (test key branch)
+- `app/src/main/java/com/nielcode/kupass/security/CryptoManager.kt` (test key branch)
 - `./gradlew :app:testDebugUnitTest` output on 2026-09-18: BUILD SUCCESSFUL. Suites: ExampleUnitTest 1, JsonExportImportTest 4, CryptoManagerTest 4. 0 failures

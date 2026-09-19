@@ -37,6 +37,7 @@ com/nielcode/kupass/
 ├── App.kt                         Application: FLAG_SECURE, locale, theme, dynamic colors
 ├── MainActivity.kt                AppCompatActivity host for Compose
 ├── di/AppContainer.kt             manual DI: repository, prefs, ContentResolver; `CreationExtras.appContainer()`
+├── security/CryptoManager.kt     Keystore AES-GCM (`kp2:` format), CryptoException, alias "kupass_vault_key"
 ├── security/AppLock.kt           UI-level vault lock state machine (auto-lock timeout, background exemptions)
 ├── security/SecureClipboard.kt   sensitive clipboard copy + 45 s auto-clear on every API level
 ├── data/
@@ -53,7 +54,8 @@ com/nielcode/kupass/
 │   ├── screens/
 │   │   ├── MainAppScreen.kt       routes, MainPager (MainTab pages + hide-on-scroll BottomNav), backup dialogs + SAF launchers, event toasts
 │   │   ├── FlowDefaults.kt        `WhileUiSubscribed`, `recoverable {}` (I/O, SecurityException, crypto, SQL)
-│   │   ├── home/                  HomeScreen (stateless), HomeViewModel (list, search, delete), VaultEvent, components/{VaultList, PasswordListItem}
+│   │   ├── VaultEvent.kt          one-shot UI events (toasts) shared by Home and Backup
+│   │   ├── home/                  HomeScreen (stateless), HomeViewModel (list, search, delete), components/{VaultList, PasswordListItem}
 │   │   ├── data/DataScreen.kt     export/import buttons only
 │   │   ├── data/BackupPasswordDialog.kt  export/import password dialogs + progress
 │   │   ├── data/BackupViewModel.kt  export/import: backup password, encrypted-import prompt, busy state, events
@@ -61,12 +63,10 @@ com/nielcode/kupass/
 │   │   ├── detail/                PasswordDetailScreen (+ copyToClipboard), PasswordDetailViewModel
 │   │   ├── editor/                PasswordEditorScreen (EditorFormState, top bar, form), PasswordEditorViewModel
 │   │   └── settings/SettingsScreen.kt   language/theme/dynamic color dialogs, about links, SingleChoiceDialog
-│   └── theme/                     Color.kt, Theme.kt (KupassTheme), Type.kt (Heming display, Google Sans Flex body)
+│   └── theme/                     Color.kt, Theme.kt (KupassTheme), Type.kt (Heming display, Google Sans Flex body) + AppearanceSettings.kt (apply language/night mode)
 └── utils/
     ├── AppConfig.kt               int codes for language/theme/dynamic color
-    ├── AppearanceSettings.kt      apply language (per-app locale) and night mode; used by App and Settings
-    ├── CryptoManager.kt           Keystore AES/GCM, alias "kupass_vault_key"
-    └── Util.kt                    openUrl()
+    └── UrlUtils.kt                openUrl() with ActivityNotFoundException guard
 ```
 
 ### Navigation routes (`MainAppScreen.kt`)

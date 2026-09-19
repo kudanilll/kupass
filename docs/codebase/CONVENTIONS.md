@@ -56,6 +56,6 @@
 
 - `gradle.properties`, `.idea/google-java-format.xml`
 - `app/src/main/java/com/nielcode/kupass/ui/screens/editor/PasswordEditorViewModel.kt`
-- `app/src/main/java/com/nielcode/kupass/utils/CryptoManager.kt`, `AppConfig.kt`
+- `app/src/main/java/com/nielcode/kupass/security/CryptoManager.kt`, `AppConfig.kt`
 - `app/src/main/res/values/strings.xml`, `values-in/strings.xml`, `values/arrays.xml`
 - `app/src/test/java/com/nielcode/kupass/data/backup/BackupCodecTest.kt`

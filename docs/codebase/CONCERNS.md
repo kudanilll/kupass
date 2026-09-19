@@ -63,7 +63,7 @@
 
 | Area                                        | Why fragile                                            | Churn signal                     | Safe change strategy                                                                |
 | ------------------------------------------- | ------------------------------------------------------ | -------------------------------- | ----------------------------------------------------------------------------------- |
-| `utils/CryptoManager.kt`                    | Security-critical, fail-open, has a test-only key path | 2 commits (`26a489b`, `8de433b`) | Change only with tests. Never break decryption of existing data. Version the format |
+| `security/CryptoManager.kt`                    | Security-critical, fail-open, has a test-only key path | 2 commits (`26a489b`, `8de433b`) | Change only with tests. Never break decryption of existing data. Version the format |
 | `ui/screens/detail/PasswordDetailScreen.kt` | Clipboard + API-level branches + delete flow           | 2 commits                        | Test on API 27, 32, and 33+                                                         |
 | `app/build.gradle.kts`                      | Signing fallback, BuildConfig                          | 2 commits                        | Never commit secrets. Verify the release build                                      |
 
@@ -80,7 +80,7 @@
 ## 7) Evidence
 
 - `docs/codebase/.codebase-scan.txt` (TODO, HIGH-CHURN, CODE METRICS sections)
-- `app/src/main/java/com/nielcode/kupass/utils/CryptoManager.kt`
+- `app/src/main/java/com/nielcode/kupass/security/CryptoManager.kt`
 - `app/src/main/java/com/nielcode/kupass/data/backup/BackupCodec.kt`, `data/repository/PasswordRepository.kt`, `data/local/db/KupassDatabase.kt`
 - `app/src/main/java/com/nielcode/kupass/ui/screens/home/HomeViewModel.kt`, `ui/screens/MainAppScreen.kt`, `ui/screens/detail/PasswordDetailScreen.kt`
 - `app/src/main/res/xml/data_extraction_rules.xml`, `app/src/main/res/font/`

@@ -2,7 +2,7 @@ package com.nielcode.kupass.data.backup
 
 import android.util.Base64
 import com.nielcode.kupass.data.local.db.PasswordEntity
-import com.nielcode.kupass.utils.CryptoManager
+import com.nielcode.kupass.security.CryptoManager
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey

@@ -1,9 +1,9 @@
 package com.nielcode.kupass.data.repository
 
 import com.nielcode.kupass.data.local.db.PasswordEntity
+import com.nielcode.kupass.security.CryptoException
+import com.nielcode.kupass.security.CryptoManager
 import com.nielcode.kupass.testing.FakePasswordDao
-import com.nielcode.kupass.utils.CryptoException
-import com.nielcode.kupass.utils.CryptoManager
 import javax.crypto.KeyGenerator
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first

@@ -1,4 +1,4 @@
-package com.nielcode.kupass.utils
+package com.nielcode.kupass.security
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import java.security.KeyStore
