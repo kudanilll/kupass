@@ -15,7 +15,7 @@
 | Constants            | `UPPER_SNAKE` in `companion object` or nested `object`s       | `AppConfig.Theme.Code.DARK`, `KEY_LANGUAGE`                    | `AppConfig.kt`, `PreferenceManager.kt`      |
 | Room columns         | snake_case via `@ColumnInfo`                                  | `site_name`, `created_at`                                      | `PasswordEntity.kt`                         |
 | Routes               | PascalCase `@Serializable` object/data class                  | `HomeBase`, `PasswordEditor`                                   | `MainAppScreen.kt`                          |
-| Tests                | Backtick sentence names                                       | `` `exportToJson encrypts passwords` ``                        | `JsonExportImportTest.kt`                   |
+| Tests                | Backtick sentence names                                       | `` `v2 file contains no plaintext vault data` ``                        | `BackupCodecTest.kt`                   |
 | String resources     | snake_case with a prefix by kind                              | `toast_success_export`, `dialog_title_delete`, `button_cancel` | `res/values/strings.xml`                    |
 
 ## 2) Formatting and Linting
@@ -33,10 +33,10 @@
 
 ## 4) Error and Logging Conventions
 
-- **ViewModels:** `try/catch (e: Exception)` around suspend work, mapped to `SaveState.Error(message)` / `DeleteState.Error`, or to string keys `"export_failed"` / `"import_failed"`. The `Error` states are **never rendered** by the screens (only `Success` is observed).
-- **Crypto:** catch-all with a fallback (encrypt → plaintext, decrypt → input) and `e.printStackTrace()` in `encrypt`.
-- **UI feedback:** `Toast`, with messages taken from `stringResource`.
-- **Logging:** there are no `Log.*` calls. The only diagnostic output is `printStackTrace()` in `CryptoManager.kt:67`.
+- **ViewModels:** `try/catch` around suspend work. Screen state is a `StateFlow` (`SaveState`, `DeleteState`, both `Error` variants rendered as toasts). One-shot results are a `sealed interface` sent through a `Channel` (`VaultEvent`, mapped to text by `VaultEvent.message(context)`).
+- **Crypto:** fail-closed. `CryptoException` (message only, never secret values) is thrown by `CryptoManager` and caught in ViewModels (`.catch {}` on read flows, `try/catch` on writes). No `printStackTrace`/logging in crypto paths.
+- **UI feedback:** `Toast` with text from resources (plurals for counts). Compose collects state with `collectAsStateWithLifecycle()`.
+- **Logging:** there are no `Log.*` calls and no `printStackTrace()` in production code.
 - **Redaction:** no explicit policy in code. Secrets are simply never logged, apart from the stack trace above, which carries no secret value.
 
 ## 5) Testing Conventions
@@ -58,4 +58,4 @@
 - `app/src/main/java/com/nielcode/kupass/ui/screens/editor/PasswordEditorViewModel.kt`
 - `app/src/main/java/com/nielcode/kupass/utils/CryptoManager.kt`, `AppConfig.kt`
 - `app/src/main/res/values/strings.xml`, `values-in/strings.xml`, `values/arrays.xml`
-- `app/src/test/java/com/nielcode/kupass/data/local/json/JsonExportImportTest.kt`
+- `app/src/test/java/com/nielcode/kupass/data/backup/BackupCodecTest.kt`

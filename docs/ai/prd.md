@@ -94,3 +94,8 @@ A change is done when it builds, passes unit tests and lint, has tests for new l
 | 2026-09-18 | Add enforced formatting/lint and CI (QA-1, QA-2).                                 | Danil |
 | 2026-09-18 | 100% telemetry-free. Manual feedback/bug report feature instead (FEAT-5).         | Danil |
 | 2026-09-18 | License is GPL-3.0. The AGPLv3 mention in commit `d1f7eff` is incorrect.          | Danil |
+| 2026-09-18 | Search after full-field encryption decrypts in memory. No SQLCipher (SEC-3). | Danil |
+| 2026-09-18 | Backup key derivation uses PBKDF2-HMAC-SHA256 (SEC-1). | Danil |
+| 2026-09-18 | App lock is UI-level only. The vault key isn't bound to user auth yet (SEC-2). | Danil |
+| 2026-09-18 | The Autofill service is an important feature (FEAT-1). | Danil |
+| 2026-09-18 | The app version stays `3.1.0`. Agents never bump `versionName`/`versionCode`. | Danil |

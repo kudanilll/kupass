@@ -1,10 +1,6 @@
 package com.nielcode.kupass.ui.screens.detail
 
-import android.content.ClipData
-import android.content.ClipboardManager
 import android.content.Context
-import android.os.Build
-import android.os.PersistableBundle
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -38,7 +34,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -52,6 +48,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nielcode.kupass.R
+import com.nielcode.kupass.security.SecureClipboard
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -62,12 +59,13 @@ fun PasswordDetailScreen(
     passwordId: Long,
     onNavigateBack: () -> Unit,
     onNavigateToEdit: (Long) -> Unit,
-    viewModel: PasswordDetailViewModel = viewModel()
+    viewModel: PasswordDetailViewModel = viewModel(factory = PasswordDetailViewModel.Factory)
 ) {
     val context = LocalContext.current
     val deleteSuccessText = stringResource(R.string.toast_success_delete)
-    val password by viewModel.password.collectAsState()
-    val deleteState by viewModel.deleteState.collectAsState()
+    val deleteFailedText = stringResource(R.string.toast_failed_delete)
+    val password by viewModel.password.collectAsStateWithLifecycle()
+    val deleteState by viewModel.deleteState.collectAsStateWithLifecycle()
 
     var showDeleteDialog by remember { mutableStateOf(false) }
     var passwordVisible by remember { mutableStateOf(false) }
@@ -81,6 +79,9 @@ fun PasswordDetailScreen(
             viewModel.resetDeleteState()
             Toast.makeText(context, deleteSuccessText, Toast.LENGTH_SHORT).show()
             onNavigateBack()
+        } else if (deleteState is DeleteState.Error) {
+            viewModel.resetDeleteState()
+            Toast.makeText(context, deleteFailedText, Toast.LENGTH_LONG).show()
         }
     }
 
@@ -311,46 +312,6 @@ private fun copyToClipboard(
     text: String,
     isSensitive: Boolean = false
 ) {
-    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-    val clip = ClipData.newPlainText(label, text)
-
-    // explicitly flag sensitive clipboard data on Android 13+ (API 33+)
-    // to prevent keyboard/system surfaces from saving or showing it.
-    if (
-        isSensitive && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
-    ) {
-        clip.description.extras =
-            PersistableBundle().apply {
-                putBoolean("android.content.extra.IS_SENSITIVE", true)
-            }
-    }
-
-    clipboard.setPrimaryClip(clip)
-
-    // Auto-clear sensitive data after a short duration on API < 33 (since the flag doesn't work
-    // there)
-    if (isSensitive && Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-        // Use a simple postDelayed via the main looper to clear it after 45 seconds
-        android.os
-            .Handler(android.os.Looper.getMainLooper())
-            .postDelayed(
-                {
-                    // Only clear if the clipboard still contains our sensitive text
-                    val currentClip = clipboard.primaryClip
-                    if (currentClip != null && currentClip.itemCount > 0) {
-                        if (currentClip.getItemAt(0).text?.toString() == text) {
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                                clipboard.clearPrimaryClip()
-                            } else {
-                                // clearPrimaryClip() is API 28+; overwrite with an empty clip on 27.
-                                clipboard.setPrimaryClip(ClipData.newPlainText("", ""))
-                            }
-                        }
-                    }
-                },
-                45000
-            )
-    }
-
+    SecureClipboard.copy(context, label, text, sensitive = isSensitive)
     Toast.makeText(context, context.getString(R.string.copied), Toast.LENGTH_SHORT).show()
 }

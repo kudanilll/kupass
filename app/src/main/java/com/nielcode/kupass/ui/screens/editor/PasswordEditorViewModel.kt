@@ -1,15 +1,18 @@
 package com.nielcode.kupass.ui.screens.editor
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.nielcode.kupass.data.local.db.KupassDatabase
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import com.nielcode.kupass.di.appContainer
 import com.nielcode.kupass.data.local.db.PasswordEntity
 import com.nielcode.kupass.data.repository.PasswordRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -27,9 +30,7 @@ sealed interface SaveState {
  * ViewModel for the Password Editor screen.
  * Handles creating new passwords and editing existing ones.
  */
-class PasswordEditorViewModel(application: Application) : AndroidViewModel(application) {
-
-    private val repository: PasswordRepository
+class PasswordEditorViewModel(private val repository: PasswordRepository) : ViewModel() {
 
     private val _saveState = MutableStateFlow<SaveState>(SaveState.Idle)
     val saveState: StateFlow<SaveState> = _saveState.asStateFlow()
@@ -41,12 +42,6 @@ class PasswordEditorViewModel(application: Application) : AndroidViewModel(appli
     /** Whether we are in edit mode (vs create mode). */
     val isEditMode: Boolean get() = _existingPassword.value != null
 
-    init {
-        val database = KupassDatabase.getInstance(application)
-        val dao = database.passwordDao()
-        repository = PasswordRepository(dao)
-    }
-
     /**
      * Load an existing password for editing.
      * Call this when the editor is opened with a valid passwordId.
@@ -55,6 +50,7 @@ class PasswordEditorViewModel(application: Application) : AndroidViewModel(appli
         if (id <= 0) return
         viewModelScope.launch {
             repository.getPasswordById(id)
+                .catch { emit(null) } // undecryptable entry: show nothing rather than ciphertext
                 .stateIn(
                     scope = viewModelScope,
                     started = SharingStarted.Eagerly,
@@ -110,5 +106,11 @@ class PasswordEditorViewModel(application: Application) : AndroidViewModel(appli
 
     fun resetSaveState() {
         _saveState.value = SaveState.Idle
+    }
+
+    companion object {
+        val Factory: ViewModelProvider.Factory = viewModelFactory {
+            initializer { PasswordEditorViewModel(appContainer().passwordRepository) }
+        }
     }
 }

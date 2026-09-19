@@ -10,7 +10,8 @@
 | `app/src/main/java/com/nielcode/kupass/`                    | All production Kotlin source                                                                                                                | `git ls-files`                            |
 | `app/src/main/res/`                                         | Resources: `values/` (EN), `values-in/` (ID), `values-night/`, `font/`, `xml/` (backup rules), mipmaps, drawables                           | directory listing                         |
 | `app/src/test/`                                             | JVM + Robolectric unit tests                                                                                                                | `git ls-files`                            |
-| `app/src/androidTest/`                                      | Instrumented tests (placeholder only)                                                                                                       | `ExampleInstrumentedTest.kt`              |
+| `app/src/androidTest/` | Instrumented tests: Room migration, Keystore crypto, backup KDF cost, legacy-format upgrade | `app/src/androidTest/` |
+| `app/schemas/` | Room exported schemas (`<version>.json`), committed. Source of truth for migration tests | `app/build.gradle.kts` (`room { schemaDirectory }`) |
 | `gradle/`                                                   | Version catalog, wrapper, daemon JVM toolchain                                                                                              | `libs.versions.toml`                      |
 | `docs/ai/`                                                  | Agent rules, PRD, best practices                                                                                                            | this repo                                 |
 | `docs/codebase/`                                            | Evidence-based codebase map (these docs)                                                                                                    | this repo                                 |
@@ -24,7 +25,7 @@
 ## 2) Entry Points
 
 - Process entry: `App.kt` (`android:name=".App"`). It blocks screenshots on every Activity (`FLAG_SECURE`) and applies the saved locale, night mode, and dynamic colors.
-- UI entry: `MainActivity.kt`, the only Activity, exported with the LAUNCHER intent filter. It runs `installSplashScreen()`, `enableEdgeToEdge()`, then `KupassTheme { MainAppScreen() }`.
+- UI entry: `MainActivity.kt`, the only Activity, exported with the LAUNCHER intent filter. It runs `installSplashScreen()`, `enableEdgeToEdge()`, creates the `BiometricPrompt`, then shows `LockScreen` or `MainAppScreen` depending on `AppLock.locked`.
 - Navigation root: `ui/screens/MainAppScreen.kt` (`NavHost`, start destination `HomeBase`).
 - Secondary entry points: none (no services, receivers, providers, or workers in `AndroidManifest.xml`).
 
@@ -34,20 +35,25 @@
 com/nielcode/kupass/
 ├── App.kt                         Application: FLAG_SECURE, locale, theme, dynamic colors
 ├── MainActivity.kt                AppCompatActivity host for Compose
+├── di/AppContainer.kt             manual DI: repository, prefs, ContentResolver; `CreationExtras.appContainer()`
+├── security/AppLock.kt           UI-level vault lock state machine (auto-lock timeout, background exemptions)
+├── security/SecureClipboard.kt   sensitive clipboard copy + 45 s auto-clear on every API level
 ├── data/
 │   ├── local/db/
-│   │   ├── KupassDatabase.kt      Room singleton "kupass_database", version 1, exportSchema=false
-│   │   ├── PasswordDao.kt         Flow getAll/search/getById, suspend insert(REPLACE)/update/delete
+│   │   ├── KupassDatabase.kt      Room singleton "kupass_database", version 1, exportSchema=true, `MIGRATIONS` registry
+│   │   ├── PasswordDao.kt         Flow getAll/getById, getAllOnce, insert(REPLACE)/update/updateAll/delete (no SQL search: data is ciphertext)
 │   │   └── PasswordEntity.kt      table "passwords"
-│   ├── local/json/JsonExportImport.kt   backup (de)serialization, password field encrypted
+│   ├── backup/BackupCodec.kt      portable backup v2 (PBKDF2 + AES-GCM) + strict legacy v1 import
 │   ├── local/prefs/PreferenceManager.kt SharedPreferences "kupass_preferences"
-│   └── repository/PasswordRepository.kt encrypt on write, decrypt on read (password field only)
+│   └── repository/PasswordRepository.kt encrypt/decrypt all text fields, in-memory sort+search, legacy format upgrade
 ├── ui/
 │   ├── components/                BottomNav (194 lines), SectionHeader, SectionItem
 │   ├── screens/
 │   │   ├── MainAppScreen.kt       routes, pager (Home/Data/Settings), SAF export/import launchers, toasts
 │   │   ├── home/                  HomeScreen, HomeViewModel (list, search, delete, export/import), components/{VaultList, PasswordListItem}
 │   │   ├── data/DataScreen.kt     export/import buttons only
+│   │   ├── data/BackupPasswordDialog.kt  export/import password dialogs + progress
+│   │   ├── lock/LockScreen.kt     locked state / "set up a screen lock" guidance
 │   │   ├── detail/                PasswordDetailScreen (+ copyToClipboard), PasswordDetailViewModel
 │   │   ├── editor/                PasswordEditorScreen, PasswordEditorViewModel, components/TextField.kt
 │   │   └── settings/SettingsScreen.kt   language/theme/dynamic color dialogs, about links, SingleChoiceDialog
@@ -71,11 +77,11 @@ com/nielcode/kupass/
 | Column                     | Kotlin                 | Stored                                  |
 | -------------------------- | ---------------------- | --------------------------------------- |
 | `id`                       | `Long` PK autoGenerate | plain                                   |
-| `site_name`                | `siteName: String`     | plaintext                               |
-| `username`                 | `String = ""`          | plaintext                               |
-| `password`                 | `String`               | Base64(IV[12] ‖ AES-GCM ciphertext+tag) |
-| `url`                      | `String = ""`          | plaintext                               |
-| `notes`                    | `String = ""`          | plaintext                               |
+| `site_name`                | `siteName: String`     | v2 ciphertext |
+| `username`                 | `String = ""`          | v2 ciphertext |
+| `password`                 | `String`               | v2 ciphertext: `kp2:` + Base64(IV[12] ‖ AES-GCM ciphertext+tag) |
+| `url`                      | `String = ""`          | v2 ciphertext |
+| `notes`                    | `String = ""`          | v2 ciphertext |
 | `created_at`, `updated_at` | `Long` epoch ms        | plain                                   |
 
 ## 4) Module Boundaries

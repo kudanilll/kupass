@@ -10,7 +10,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -24,10 +24,10 @@ import com.nielcode.kupass.ui.screens.home.components.VaultList
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(onNavigateToDetail: (Long) -> Unit = {}, viewModel: HomeViewModel = viewModel()) {
+fun HomeScreen(onNavigateToDetail: (Long) -> Unit = {}, viewModel: HomeViewModel = viewModel(factory = HomeViewModel.Factory)) {
     // Collect state from ViewModel
-    val passwords by viewModel.passwords.collectAsState()
-    val searchQuery by viewModel.searchQuery.collectAsState()
+    val passwords by viewModel.passwords.collectAsStateWithLifecycle()
+    val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
 
     // Local UI state
     var isSearchActive by remember { mutableStateOf(false) }

@@ -22,11 +22,14 @@ MainActivity -> MainAppScreen (NavHost)
   ├─ PasswordDetail(passwordId)
   └─ PasswordEditor(passwordId = -1 for create)
 
-Screen (Compose) -> AndroidViewModel -> PasswordRepository -> PasswordDao (Room)
-                                              └─ CryptoManager (encrypts `password` field)
+MainActivity: AppLock gate (BiometricPrompt) → LockScreen | MainAppScreen
+
+Screen (Compose) -> ViewModel(Factory) -> PasswordRepository -> PasswordDao (Room)
+                                              └─ CryptoManager (Keystore AES-GCM, every field, `kp2:` format)
+Backup: BackupCodec (PBKDF2-HMAC-SHA256 + AES-256-GCM, password-protected, portable)
 ```
 
-No DI framework. ViewModels build their own repository from `KupassDatabase.getInstance()`.
+No DI framework: `App.container` (`di/AppContainer`) provides the repository, prefs, and `AppLock`; each ViewModel exposes a `Factory`.
 
 ## Where To Read More
 
@@ -64,7 +67,7 @@ Regenerate the scan with the skill's `scan.py` (output: `docs/codebase/.codebase
 6. License is **GPL-3.0**. New dependencies must be compatible with it.
 7. Do not commit `secrets.properties`, `*.jks`, or `local.properties`.
 
-Confirmed product decisions (app lock, portable backups, font, CI, etc.) are in the `docs/ai/prd.md` §8 Decision Log.
+Confirmed product decisions (app lock, portable backups, font, CI, etc.) are in the `docs/ai/prd.md` §8 Decision Log. The ordered plan (milestones M0–M3, item IDs such as `EN-06` and `S-3.1`, dependencies, and open questions) is in [`docs/ai/roadmap.md`](docs/ai/roadmap.md). Check it before picking up work.
 
 ## Build & Test
 

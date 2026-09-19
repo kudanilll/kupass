@@ -23,7 +23,6 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,7 +41,16 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.nielcode.kupass.App
 import com.nielcode.kupass.R
+import com.nielcode.kupass.ui.screens.home.message
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.repeatOnLifecycle
+import com.nielcode.kupass.ui.screens.data.BackupProgressDialog
+import com.nielcode.kupass.ui.screens.data.ExportPasswordDialog
+import com.nielcode.kupass.ui.screens.data.ImportPasswordDialog
 import com.nielcode.kupass.ui.components.BottomNav
 import com.nielcode.kupass.ui.screens.detail.PasswordDetailScreen
 import com.nielcode.kupass.ui.screens.editor.PasswordEditorScreen
@@ -127,7 +135,7 @@ fun MainAppScreen() {
 fun MainPagerScreen(
     onNavigateToEditor: () -> Unit,
     onNavigateToDetail: (Long) -> Unit = {},
-    homeViewModel: HomeViewModel = viewModel()
+    homeViewModel: HomeViewModel = viewModel(factory = HomeViewModel.Factory)
 ) {
     val pagerState = rememberPagerState(pageCount = { 3 })
     val coroutineScope = rememberCoroutineScope()
@@ -155,7 +163,7 @@ fun MainPagerScreen(
         rememberLauncherForActivityResult(
             contract = ActivityResultContracts.CreateDocument("application/json")
         ) { uri ->
-            uri?.let { homeViewModel.exportPasswords(it) }
+            if (uri != null) homeViewModel.exportPasswords(uri) else homeViewModel.cancelExport()
         }
 
     val importLauncher =
@@ -164,27 +172,43 @@ fun MainPagerScreen(
             uri?.let { homeViewModel.importPasswords(it) }
         }
 
-    // Observe operation messages for toast
-    val operationMessage by homeViewModel.operationMessage.collectAsState()
+    val appContext = LocalContext.current.applicationContext
+    val appLock = remember(appContext) { (appContext as App).container.appLock }
+    var showExportPasswordDialog by remember { mutableStateOf(false) }
+    val importPrompt by homeViewModel.importPrompt.collectAsStateWithLifecycle()
+    val backupBusy by homeViewModel.backupBusy.collectAsStateWithLifecycle()
+
+    if (showExportPasswordDialog) {
+        ExportPasswordDialog(
+            onConfirm = { password ->
+                showExportPasswordDialog = false
+                homeViewModel.prepareExport(password)
+                appLock.allowNextBackground()
+                exportLauncher.launch("kupass-backup.json")
+            },
+            onDismiss = { showExportPasswordDialog = false },
+        )
+    }
+    importPrompt?.let { prompt ->
+        if (!backupBusy) {
+            ImportPasswordDialog(
+                wrongPassword = prompt.wrongPassword,
+                onConfirm = homeViewModel::submitImportPassword,
+                onDismiss = homeViewModel::cancelImport,
+            )
+        }
+    }
+    if (backupBusy) BackupProgressDialog()
+
+    // One-shot export/import results, collected only while the screen is started.
     val context = LocalContext.current
-    val exportSuccessText = stringResource(R.string.toast_success_export)
-    val exportFailedText = stringResource(R.string.toast_failed_export)
-    val importSuccessText = stringResource(R.string.toast_success_import)
-    val importFailedText = stringResource(R.string.toast_failed_import)
-    val noDataText = stringResource(R.string.toast_no_data)
-    LaunchedEffect(operationMessage) {
-        val msg = operationMessage ?: return@LaunchedEffect
-        val toastText =
-            when (msg) {
-                "export_success" -> exportSuccessText
-                "export_failed" -> exportFailedText
-                "import_success" -> importSuccessText
-                "import_failed" -> importFailedText
-                "no_data" -> noDataText
-                else -> msg
+    val lifecycleOwner = LocalLifecycleOwner.current
+    LaunchedEffect(homeViewModel, lifecycleOwner) {
+        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            homeViewModel.events.collect { event ->
+                Toast.makeText(context, event.message(context), Toast.LENGTH_LONG).show()
             }
-        Toast.makeText(context, toastText, Toast.LENGTH_SHORT).show()
-        homeViewModel.clearOperationMessage()
+        }
     }
 
     Box(modifier = Modifier
@@ -205,8 +229,11 @@ fun MainPagerScreen(
 
                     1 ->
                         com.nielcode.kupass.ui.screens.data.DataScreen(
-                            onExportClick = { exportLauncher.launch("kupass_backup.json") },
-                            onImportClick = { importLauncher.launch(arrayOf("application/json")) }
+                            onExportClick = { showExportPasswordDialog = true },
+                            onImportClick = {
+                                appLock.allowNextBackground()
+                                importLauncher.launch(arrayOf("application/json"))
+                            }
                         )
 
                     2 -> SettingsScreen()

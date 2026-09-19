@@ -21,15 +21,17 @@
 | Compose BOM (`ui`, `ui-graphics`, `material3`, `material-icons-extended`, `ui-tooling-preview`) | 2026.09.00 (material3 1.4.0) | Entire UI layer                                     | `libs.versions.toml`                  |
 | `activity-compose`                                                                              | 1.13.0                       | `setContent`, `enableEdgeToEdge`, SAF launchers     | `MainActivity.kt`, `MainAppScreen.kt` |
 | `navigation-compose`                                                                            | 2.10.1                       | Typed `@Serializable` routes                        | `MainAppScreen.kt`                    |
-| `lifecycle-runtime-ktx`, `lifecycle-viewmodel-compose`                                          | 2.11.0                       | `AndroidViewModel`, `viewModelScope`, `viewModel()` | `ui/screens/*/*ViewModel.kt`          |
+| `lifecycle-runtime-ktx`, `lifecycle-viewmodel-compose`                                          | 2.11.0                       | `ViewModel` + `viewModelFactory`, `viewModelScope`, `viewModel(factory = …)` | `ui/screens/*/*ViewModel.kt`          |
 | Room (`runtime`, `ktx`, `compiler` via KSP 2.3.12)                                              | 2.8.5                        | Local DB `kupass_database`                          | `data/local/db/*`                     |
-| `kotlinx-serialization-json` (+ Kotlin serialization plugin 2.4.20)                             | 1.11.0                       | Backup JSON format and nav routes                   | `JsonExportImport.kt`                 |
+| `kotlinx-serialization-json` (+ Kotlin serialization plugin 2.4.20)                             | 1.11.0                       | Backup JSON format and nav routes                   | `BackupCodec.kt`                 |
 | `core-ktx`                                                                                      | 1.19.0                       | `toUri()` and other extensions                      | `Util.kt`                             |
 | `core-splashscreen`                                                                             | 1.2.0                        | `installSplashScreen()`                             | `MainActivity.kt`                     |
 | `play-services-oss-licenses` (+ `oss-licenses` plugin 0.13.0)                                   | 17.5.2                       | `OssLicensesMenuActivity`                           | `SettingsScreen.kt`                   |
 | **AppCompat** (`AppCompatActivity`, `AppCompatDelegate`)                                        | 1.8.0 (declared)             | Per-app locale, night mode                          | `MainActivity.kt`, `App.kt`           |
 | **Material Components** (`com.google.android.material.color.DynamicColors`)                     | 1.14.0 (declared)            | Dynamic color check/apply                           | `App.kt`, `SettingsScreen.kt`         |
-| Android Keystore / `javax.crypto` (platform)                                                    | platform                     | AES-256-GCM encryption of the password field        | `utils/CryptoManager.kt`              |
+| Android Keystore / `javax.crypto` (platform)                                                    | platform                     | AES-GCM encryption of every vault field (`kp2:` format)        | `utils/CryptoManager.kt`              |
+| `androidx.biometric` | 1.1.0 | `BiometricPrompt` for the UI-level app lock | `MainActivity.kt` |
+| `lifecycle-runtime-compose` | 2.11.0 | `collectAsStateWithLifecycle` | `ui/screens/**` |
 
 Bundled assets that affect APK size: `res/font/googlesansflex.ttf` (**~3.9 MB**, variable font) and `res/font/heming.ttf` (~30 KB), referenced in `ui/theme/Type.kt`.
 
@@ -38,13 +40,15 @@ Bundled assets that affect APK size: `res/font/googlesansflex.ttf` (**~3.9 MB**,
 | Tool                                                                           | Purpose                                                                                                                                | Evidence                       |
 | ------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
 | JUnit 4.13.2                                                                   | Unit tests                                                                                                                             | `libs.versions.toml`           |
+| kotlinx-coroutines-test 1.11.0 | ViewModel/repository tests (`runTest`, `MainDispatcherRule`) | `libs.versions.toml` |
+| `room-testing` 2.8.5 + `androidx.room` Gradle plugin | `MigrationTestHelper`, schema export to `app/schemas/` | `app/build.gradle.kts` |
 | Robolectric 4.17 (supports SDK 37)                                             | Android framework on the JVM for unit tests                                                                                            | `app/build.gradle.kts`         |
 | AndroidX Test (`junit` 1.3.0, `espresso-core` 3.7.0, `compose-ui-test-junit4`) | Instrumented tests                                                                                                                     | `libs.versions.toml`           |
 | R8 (`isMinifyEnabled`, `isShrinkResources` in release)                         | Shrinking/obfuscation                                                                                                                  | `app/build.gradle.kts`         |
 | Android Lint                                                                   | Static checks (default config, no `lint.xml`)                                                                                          | [TODO] no lint config found    |
 | google-java-format IDE plugin (enabled in `.idea`, which is gitignored)        | Formatting in the IDE only                                                                                                             | `.idea/google-java-format.xml` |
 | `kotlin.code.style=official`                                                   | Kotlin style hint for the IDE                                                                                                          | `gradle.properties`            |
-| CI/CD                                                                          | Release workflow only (`.github/workflows/release.yml`, tag `v*`). Dependabot (`.github/dependabot.yml`). No PR/push CI yet (PRD QA-2) | `.github/`                     |
+| CI/CD                                                                          | Release workflow only (`.github/workflows/release.yml`, tag `v*`). Dependabot (`.github/dependabot.yml`). `ci.yml`: build + unit tests + lint on push/PR to `master`, and dependency-graph submission on `master` | `.github/`                     |
 
 ## 4) Key Commands
 

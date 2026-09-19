@@ -8,12 +8,23 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
 import com.google.android.material.color.DynamicColors
 import com.nielcode.kupass.data.local.prefs.PreferenceManager
+import com.nielcode.kupass.di.AppContainer
+import kotlinx.coroutines.launch
 import com.nielcode.kupass.utils.AppConfig
 
 class App : Application() {
 
+    /** Application-wide dependencies. See [AppContainer]. */
+    lateinit var container: AppContainer
+        private set
+
     override fun onCreate() {
         super.onCreate()
+        container = AppContainer(this)
+        // Bring rows written by older builds up to full-field v2 encryption. Retried next launch on failure.
+        container.applicationScope.launch {
+            runCatching { container.passwordRepository.upgradeStoredFormat() }
+        }
 
         // Block screenshots for all Activities
         registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
@@ -32,7 +43,7 @@ class App : Application() {
             override fun onActivityDestroyed(activity: Activity) {}
         })
 
-        val prefs = PreferenceManager(this)
+        val prefs = container.preferenceManager
 
         // Apply user settings on app startup
         applyLanguage(prefs.language)

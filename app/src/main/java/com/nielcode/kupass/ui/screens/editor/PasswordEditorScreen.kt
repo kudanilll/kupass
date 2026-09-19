@@ -1,5 +1,7 @@
 package com.nielcode.kupass.ui.screens.editor
 
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -27,7 +29,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,7 +50,7 @@ import com.nielcode.kupass.ui.components.TextField
 fun PasswordEditorScreen(
     passwordId: Long = -1L,
     onNavigateBack: () -> Unit,
-    viewModel: PasswordEditorViewModel = viewModel()
+    viewModel: PasswordEditorViewModel = viewModel(factory = PasswordEditorViewModel.Factory)
 ) {
     val isEditMode = passwordId > 0
 
@@ -73,7 +75,7 @@ fun PasswordEditorScreen(
     }
 
     // Pre-fill form when existing password is loaded
-    val existingPassword by viewModel.existingPassword.collectAsState()
+    val existingPassword by viewModel.existingPassword.collectAsStateWithLifecycle()
     LaunchedEffect(existingPassword) {
         val existing = existingPassword
         if (existing != null && !hasPreFilled) {
@@ -89,13 +91,23 @@ fun PasswordEditorScreen(
     val isFormValid = siteName.isNotBlank() && password.isNotBlank()
 
     // Observe save state
-    val saveState by viewModel.saveState.collectAsState()
+    val saveState by viewModel.saveState.collectAsStateWithLifecycle()
 
     // Navigate back on successful save
+    val context = LocalContext.current
+    val saveFailedText = stringResource(R.string.toast_failed_save)
     LaunchedEffect(saveState) {
-        if (saveState is SaveState.Success) {
-            viewModel.resetSaveState()
-            onNavigateBack()
+        when (saveState) {
+            is SaveState.Success -> {
+                viewModel.resetSaveState()
+                onNavigateBack()
+            }
+            is SaveState.Error -> {
+                // Keep the form so nothing typed is lost; the user can retry.
+                Toast.makeText(context, saveFailedText, Toast.LENGTH_LONG).show()
+                viewModel.resetSaveState()
+            }
+            else -> Unit
         }
     }
 

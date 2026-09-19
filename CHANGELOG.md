@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+
+- Copied passwords are cleared from the clipboard after 45 seconds on every Android version, including when Kupass is in the background.
+- Vault data is excluded from Android cloud backup and device-to-device transfer on every Android version. Use the password-protected export to move your vault.
+- Site names, usernames, URLs, and notes are now encrypted on the device like passwords. Existing vaults are upgraded automatically on first launch.
+
+### Added
+
+- App lock: the vault opens only after fingerprint/face or the device PIN/pattern/password, and locks again after leaving the app (Settings → Security → Auto-lock: immediately, 30 seconds, 1 minute, or 5 minutes). Devices without a screen lock are asked to set one up.
+- Portable encrypted backups: export asks for a backup password and encrypts the whole vault (PBKDF2-HMAC-SHA256 + AES-256-GCM), so a backup can be restored on a new phone or after reinstalling.
+
 ### Changed
 
 - Updated the build toolchain to the latest stable releases: Android Gradle Plugin 9.4.0, Gradle 9.7.1, Kotlin 2.4.20, and KSP 2.3.12.
@@ -15,6 +26,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Swipe-to-delete uses the current Material 3 `SwipeToDismissBox` API. The confirmation dialog behaves the same as before.
 
 ### Fixed
+
+- Importing is now all-or-nothing, skips entries that already exist (or appear twice in the file), and reports how many were imported and skipped.
+- Importing an old backup made on another device no longer imports encrypted text as passwords. The import is refused with an explanation.
+- Encryption failures no longer fall back to storing plaintext, and unreadable entries are no longer shown as ciphertext.
 
 - Copied passwords are now cleared from the clipboard without crashing on Android 8.1 (API 27), where `clearPrimaryClip()` is unavailable.
 

@@ -7,8 +7,9 @@
 | System                                      | Type                                    | Purpose                                                                                  | Auth model                                              | Criticality                                      | Evidence                                                                              |
 | ------------------------------------------- | --------------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------- |
 | Android Keystore (`AndroidKeyStore`)        | Platform crypto                         | Holds the non-exportable AES-256 key `kupass_vault_key`                                  | App UID. No user authentication is required for the key | **High**: losing it makes the data undecryptable | `CryptoManager.kt`                                                                    |
+| `androidx.biometric` 1.1.0 (`BiometricPrompt`) | Platform auth | UI-level app lock | Biometric or device credential | High | `MainActivity.kt` |
 | Storage Access Framework                    | Platform file I/O                       | User-chosen export/import JSON file                                                      | User picks the file                                     | High (backups)                                   | `MainAppScreen.kt`, `HomeViewModel.kt`                                                |
-| Clipboard (`ClipboardManager`)              | Platform                                | Copy fields. Password flagged `IS_SENSITIVE` (API 33+) or auto-cleared after 45 s (< 33) | none                                                    | Medium (secret exposure)                         | `PasswordDetailScreen.kt`                                                             |
+| Clipboard (`ClipboardManager`) | Platform | Copy fields. Password flagged `EXTRA_IS_SENSITIVE` (API 33+) and cleared after 45 s on all APIs | none | Medium (secret exposure) | `security/SecureClipboard.kt` |
 | Browser via `ACTION_VIEW`                   | Implicit intent                         | Open developer/GitHub URLs                                                               | none                                                    | Low                                              | `Util.kt`, `SettingsScreen.kt`                                                        |
 | `OssLicensesMenuActivity`                   | Play services lib                       | Open-source license screen                                                               | none                                                    | Low                                              | `SettingsScreen.kt`                                                                   |
 | Favget API `https://favget.nielcode.web.id` | HTTP API (**planned, not wired; keep**) | Site favicons, opt-in (PRD FEAT-2)                                                       | [TODO]                                                  | n/a                                              | `BuildConfig.FAVGET_API_URL` in `app/build.gradle.kts`, TODO in `PasswordListItem.kt` |
@@ -21,7 +22,7 @@ No analytics, crash reporting, network client, or push service is present. The `
 | ------------------------------------------------ | ----------------------------------------- | -------------------------------------- | --------------------------------------------------------------------------------- | ---------------------------------------- |
 | Room/SQLite `kupass_database`, table `passwords` | Vault                                     | `PasswordDao` via `PasswordRepository` | Only `password` is encrypted. No migrations (`version 1`, `exportSchema = false`) | `KupassDatabase.kt`, `PasswordEntity.kt` |
 | SharedPreferences `kupass_preferences`           | `language`, `theme`, `dynamic_color` ints | `PreferenceManager`                    | Low (no secrets)                                                                  | `PreferenceManager.kt`                   |
-| Exported JSON file (user storage)                | Backup                                    | `JsonExportImport`                     | Metadata in plaintext. Password bound to the device key                           | `JsonExportImport.kt`                    |
+| Backup file (user storage, `kupass-backup.json`) | Portable backup v2 | `data/backup/BackupCodec` | Strength depends on the user's backup password (min 8 chars, PBKDF2 600k) | `BackupCodec.kt` |
 
 ## 3) Secrets and Credentials Handling
 
@@ -32,7 +33,7 @@ No analytics, crash reporting, network client, or push service is present. The `
 ## 4) Reliability and Failure Behavior
 
 - Retry/timeout: n/a (no network).
-- Fallbacks: `CryptoManager.encrypt` returns plaintext on failure, and `decrypt` returns its input on failure (**fail-open**).
+- Crypto failure policy (EN-06): fail-closed. `CryptoManager.encrypt`/`decrypt` throw `CryptoException`. ViewModels catch it: the list shows the `toast_vault_read_failed` toast and never ciphertext.
 - SAF failures are caught generically and surfaced as the `export_failed`/`import_failed` toasts.
 - Import cap: rejects more than 2000 entries, but only after the full file is read and parsed.
 
