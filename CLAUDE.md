@@ -76,6 +76,8 @@ Confirmed product decisions (app lock, portable backups, font, CI, etc.) are in 
 ./gradlew :app:testDebugUnitTest    # JVM + Robolectric unit tests
 ./gradlew :app:lintDebug            # Android lint
 ./gradlew :app:connectedDebugAndroidTest   # instrumented tests (device/emulator required)
+./gradlew spotlessApply            # format all Kotlin/Gradle files with ktfmt (spotlessCheck verifies)
+./gradlew :app:detektMain :app:detektTest  # static analysis incl. Compose rules (must report 0 issues)
 ```
 
 ## Agent Protocol

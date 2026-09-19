@@ -45,10 +45,11 @@ Bundled assets that affect APK size: `res/font/googlesansflex.ttf` (**~3.9 MB**,
 | Robolectric 4.17 (supports SDK 37)                                             | Android framework on the JVM for unit tests                                                                                            | `app/build.gradle.kts`         |
 | AndroidX Test (`junit` 1.3.0, `espresso-core` 3.7.0, `compose-ui-test-junit4`) | Instrumented tests                                                                                                                     | `libs.versions.toml`           |
 | R8 (`isMinifyEnabled`, `isShrinkResources` in release)                         | Shrinking/obfuscation                                                                                                                  | `app/build.gradle.kts`         |
-| Android Lint                                                                   | Static checks (default config, no `lint.xml`)                                                                                          | [TODO] no lint config found    |
-| google-java-format IDE plugin (enabled in `.idea`, which is gitignored)        | Formatting in the IDE only                                                                                                             | `.idea/google-java-format.xml` |
+| Android Lint | Static checks, default config (0 errors) | `./gradlew :app:lintDebug` |
+| Spotless 8.10.2 + ktfmt 0.64 (kotlinlang style) | Formatting for `*.kt` / `*.gradle.kts` | root `build.gradle.kts` |
+| detekt 2.0.0-alpha.6 + compose-rules 0.6.6 | Static analysis with type resolution, no baseline | `app/build.gradle.kts`, `config/detekt/detekt.yml` |
 | `kotlin.code.style=official`                                                   | Kotlin style hint for the IDE                                                                                                          | `gradle.properties`            |
-| CI/CD                                                                          | Release workflow only (`.github/workflows/release.yml`, tag `v*`). Dependabot (`.github/dependabot.yml`). `ci.yml`: build + unit tests + lint on push/PR to `master`, and dependency-graph submission on `master` | `.github/`                     |
+| CI/CD                                                                          | Release workflow only (`.github/workflows/release.yml`, tag `v*`). Dependabot (`.github/dependabot.yml`). `ci.yml`: spotlessCheck + detekt + build + unit tests + lint on push/PR to `master`, and dependency-graph submission on `master` | `.github/`                     |
 
 ## 4) Key Commands
 
