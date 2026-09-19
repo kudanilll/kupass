@@ -13,8 +13,8 @@ import android.os.PersistableBundle
  * Copies vault values to the clipboard. Sensitive values are flagged (API 33+ hides them from
  * previews and keyboards) and cleared after [CLEAR_AFTER_MILLIS] on every API level.
  *
- * Since Android 10, an app in the background can't read the clipboard. When the timer fires and
- * the clipboard can't be read, it's cleared anyway, because a password manager would rather clear a
+ * Since Android 10, an app in the background can't read the clipboard. When the timer fires and the
+ * clipboard can't be read, it's cleared anyway, because a password manager would rather clear a
  * newer clip than leave a password behind. If it can be read and holds something else, it's left
  * alone.
  */
@@ -28,7 +28,8 @@ object SecureClipboard {
         val clipboard = context.getSystemService(ClipboardManager::class.java) ?: return
         val clip = ClipData.newPlainText(label, text)
         if (sensitive && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            clip.description.extras = PersistableBundle().apply { putBoolean(ClipDescription.EXTRA_IS_SENSITIVE, true) }
+            clip.description.extras =
+                PersistableBundle().apply { putBoolean(ClipDescription.EXTRA_IS_SENSITIVE, true) }
         }
         clipboard.setPrimaryClip(clip)
 
@@ -45,7 +46,8 @@ object SecureClipboard {
         pendingClear = null
         val current = runCatching { clipboard.primaryClip }.getOrNull()
         val readable = current != null && current.itemCount > 0
-        if (readable && current.getItemAt(0).text?.toString() != copied) return // the user copied something else
+        if (readable && current.getItemAt(0).text?.toString() != copied)
+            return // the user copied something else
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             clipboard.clearPrimaryClip()
         } else {

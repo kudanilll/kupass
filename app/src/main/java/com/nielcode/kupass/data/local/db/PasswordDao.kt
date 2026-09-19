@@ -8,9 +8,7 @@ import androidx.room.Query
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 
-/**
- * Data Access Object for password CRUD operations. Reactive reads return Flow for UI updates.
- */
+/** Data Access Object for password CRUD operations. Reactive reads return Flow for UI updates. */
 @Dao
 interface PasswordDao {
 
@@ -18,12 +16,10 @@ interface PasswordDao {
      * Every row, unordered. Text columns hold ciphertext, so SQL ordering and `LIKE` search are
      * meaningless; the repository sorts and searches after decryption.
      */
-    @Query("SELECT * FROM passwords")
-    fun getAll(): Flow<List<PasswordEntity>>
+    @Query("SELECT * FROM passwords") fun getAll(): Flow<List<PasswordEntity>>
 
     /** One-shot snapshot of every row, used by the storage-format upgrade. */
-    @Query("SELECT * FROM passwords")
-    suspend fun getAllOnce(): List<PasswordEntity>
+    @Query("SELECT * FROM passwords") suspend fun getAllOnce(): List<PasswordEntity>
 
     @Query("SELECT * FROM passwords WHERE id = :id") fun getById(id: Long): Flow<PasswordEntity?>
 

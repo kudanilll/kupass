@@ -27,20 +27,31 @@ class PasswordRepositoryUpgradeTest {
 
     @Before
     fun setUp() {
-        db = Room.inMemoryDatabaseBuilder(InstrumentationRegistry.getInstrumentation().targetContext, KupassDatabase::class.java).build()
+        db =
+            Room.inMemoryDatabaseBuilder(
+                    InstrumentationRegistry.getInstrumentation().targetContext,
+                    KupassDatabase::class.java,
+                )
+                .build()
         repository = PasswordRepository(db.passwordDao())
     }
 
-    @After
-    fun tearDown() = db.close()
+    @After fun tearDown() = db.close()
 
     @Test
     fun upgradesLegacyRowsToFullFieldEncryption() = runBlocking {
         // v1 ciphertext is the v2 payload without the "kp2:" prefix.
         val v1Password = CryptoManager.encrypt("hunter22").removePrefix(CryptoManager.PREFIX_V2)
-        db.passwordDao().insert(
-            PasswordEntity(siteName = "Legacy Bank", username = "alice", password = v1Password, url = "bank.example", notes = "PIN in drawer")
-        )
+        db.passwordDao()
+            .insert(
+                PasswordEntity(
+                    siteName = "Legacy Bank",
+                    username = "alice",
+                    password = v1Password,
+                    url = "bank.example",
+                    notes = "PIN in drawer",
+                )
+            )
 
         // Readable before the upgrade (legacy read path).
         assertEquals("hunter22", repository.getAllPasswords().first().single().password)
@@ -58,6 +69,9 @@ class PasswordRepositoryUpgradeTest {
         assertEquals("hunter22", restored.password)
         assertEquals("bank.example", restored.url)
         assertEquals("PIN in drawer", restored.notes)
-        assertEquals(listOf("Legacy Bank"), repository.searchPasswords("drawer").first().map { it.siteName })
+        assertEquals(
+            listOf("Legacy Bank"),
+            repository.searchPasswords("drawer").first().map { it.siteName },
+        )
     }
 }

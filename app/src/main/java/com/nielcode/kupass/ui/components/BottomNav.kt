@@ -1,8 +1,6 @@
 package com.nielcode.kupass.ui.components
 
-import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateDpAsState
@@ -25,8 +23,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -38,156 +34,156 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.nielcode.kupass.R
 
-@OptIn(ExperimentalAnimationApi::class)
-@SuppressLint("ModifierParameter", "UseOfNonLambdaOffsetOverload")
+private const val NAV_ANIMATION_MILLIS = 250
+private const val ITEM_ANIMATION_MILLIS = 200
+
+/** Floating pill navigation with an "add" button that only shows on the Home tab. */
 @Composable
 fun BottomNav(
-    currentRoute: String,
-    onNavigate: (String) -> Unit,
+    currentTab: MainTab,
+    onTabClick: (MainTab) -> Unit,
     onAddClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
-    val isDarkMode = isSystemInDarkTheme()
-    val fabVisible = !(currentRoute == "settings" || currentRoute == "data")
-    val spacing = 12.dp
-
+    val addVisible = currentTab == MainTab.Home
     val offsetX by
         animateDpAsState(
-            targetValue = if (fabVisible) -(spacing / 2 + spacing / 2) else 0.dp,
-            animationSpec = tween(durationMillis = 250, easing = LinearEasing),
-            label = "nav_offset"
+            // Shift the pill left to make room for the add button next to it.
+            targetValue = if (addVisible) (-12).dp else 0.dp,
+            animationSpec = tween(NAV_ANIMATION_MILLIS, easing = LinearEasing),
+            label = "nav_offset",
         )
 
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(
-            modifier =
-                Modifier.offset(x = offsetX)
-                    .clip(RoundedCornerShape(50))
-                    .background(
-                        if (isDarkMode) MaterialTheme.colorScheme.surfaceContainer
-                        else MaterialTheme.colorScheme.surfaceVariant
-                    )
-                    .padding(8.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            NavItem(
-                title = "Home",
-                icon = Icons.Default.Home,
-                isSelected = currentRoute == "home",
-                onClick = { onNavigate("home") }
-            )
-
-            NavItem(
-                title = "Data",
-                icon = Icons.Default.Storage,
-                isSelected = currentRoute == "data",
-                onClick = { onNavigate("data") }
-            )
-
-            NavItem(
-                title = "Settings",
-                icon = Icons.Default.Settings,
-                isSelected = currentRoute == "settings",
-                onClick = { onNavigate("settings") }
-            )
-        }
-
+        TabPill(
+            currentTab = currentTab,
+            onTabClick = onTabClick,
+            modifier = Modifier.offset { IntOffset(offsetX.roundToPx(), 0) },
+        )
         AnimatedVisibility(
-            visible = fabVisible,
+            visible = addVisible,
             enter =
-                slideInHorizontally(
-                    initialOffsetX = { fullWidth -> fullWidth / 2 },
-                    animationSpec = tween(durationMillis = 250, easing = LinearEasing)
-                ) + fadeIn(animationSpec = tween(durationMillis = 250, easing = LinearEasing)),
+                slideInHorizontally(tween(NAV_ANIMATION_MILLIS, easing = LinearEasing)) { it / 2 } +
+                    fadeIn(tween(NAV_ANIMATION_MILLIS, easing = LinearEasing)),
             exit =
-                slideOutHorizontally(
-                    targetOffsetX = { fullWidth -> fullWidth / 2 },
-                    animationSpec = tween(durationMillis = 250, easing = LinearEasing)
-                ) + fadeOut(animationSpec = tween(durationMillis = 250, easing = LinearEasing))
+                slideOutHorizontally(tween(NAV_ANIMATION_MILLIS, easing = LinearEasing)) {
+                    it / 2
+                } + fadeOut(tween(NAV_ANIMATION_MILLIS, easing = LinearEasing)),
         ) {
-            Surface(
-                modifier =
-                    Modifier.size(56.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                        .clickable(role = Role.Button, onClick = onAddClick),
-                shape = RoundedCornerShape(16.dp),
-                color = MaterialTheme.colorScheme.secondary,
-                contentColor = MaterialTheme.colorScheme.onSecondary,
-                tonalElevation = 4.dp
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = stringResource(R.string.fab_open),
-                    modifier = Modifier.padding(16.dp)
-                )
-            }
+            AddButton(onClick = onAddClick)
         }
+    }
+}
+
+@Composable
+private fun TabPill(
+    currentTab: MainTab,
+    onTabClick: (MainTab) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val background =
+        if (isSystemInDarkTheme()) MaterialTheme.colorScheme.surfaceContainer
+        else MaterialTheme.colorScheme.surfaceVariant
+    Row(
+        modifier = modifier.clip(RoundedCornerShape(50)).background(background).padding(8.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        MainTab.entries.forEach { tab ->
+            NavItem(
+                title = stringResource(tab.title),
+                icon = tab.icon,
+                isSelected = tab == currentTab,
+                onClick = { onTabClick(tab) },
+            )
+        }
+    }
+}
+
+@Composable
+private fun AddButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Surface(
+        modifier =
+            modifier
+                .size(56.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .clickable(role = Role.Button, onClick = onClick),
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.secondary,
+        contentColor = MaterialTheme.colorScheme.onSecondary,
+        tonalElevation = 4.dp,
+    ) {
+        Icon(
+            imageVector = Icons.Default.Add,
+            contentDescription = stringResource(R.string.fab_open),
+            modifier = Modifier.padding(16.dp),
+        )
     }
 }
 
 @Composable
 private fun NavItem(
     title: String,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    icon: ImageVector,
     isSelected: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-    val targetScale = if (isSelected) 1.1f else 1.0f
     val scale by
         animateFloatAsState(
-            targetValue = targetScale,
-            animationSpec = tween(durationMillis = 200, easing = LinearEasing)
+            targetValue = if (isSelected) 1.1f else 1.0f,
+            animationSpec = tween(ITEM_ANIMATION_MILLIS, easing = LinearEasing),
+            label = "nav_item_scale",
         )
-
-    val targetAlpha = if (isSelected) 1.0f else 0.6f
     val alpha by
         animateFloatAsState(
-            targetValue = targetAlpha,
-            animationSpec = tween(durationMillis = 200, easing = LinearEasing)
+            targetValue = if (isSelected) 1.0f else 0.6f,
+            animationSpec = tween(ITEM_ANIMATION_MILLIS, easing = LinearEasing),
+            label = "nav_item_alpha",
         )
 
     Row(
         modifier =
-            Modifier.clip(RoundedCornerShape(50))
+            modifier
+                .clip(RoundedCornerShape(50))
                 .background(
                     if (isSelected) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
                     else Color.Transparent
                 )
                 .clickable(onClick = onClick)
                 .padding(horizontal = 12.dp, vertical = 8.dp)
-                .animateContentSize(
-                    animationSpec = tween(durationMillis = 200, easing = LinearEasing)
-                )
+                .animateContentSize(tween(ITEM_ANIMATION_MILLIS, easing = LinearEasing))
                 .graphicsLayer {
-                    this.scaleX = scale
-                    this.scaleY = scale
+                    scaleX = scale
+                    scaleY = scale
                     this.alpha = alpha
                 },
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center
+        horizontalArrangement = Arrangement.Center,
     ) {
         Icon(
             imageVector = icon,
             contentDescription = title,
             modifier = Modifier.size(24.dp),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = alpha)
+            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = alpha),
         )
         if (isSelected) {
             Text(
                 text = title,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.labelLarge,
-                modifier = Modifier.padding(horizontal = 8.dp)
+                modifier = Modifier.padding(horizontal = 8.dp),
             )
         }
     }

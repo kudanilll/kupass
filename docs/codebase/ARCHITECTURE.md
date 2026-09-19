@@ -27,9 +27,9 @@ User action (Compose) -> ViewModel (viewModelScope) -> PasswordRepository (encry
 4. On success `SaveState.Success` is set, and the screen's `LaunchedEffect(saveState)` pops the back stack.
 5. `HomeViewModel.passwords` (`flatMapLatest` over the search query → `getAll` Flow → decrypt every field → sort/filter in memory) re-emits, and `VaultList` recomposes.
 
-**Export:** `DataScreen` → `ExportPasswordDialog` (backup password ≥ 8 chars, confirmed) → `HomeViewModel.prepareExport(CharArray)` → SAF `CreateDocument` → `exportPasswords(uri)` → `repository.getAllPasswords().first()` → `BackupCodec.encode` on `Dispatchers.Default` (PBKDF2 600k ≈ 2 s on an emulator, with `BackupProgressDialog`) → write → password array zeroed.
+**Export:** `DataScreen` → `ExportPasswordDialog` (backup password ≥ 8 chars, confirmed) → `BackupViewModel.prepareExport(CharArray)` → SAF `CreateDocument` → `exportPasswords(uri)` → `repository.getAllPasswords().first()` → `BackupCodec.encode` on `Dispatchers.Default` (PBKDF2 600k ≈ 2 s on an emulator, with `BackupProgressDialog`) → write → password array zeroed.
 
-**Import:** SAF `OpenDocument` → `HomeViewModel.importPasswords` → bounded read (≤ 32 MB) → `BackupCodec.isPasswordProtected` ? `ImportPasswordDialog` (retry on wrong password) : legacy path → `BackupCodec.decode` → `repository.importPasswords` (skip invalid + duplicates, encrypt all, single-transaction `insertAll`) → `VaultEvent.ImportSucceeded(imported, skipped)`.
+**Import:** SAF `OpenDocument` → `BackupViewModel.importPasswords` → bounded read (≤ 32 MB) → `BackupCodec.isPasswordProtected` ? `ImportPasswordDialog` (retry on wrong password) : legacy path → `BackupCodec.decode` → `repository.importPasswords` (skip invalid + duplicates, encrypt all, single-transaction `insertAll`) → `VaultEvent.ImportSucceeded(imported, skipped)`.
 
 ## 3) Layer/Module Responsibilities
 
@@ -54,10 +54,10 @@ User action (Compose) -> ViewModel (viewModelScope) -> PasswordRepository (encry
 | Repository (thin, with a crypto decorator)         | `PasswordRepository`                                     | Keep the DAO and UI unaware of encryption               |
 | Manual DI container + `viewModelFactory { initializer { } }` | `di/AppContainer.kt`, `*ViewModel.Factory` | Constructor injection without a DI framework (lightweight, testable) |
 | Sealed interface operation state                   | `SaveState`, `DeleteState`                               | Drive navigation after async work via `LaunchedEffect`  |
-| Sealed one-shot events over a `Channel` | `HomeViewModel.events` (`VaultEvent`) → `MainAppScreen` (`repeatOnLifecycle`) | Toasts after export/import, delivered exactly once |
+| Sealed one-shot events over a `Channel` | `HomeViewModel.events`, `BackupViewModel.events` (`VaultEvent`) → `MainAppScreen` (`repeatOnLifecycle`) | Toasts after read failures and export/import, delivered exactly once |
 | `flatMapLatest` + `stateIn(WhileSubscribed(5000))` | `HomeViewModel.passwords`                                | Reactive search                                         |
 | Type-safe navigation with `@Serializable` routes   | `MainAppScreen`                                          | Compile-time route args                                 |
-| Shared ViewModel across pager pages                | `MainPagerScreen` passes `homeViewModel` to `HomeScreen` | Export/import launchers live at pager level             |
+| Stateless screens, state hoisted to the pager | `MainPagerScreen` collects `HomeViewModel` + `BackupViewModel` and passes state/callbacks to `HomeScreen` and `DataScreen` | No ViewModel forwarding between composables (compose-rules) |
 
 ## 5) Known Architectural Risks
 

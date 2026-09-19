@@ -1,0 +1,94 @@
+# Overrides on top of detekt's default config (buildUponDefaultConfig = true).
+# Only Compose-driven adjustments live here; everything else keeps the defaults.
+
+empty-blocks:
+  EmptyFunctionBlock:
+    # Required no-op overrides of platform interfaces (e.g. ActivityLifecycleCallbacks on API 27).
+    ignoreOverridden: true
+
+naming:
+  FunctionNaming:
+    # Composables are PascalCase by convention.
+    ignoreAnnotated: ['Composable']
+
+style:
+  MagicNumber:
+    # Dimensions (16.dp), durations, and colors are literal by design in UI code.
+    ignoreAnnotated: ['Composable', 'Preview']
+    ignorePropertyDeclaration: true
+    ignoreCompanionObjectPropertyDeclaration: true
+  UnusedPrivateFunction:
+    ignoreAnnotated: ['Preview']
+
+complexity:
+  LongParameterList:
+    # Composables take many slots/state parameters by design (state hoisting).
+    ignoreAnnotated: ['Composable']
+  LongMethod:
+    ignoreAnnotated: ['Preview']
+
+Compose:
+  ComposableAnnotationNaming:
+    active: true
+  ComposableNaming:
+    active: true
+  ComposableParamOrder:
+    active: true
+  CompositionLocalAllowlist:
+    active: true
+  CompositionLocalNaming:
+    active: true
+  ContentEmitterReturningValues:
+    active: true
+  ContentTrailingLambda:
+    active: true
+  ContentSlotReused:
+    active: true
+  DefaultsVisibility:
+    active: true
+  LambdaParameterEventTrailing:
+    active: true
+  LambdaParameterInRestartableEffect:
+    active: true
+  Material2:
+    active: true
+  ModifierClickableOrder:
+    active: true
+  ModifierComposed:
+    active: true
+  ModifierMissing:
+    active: true
+  ModifierNaming:
+    active: true
+  ModifierNotUsedAtRoot:
+    active: true
+  ModifierReused:
+    active: true
+  ModifierWithoutDefault:
+    active: true
+  MultipleEmitters:
+    active: true
+  MutableParams:
+    active: true
+  MutableStateAutoboxing:
+    active: true
+  MutableStateParam:
+    active: true
+  ParameterNaming:
+    active: true
+  PreviewAnnotationNaming:
+    active: true
+  PreviewPublic:
+    active: true
+  RememberMissing:
+    active: true
+  RememberContentMissing:
+    active: true
+  UnstableCollections:
+    # Off by default upstream. Strong skipping (default since Kotlin 2.0.20) already skips
+    # recomposition for unstable parameters by instance equality.
+    active: false
+  ViewModelForwarding:
+    active: true
+  ViewModelInjection:
+    active: true

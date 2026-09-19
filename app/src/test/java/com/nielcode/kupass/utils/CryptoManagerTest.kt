@@ -92,8 +92,12 @@ class CryptoManagerTest {
 
     @Test
     fun `malformed v2 value throws`() {
-        assertThrows(CryptoException::class.java) { CryptoManager.decrypt(CryptoManager.PREFIX_V2 + "***") }
-        assertThrows(CryptoException::class.java) { CryptoManager.decrypt(CryptoManager.PREFIX_V2 + "AAAA") }
+        assertThrows(CryptoException::class.java) {
+            CryptoManager.decrypt(CryptoManager.PREFIX_V2 + "***")
+        }
+        assertThrows(CryptoException::class.java) {
+            CryptoManager.decrypt(CryptoManager.PREFIX_V2 + "AAAA")
+        }
     }
 
     @Test
@@ -110,12 +114,16 @@ class CryptoManagerTest {
         assertFalse(CryptoManager.isCurrentFormat("plaintext"))
     }
 
-    private fun newKey(): SecretKey = KeyGenerator.getInstance("AES").apply { init(256) }.generateKey()
+    private fun newKey(): SecretKey =
+        KeyGenerator.getInstance("AES").apply { init(256) }.generateKey()
 
     /** Reproduces the pre-v2 format: Base64(IV || ciphertext || tag) with no prefix. */
     private fun encryptV1(plaintext: String, key: SecretKey): String {
         val cipher = Cipher.getInstance("AES/GCM/NoPadding")
         cipher.init(Cipher.ENCRYPT_MODE, key)
-        return Base64.encodeToString(cipher.iv + cipher.doFinal(plaintext.toByteArray()), Base64.NO_WRAP)
+        return Base64.encodeToString(
+            cipher.iv + cipher.doFinal(plaintext.toByteArray()),
+            Base64.NO_WRAP,
+        )
     }
 }

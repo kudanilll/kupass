@@ -1,13 +1,12 @@
 package com.nielcode.kupass.ui.screens.settings
 
+import android.content.Context
 import android.content.Intent
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Code
@@ -17,297 +16,325 @@ import androidx.compose.material.icons.filled.Gavel
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
-import androidx.core.os.LocaleListCompat
 import com.google.android.gms.oss.licenses.v2.OssLicensesMenuActivity
 import com.google.android.material.color.DynamicColors
+import com.nielcode.kupass.App
 import com.nielcode.kupass.BuildConfig
 import com.nielcode.kupass.MainActivity
 import com.nielcode.kupass.R
-import com.nielcode.kupass.App
+import com.nielcode.kupass.data.local.prefs.PreferenceManager
 import com.nielcode.kupass.security.AppLock
 import com.nielcode.kupass.ui.components.SectionHeader
 import com.nielcode.kupass.ui.components.SectionItem
+import com.nielcode.kupass.ui.components.SingleChoiceDialog
 import com.nielcode.kupass.utils.AppConfig
+import com.nielcode.kupass.utils.AppearanceSettings
 import com.nielcode.kupass.utils.openUrl
 
-@OptIn(ExperimentalMaterial3Api::class)
+private const val SECONDS_PER_MINUTE = 60
+
+private enum class SettingsDialog {
+    Language,
+    AutoLock,
+    Theme,
+    DynamicColor,
+    Restart,
+}
+
+/** App settings: language, auto-lock, theme, dynamic color, and about links. */
 @Composable
-fun SettingsScreen() {
-
+fun SettingsScreen(modifier: Modifier = Modifier) {
     val context = LocalContext.current
-    val container = remember { (context.applicationContext as App).container }
-    val prefs = container.preferenceManager
-    val appLock = container.appLock
+    val container = remember(context) { (context.applicationContext as App).container }
+    val settings = remember(container) { SettingsController(context, container.preferenceManager) }
+    var openDialog by remember { mutableStateOf<SettingsDialog?>(null) }
 
-    var currentLanguageIndex by remember { mutableIntStateOf(prefs.language) }
-    var currentThemeIndex by remember { mutableIntStateOf(prefs.theme) }
-    var currentDynamicColor by remember { mutableIntStateOf(prefs.dynamicColor) }
-    var currentAutoLockSeconds by remember { mutableIntStateOf(prefs.autoLockSeconds) }
-    var showAutoLockDialog by remember { mutableStateOf(false) }
-    val autoLockLabels = AppLock.TIMEOUT_OPTIONS_SECONDS.map { autoLockLabel(it) }
-
-    // State Variables For Visibility
-    var showLanguageDialog by remember { mutableStateOf(false) }
-    var showThemeDialog by remember { mutableStateOf(false) }
-    var showDynamicColorsDialog by remember { mutableStateOf(false) }
-    var showRestartDialog by remember { mutableStateOf(false) }
-
-    val languageList = stringArrayResource(id = R.array.language_list)
-    val themeList = stringArrayResource(id = R.array.theme_list)
-
-    val isDynamicColorSupported = DynamicColors.isDynamicColorAvailable()
-    val dynamicColorStatus =
-        when {
-            !isDynamicColorSupported -> stringResource(R.string.not_supported)
-            currentDynamicColor == AppConfig.DynamicColors.Code.ENABLE ->
-                stringResource(R.string.enable)
-            else -> stringResource(R.string.disable)
-        }
-
-    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-        Column(modifier = Modifier.fillMaxSize().padding(innerPadding).padding(vertical = 16.dp)) {
-            // Section: General
-            SectionHeader(title = stringResource(R.string.settings))
-            SectionItem(
-                icon = Icons.Default.Language,
-                title = stringResource(R.string.settings_language_title),
-                subtitle =
-                    languageList.getOrNull(currentLanguageIndex)
-                        ?: stringResource(R.string.lang_en),
-                onClick = { showLanguageDialog = true }
+    Scaffold(modifier = modifier.fillMaxSize()) { innerPadding ->
+        Column(
+            modifier =
+                Modifier.fillMaxSize()
+                    .padding(innerPadding)
+                    .padding(vertical = 16.dp)
+                    .verticalScroll(rememberScrollState())
+        ) {
+            GeneralSection(
+                languageIndex = settings.language,
+                onLanguageClick = { openDialog = SettingsDialog.Language },
             )
-
-            // Section: Security
-            SectionHeader(title = stringResource(R.string.settings_category_security))
-            SectionItem(
-                icon = Icons.Default.Lock,
-                title = stringResource(R.string.settings_auto_lock_title),
-                subtitle = autoLockLabel(currentAutoLockSeconds),
-                onClick = { showAutoLockDialog = true }
+            SecuritySection(
+                autoLockSeconds = settings.autoLockSeconds,
+                onAutoLockClick = { openDialog = SettingsDialog.AutoLock },
             )
-
-            // Section: Appearance
-            SectionHeader(title = stringResource(R.string.settings_category_appearance))
-            SectionItem(
-                icon = Icons.Default.Contrast,
-                title = stringResource(R.string.settings_theme_title),
-                subtitle = themeList.getOrNull(currentThemeIndex) ?: "System Default",
-                onClick = { showThemeDialog = true }
+            AppearanceSection(
+                themeIndex = settings.theme,
+                dynamicColor = settings.dynamicColor,
+                onThemeClick = { openDialog = SettingsDialog.Theme },
+                onDynamicColorClick = { openDialog = SettingsDialog.DynamicColor },
             )
-            SectionItem(
-                icon = Icons.Default.ColorLens,
-                title = stringResource(R.string.settings_dynamic_colors_title),
-                subtitle = dynamicColorStatus,
-                onClick = { if (isDynamicColorSupported) showDynamicColorsDialog = true }
-            )
-
-            // Section: About
-            SectionHeader(title = stringResource(R.string.settings_category_developer))
-            SectionItem(
-                icon = Icons.Default.AccountCircle,
-                title = stringResource(R.string.settings_about_title),
-                subtitle = BuildConfig.DEV_NAME,
-                onClick = {
-                    appLock.allowNextBackground()
-                    openUrl(context, BuildConfig.DEV_URL)
-                }
-            )
-            SectionItem(
-                icon = Icons.Default.Gavel,
-                title = stringResource(R.string.settings_license_title),
-                subtitle = stringResource(R.string.settings_license_summary),
-                onClick = {
-                    appLock.allowNextBackground()
-                    val intent = Intent(context, OssLicensesMenuActivity::class.java)
-                    context.startActivity(intent)
-                }
-            )
-            SectionItem(
-                icon = Icons.Default.Code,
-                title = stringResource(R.string.app_name),
-                subtitle = "${BuildConfig.VERSION_NAME} - ${BuildConfig.BUILD_TYPE}",
-                onClick = {
-                    appLock.allowNextBackground()
-                    openUrl(context, BuildConfig.GIT_URL)
-                }
-            )
-        }
-
-        if (showAutoLockDialog) {
-            SingleChoiceDialog(
-                title = stringResource(R.string.settings_auto_lock_title),
-                options = autoLockLabels,
-                selectedIndex = AppLock.TIMEOUT_OPTIONS_SECONDS.indexOf(currentAutoLockSeconds).coerceAtLeast(0),
-                onDismiss = { showAutoLockDialog = false },
-                onConfirm = { index ->
-                    val seconds = AppLock.TIMEOUT_OPTIONS_SECONDS[index]
-                    prefs.autoLockSeconds = seconds
-                    currentAutoLockSeconds = seconds
-                    showAutoLockDialog = false
-                }
-            )
-        }
-
-        val languageValues = stringArrayResource(id = R.array.language_values)
-
-        if (showLanguageDialog) {
-            SingleChoiceDialog(
-                title = stringResource(id = R.string.settings_language_title),
-                options = languageList.toList(),
-                selectedIndex = currentLanguageIndex,
-                onDismiss = { showLanguageDialog = false },
-                onConfirm = { newIndex ->
-                    if (currentLanguageIndex != newIndex) {
-                        prefs.language = newIndex
-                        currentLanguageIndex = newIndex
-                        // Safeguard out of bounds index crash if translation
-                        // arrays drift in sync length
-                        val languageTag = languageValues.getOrNull(newIndex) ?: "en"
-                        AppCompatDelegate.setApplicationLocales(
-                            LocaleListCompat.forLanguageTags(languageTag)
-                        )
-                    }
-                    showLanguageDialog = false
-                }
-            )
-        }
-
-        if (showThemeDialog) {
-            SingleChoiceDialog(
-                title = stringResource(id = R.string.settings_theme_title),
-                options = themeList.toList(),
-                selectedIndex = currentThemeIndex,
-                onDismiss = { showThemeDialog = false },
-                onConfirm = { newIndex ->
-                    if (currentThemeIndex != newIndex) {
-                        prefs.theme = newIndex
-                        currentThemeIndex = newIndex
-                        val nightMode =
-                            when (newIndex) {
-                                AppConfig.Theme.Code.LIGHT -> AppCompatDelegate.MODE_NIGHT_NO
-                                AppConfig.Theme.Code.DARK -> AppCompatDelegate.MODE_NIGHT_YES
-                                else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
-                            }
-                        AppCompatDelegate.setDefaultNightMode(nightMode)
-                    }
-                    showThemeDialog = false
-                }
-            )
-        }
-
-        if (showDynamicColorsDialog) {
-            val options = listOf(stringResource(R.string.enable), stringResource(R.string.disable))
-            val currentIndex =
-                if (currentDynamicColor == AppConfig.DynamicColors.Code.ENABLE) 0 else 1
-
-            SingleChoiceDialog(
-                title = stringResource(R.string.settings_dynamic_colors_title),
-                options = options,
-                selectedIndex = currentIndex,
-                onDismiss = { showDynamicColorsDialog = false },
-                onConfirm = { newIndex ->
-                    val newSetting =
-                        if (newIndex == 0) AppConfig.DynamicColors.Code.ENABLE
-                        else AppConfig.DynamicColors.Code.DISABLE
-                    if (currentDynamicColor != newSetting) {
-                        prefs.dynamicColor = newSetting
-                        currentDynamicColor = newSetting
-                        showRestartDialog = true
-                    }
-                    showDynamicColorsDialog = false
-                }
-            )
-        }
-
-        if (showRestartDialog) {
-            AlertDialog(
-                onDismissRequest = {},
-                properties =
-                    DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false),
-                text = { Text(stringResource(R.string.dialog_message_language)) },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            showRestartDialog = false
-                            val restart =
-                                Intent(context, MainActivity::class.java).apply {
-                                    flags =
-                                        Intent.FLAG_ACTIVITY_CLEAR_TOP or
-                                            Intent.FLAG_ACTIVITY_NEW_TASK
-                                }
-                            context.startActivity(restart)
-                        }
-                    ) {
-                        Text(stringResource(R.string.button_restart))
-                    }
+            AboutSection(
+                onOpen = { launch ->
+                    // Leaving for a browser or the licenses screen must not lock the vault.
+                    container.appLock.allowNextBackground()
+                    launch(context)
                 }
             )
         }
     }
+
+    openDialog?.let { dialog ->
+        SettingsDialogHost(
+            dialog = dialog,
+            settings = settings,
+            onDismiss = { openDialog = null },
+            onRestartRequest = { openDialog = SettingsDialog.Restart },
+        )
+    }
+}
+
+/** Current settings values, persisted and applied as soon as they change. */
+@Stable
+private class SettingsController(
+    private val context: Context,
+    private val prefs: PreferenceManager,
+) {
+    var language by mutableIntStateOf(prefs.language)
+        private set
+
+    var theme by mutableIntStateOf(prefs.theme)
+        private set
+
+    var dynamicColor by mutableIntStateOf(prefs.dynamicColor)
+        private set
+
+    var autoLockSeconds by mutableIntStateOf(prefs.autoLockSeconds)
+        private set
+
+    fun selectLanguage(index: Int) {
+        if (index == language) return
+        prefs.language = index
+        language = index
+        AppearanceSettings.applyLanguage(context, index)
+    }
+
+    fun selectTheme(code: Int) {
+        if (code == theme) return
+        prefs.theme = code
+        theme = code
+        AppearanceSettings.applyTheme(code)
+    }
+
+    /** @return true if the change needs an app restart to take effect. */
+    fun selectDynamicColor(enabled: Boolean): Boolean {
+        val code =
+            if (enabled) AppConfig.DynamicColors.Code.ENABLE
+            else AppConfig.DynamicColors.Code.DISABLE
+        if (code == dynamicColor) return false
+        prefs.dynamicColor = code
+        dynamicColor = code
+        return true
+    }
+
+    fun selectAutoLockSeconds(seconds: Int) {
+        prefs.autoLockSeconds = seconds
+        autoLockSeconds = seconds
+    }
 }
 
 @Composable
-fun SingleChoiceDialog(
-    title: String,
-    options: List<String>,
-    selectedIndex: Int,
-    onDismiss: () -> Unit,
-    onConfirm: (Int) -> Unit
+private fun GeneralSection(
+    languageIndex: Int,
+    onLanguageClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-    var tempSelectedIndex by remember { mutableIntStateOf(selectedIndex) }
+    val languages = stringArrayResource(R.array.language_list)
+    Column(modifier = modifier) {
+        SectionHeader(title = stringResource(R.string.settings))
+        SectionItem(
+            icon = Icons.Default.Language,
+            title = stringResource(R.string.settings_language_title),
+            subtitle = languages.getOrNull(languageIndex) ?: stringResource(R.string.lang_en),
+            onClick = onLanguageClick,
+        )
+    }
+}
 
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(title) },
-        text = {
-            Column {
-                options.forEachIndexed { index, option ->
-                    Row(
-                        modifier =
-                            Modifier.fillMaxWidth()
-                                .selectable(
-                                    selected = (index == tempSelectedIndex),
-                                    onClick = { tempSelectedIndex = index }
-                                ),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        RadioButton(
-                            selected = (index == tempSelectedIndex),
-                            onClick = { tempSelectedIndex = index }
-                        )
-                        Text(text = option, style = MaterialTheme.typography.bodyLarge)
+@Composable
+private fun SecuritySection(
+    autoLockSeconds: Int,
+    onAutoLockClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier) {
+        SectionHeader(title = stringResource(R.string.settings_category_security))
+        SectionItem(
+            icon = Icons.Default.Lock,
+            title = stringResource(R.string.settings_auto_lock_title),
+            subtitle = autoLockLabel(autoLockSeconds),
+            onClick = onAutoLockClick,
+        )
+    }
+}
+
+@Composable
+private fun AppearanceSection(
+    themeIndex: Int,
+    dynamicColor: Int,
+    onThemeClick: () -> Unit,
+    onDynamicColorClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val themes = stringArrayResource(R.array.theme_list)
+    val dynamicColorSupported = DynamicColors.isDynamicColorAvailable()
+    Column(modifier = modifier) {
+        SectionHeader(title = stringResource(R.string.settings_category_appearance))
+        SectionItem(
+            icon = Icons.Default.Contrast,
+            title = stringResource(R.string.settings_theme_title),
+            subtitle = themes.getOrNull(themeIndex) ?: stringResource(R.string.theme_default),
+            onClick = onThemeClick,
+        )
+        SectionItem(
+            icon = Icons.Default.ColorLens,
+            title = stringResource(R.string.settings_dynamic_colors_title),
+            subtitle =
+                stringResource(
+                    when {
+                        !dynamicColorSupported -> R.string.not_supported
+                        dynamicColor == AppConfig.DynamicColors.Code.ENABLE -> R.string.enable
+                        else -> R.string.disable
                     }
-                }
-            }
-        },
+                ),
+            onClick = { if (dynamicColorSupported) onDynamicColorClick() },
+        )
+    }
+}
+
+/** @param onOpen starts an external screen; receives the launch action to run. */
+@Composable
+private fun AboutSection(onOpen: ((Context) -> Unit) -> Unit, modifier: Modifier = Modifier) {
+    Column(modifier = modifier) {
+        SectionHeader(title = stringResource(R.string.settings_category_developer))
+        SectionItem(
+            icon = Icons.Default.AccountCircle,
+            title = stringResource(R.string.settings_about_title),
+            subtitle = BuildConfig.DEV_NAME,
+            onClick = { onOpen { openUrl(it, BuildConfig.DEV_URL) } },
+        )
+        SectionItem(
+            icon = Icons.Default.Gavel,
+            title = stringResource(R.string.settings_license_title),
+            subtitle = stringResource(R.string.settings_license_summary),
+            onClick = {
+                onOpen { it.startActivity(Intent(it, OssLicensesMenuActivity::class.java)) }
+            },
+        )
+        SectionItem(
+            icon = Icons.Default.Code,
+            title = stringResource(R.string.app_name),
+            subtitle = "${BuildConfig.VERSION_NAME} - ${BuildConfig.BUILD_TYPE}",
+            onClick = { onOpen { openUrl(it, BuildConfig.GIT_URL) } },
+        )
+    }
+}
+
+@Composable
+private fun SettingsDialogHost(
+    dialog: SettingsDialog,
+    settings: SettingsController,
+    onDismiss: () -> Unit,
+    onRestartRequest: () -> Unit,
+) {
+    when (dialog) {
+        SettingsDialog.Language ->
+            SingleChoiceDialog(
+                title = stringResource(R.string.settings_language_title),
+                options = stringArrayResource(R.array.language_list).toList(),
+                selectedIndex = settings.language,
+                onDismiss = onDismiss,
+                onConfirm = {
+                    settings.selectLanguage(it)
+                    onDismiss()
+                },
+            )
+        SettingsDialog.AutoLock ->
+            SingleChoiceDialog(
+                title = stringResource(R.string.settings_auto_lock_title),
+                options = AppLock.TIMEOUT_OPTIONS_SECONDS.map { autoLockLabel(it) },
+                selectedIndex =
+                    AppLock.TIMEOUT_OPTIONS_SECONDS.indexOf(settings.autoLockSeconds)
+                        .coerceAtLeast(0),
+                onDismiss = onDismiss,
+                onConfirm = {
+                    settings.selectAutoLockSeconds(AppLock.TIMEOUT_OPTIONS_SECONDS[it])
+                    onDismiss()
+                },
+            )
+        SettingsDialog.Theme ->
+            SingleChoiceDialog(
+                title = stringResource(R.string.settings_theme_title),
+                options = stringArrayResource(R.array.theme_list).toList(),
+                selectedIndex = settings.theme,
+                onDismiss = onDismiss,
+                onConfirm = {
+                    settings.selectTheme(it)
+                    onDismiss()
+                },
+            )
+        SettingsDialog.DynamicColor ->
+            SingleChoiceDialog(
+                title = stringResource(R.string.settings_dynamic_colors_title),
+                options = listOf(stringResource(R.string.enable), stringResource(R.string.disable)),
+                selectedIndex =
+                    if (settings.dynamicColor == AppConfig.DynamicColors.Code.ENABLE) 0 else 1,
+                onDismiss = onDismiss,
+                onConfirm = {
+                    if (settings.selectDynamicColor(enabled = it == 0)) onRestartRequest()
+                    else onDismiss()
+                },
+            )
+        SettingsDialog.Restart -> RestartDialog()
+    }
+}
+
+/** Dynamic colors only apply after a restart; this dialog can't be dismissed without one. */
+@Composable
+private fun RestartDialog(modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+    AlertDialog(
+        onDismissRequest = {},
+        modifier = modifier,
+        properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false),
+        text = { Text(stringResource(R.string.dialog_message_language)) },
         confirmButton = {
-            TextButton(onClick = { onConfirm(tempSelectedIndex) }) {
-                Text(stringResource(R.string.button_apply))
+            TextButton(
+                onClick = {
+                    context.startActivity(
+                        Intent(context, MainActivity::class.java).apply {
+                            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+                        }
+                    )
+                }
+            ) {
+                Text(stringResource(R.string.button_restart))
             }
         },
-        dismissButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.button_cancel)) }
-        }
     )
 }
 
@@ -315,6 +342,10 @@ fun SingleChoiceDialog(
 private fun autoLockLabel(seconds: Int): String =
     when {
         seconds == 0 -> stringResource(R.string.auto_lock_immediately)
-        seconds < 60 -> pluralStringResource(R.plurals.auto_lock_seconds, seconds, seconds)
-        else -> pluralStringResource(R.plurals.auto_lock_minutes, seconds / 60, seconds / 60)
+        seconds < SECONDS_PER_MINUTE ->
+            pluralStringResource(R.plurals.auto_lock_seconds, seconds, seconds)
+        else -> {
+            val minutes = seconds / SECONDS_PER_MINUTE
+            pluralStringResource(R.plurals.auto_lock_minutes, minutes, minutes)
+        }
     }

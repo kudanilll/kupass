@@ -1,21 +1,22 @@
 package com.nielcode.kupass.ui.screens
 
+import android.net.Uri
 import com.nielcode.kupass.data.local.db.PasswordEntity
 import com.nielcode.kupass.data.repository.PasswordRepository
 import com.nielcode.kupass.testing.FakePasswordDao
 import com.nielcode.kupass.testing.MainDispatcherRule
+import com.nielcode.kupass.ui.screens.data.BackupViewModel
 import com.nielcode.kupass.ui.screens.detail.DeleteState
 import com.nielcode.kupass.ui.screens.detail.PasswordDetailViewModel
 import com.nielcode.kupass.ui.screens.editor.PasswordEditorViewModel
 import com.nielcode.kupass.ui.screens.editor.SaveState
 import com.nielcode.kupass.ui.screens.home.HomeViewModel
-import android.net.Uri
 import com.nielcode.kupass.ui.screens.home.VaultEvent
 import com.nielcode.kupass.utils.CryptoException
 import com.nielcode.kupass.utils.CryptoManager
-import kotlinx.coroutines.flow.first
 import javax.crypto.KeyGenerator
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -47,7 +48,13 @@ class ViewModelsTest {
     fun `editor saves a new entry trimmed and encrypted at rest`() = runTest {
         val vm = PasswordEditorViewModel(repository)
 
-        vm.savePassword(siteName = "  GitHub ", username = " me ", password = "s3cret", url = "", notes = "")
+        vm.savePassword(
+            siteName = "  GitHub ",
+            username = " me ",
+            password = "s3cret",
+            url = "",
+            notes = "",
+        )
 
         assertEquals(SaveState.Success, vm.saveState.value)
         val stored = dao.stored.single()
@@ -74,9 +81,13 @@ class ViewModelsTest {
 
     @Test
     fun `home lists decrypted entries and filters by search`() = runTest {
-        repository.insertPassword(PasswordEntity(siteName = "Google", username = "alice", password = "p1"))
-        repository.insertPassword(PasswordEntity(siteName = "GitHub", username = "bob", password = "p2"))
-        val vm = HomeViewModel(repository, RuntimeEnvironment.getApplication().contentResolver)
+        repository.insertPassword(
+            PasswordEntity(siteName = "Google", username = "alice", password = "p1")
+        )
+        repository.insertPassword(
+            PasswordEntity(siteName = "GitHub", username = "bob", password = "p2")
+        )
+        val vm = HomeViewModel(repository)
         backgroundScope.launchCollect(vm)
 
         assertEquals(listOf("GitHub", "Google"), vm.passwords.value.map { it.siteName })
@@ -101,7 +112,7 @@ class ViewModelsTest {
 
     @Test
     fun `export of an empty vault emits NothingToExport`() = runTest {
-        val vm = HomeViewModel(repository, RuntimeEnvironment.getApplication().contentResolver)
+        val vm = BackupViewModel(repository, RuntimeEnvironment.getApplication().contentResolver)
 
         vm.prepareExport("correct horse".toCharArray())
         vm.exportPasswords(Uri.parse("content://test/backup.json"))

@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.oss.licenses)
     alias(libs.plugins.room)
+    alias(libs.plugins.detekt)
 }
 
 android {
@@ -94,6 +95,14 @@ room {
     schemaDirectory("$projectDir/schemas")
 }
 
+detekt {
+    // Default rules plus the overrides in config/detekt/detekt.yml. No baseline: findings get
+    // fixed.
+    config.setFrom(rootProject.file("config/detekt/detekt.yml"))
+    buildUponDefaultConfig = true
+    parallel = true
+}
+
 dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -122,6 +131,7 @@ dependencies {
     implementation(libs.material)
     implementation(libs.play.services.oss.licenses)
     implementation(platform(libs.androidx.compose.bom))
+    detektPlugins(libs.compose.rules.detekt)
     ksp(libs.androidx.room.compiler)
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)

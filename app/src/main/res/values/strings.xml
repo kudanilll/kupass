@@ -47,6 +47,8 @@
     <!-- Navigation Drawer -->
     <string name="nav_export">Export Password</string>
     <string name="nav_import">Import Password</string>
+    <string name="nav_home">Home</string>
+    <string name="nav_data">Data</string>
     <string name="nav_settings">Settings</string>
 
     <!-- Settings -->
@@ -66,7 +68,6 @@
     <string name="backup_export_dialog_message">Choose a backup password. You will need it to restore this backup on any device. It cannot be recovered if you forget it.</string>
     <string name="backup_password_label">Backup password</string>
     <string name="backup_password_confirm_label">Confirm password</string>
-    <string name="backup_password_too_short">Use at least %1$d characters</string>
     <string name="backup_password_mismatch">Passwords do not match</string>
     <string name="backup_import_dialog_title">Enter backup password</string>
     <string name="backup_import_dialog_message">This backup is encrypted. Enter the password you chose when exporting it.</string>
@@ -153,5 +154,12 @@
     <plurals name="toast_import_skipped">
         <item quantity="one">%1$d skipped</item>
         <item quantity="other">%1$d skipped</item>
+    </plurals>
+    <string name="search_close">Close search</string>
+    <string name="search_searching_for">Searching: %1$s</string>
+    <string name="site_placeholder">e.g. Netflix, Google</string>
+    <plurals name="backup_password_too_short">
+        <item quantity="one">Use at least %1$d character</item>
+        <item quantity="other">Use at least %1$d characters</item>
     </plurals>
 </resources>

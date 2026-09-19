@@ -13,6 +13,7 @@
 | `app/src/androidTest/` | Instrumented tests: Room migration, Keystore crypto, backup KDF cost, legacy-format upgrade | `app/src/androidTest/` |
 | `app/schemas/` | Room exported schemas (`<version>.json`), committed. Source of truth for migration tests | `app/build.gradle.kts` (`room { schemaDirectory }`) |
 | `gradle/`                                                   | Version catalog, wrapper, daemon JVM toolchain                                                                                              | `libs.versions.toml`                      |
+| `config/detekt/detekt.yml` | detekt overrides on top of the defaults (Compose rules enabled) | `app/build.gradle.kts` |
 | `docs/ai/`                                                  | Agent rules, PRD, best practices                                                                                                            | this repo                                 |
 | `docs/codebase/`                                            | Evidence-based codebase map (these docs)                                                                                                    | this repo                                 |
 | `image/`                                                    | README banner and screenshots                                                                                                               | `README.md`                               |
@@ -46,20 +47,24 @@ com/nielcode/kupass/
 │   ├── backup/BackupCodec.kt      portable backup v2 (PBKDF2 + AES-GCM) + strict legacy v1 import
 │   ├── local/prefs/PreferenceManager.kt SharedPreferences "kupass_preferences"
 │   └── repository/PasswordRepository.kt encrypt/decrypt all text fields, in-memory sort+search, legacy format upgrade
+│       └── repository/VaultEntityMapping.kt  field encrypt/decrypt, identity, search match, sort
 ├── ui/
-│   ├── components/                BottomNav (194 lines), SectionHeader, SectionItem
+│   ├── components/                BottomNav + MainTab, SectionHeader, SectionItem, VaultTextField, DeletePasswordDialog, SingleChoiceDialog
 │   ├── screens/
-│   │   ├── MainAppScreen.kt       routes, pager (Home/Data/Settings), SAF export/import launchers, toasts
-│   │   ├── home/                  HomeScreen, HomeViewModel (list, search, delete, export/import), components/{VaultList, PasswordListItem}
+│   │   ├── MainAppScreen.kt       routes, MainPager (MainTab pages + hide-on-scroll BottomNav), backup dialogs + SAF launchers, event toasts
+│   │   ├── FlowDefaults.kt        `WhileUiSubscribed`, `recoverable {}` (I/O, SecurityException, crypto, SQL)
+│   │   ├── home/                  HomeScreen (stateless), HomeViewModel (list, search, delete), VaultEvent, components/{VaultList, PasswordListItem}
 │   │   ├── data/DataScreen.kt     export/import buttons only
 │   │   ├── data/BackupPasswordDialog.kt  export/import password dialogs + progress
+│   │   ├── data/BackupViewModel.kt  export/import: backup password, encrypted-import prompt, busy state, events
 │   │   ├── lock/LockScreen.kt     locked state / "set up a screen lock" guidance
 │   │   ├── detail/                PasswordDetailScreen (+ copyToClipboard), PasswordDetailViewModel
-│   │   ├── editor/                PasswordEditorScreen, PasswordEditorViewModel, components/TextField.kt
+│   │   ├── editor/                PasswordEditorScreen (EditorFormState, top bar, form), PasswordEditorViewModel
 │   │   └── settings/SettingsScreen.kt   language/theme/dynamic color dialogs, about links, SingleChoiceDialog
 │   └── theme/                     Color.kt, Theme.kt (KupassTheme), Type.kt (Heming display, Google Sans Flex body)
 └── utils/
     ├── AppConfig.kt               int codes for language/theme/dynamic color
+    ├── AppearanceSettings.kt      apply language (per-app locale) and night mode; used by App and Settings
     ├── CryptoManager.kt           Keystore AES/GCM, alias "kupass_vault_key"
     └── Util.kt                    openUrl()
 ```
