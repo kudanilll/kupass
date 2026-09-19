@@ -8,7 +8,6 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -48,6 +47,7 @@ import androidx.navigation.toRoute
 import com.nielcode.kupass.App
 import com.nielcode.kupass.ui.components.BottomNav
 import com.nielcode.kupass.ui.components.MainTab
+import com.nielcode.kupass.ui.components.navSpring
 import com.nielcode.kupass.ui.screens.data.BackupProgressDialog
 import com.nielcode.kupass.ui.screens.data.BackupViewModel
 import com.nielcode.kupass.ui.screens.data.DataScreen
@@ -69,7 +69,6 @@ import kotlinx.serialization.Serializable
 @Serializable data class PasswordDetail(val passwordId: Long)
 
 private const val SCREEN_TRANSITION_MILLIS = 400
-private const val BOTTOM_BAR_TRANSITION_MILLIS = 300
 private const val BACKUP_MIME_TYPE = "application/json"
 private const val BACKUP_FILE_NAME = "kupass-backup.json"
 
@@ -210,14 +209,8 @@ private fun MainPager(
         }
         AnimatedVisibility(
             visible = bottomBarVisible,
-            enter =
-                slideInVertically(tween(BOTTOM_BAR_TRANSITION_MILLIS, easing = LinearEasing)) {
-                    it
-                } + fadeIn(tween(BOTTOM_BAR_TRANSITION_MILLIS, easing = LinearEasing)),
-            exit =
-                slideOutVertically(tween(BOTTOM_BAR_TRANSITION_MILLIS, easing = LinearEasing)) {
-                    it
-                } + fadeOut(tween(BOTTOM_BAR_TRANSITION_MILLIS, easing = LinearEasing)),
+            enter = slideInVertically(navSpring()) { it } + fadeIn(navSpring()),
+            exit = slideOutVertically(navSpring()) { it } + fadeOut(navSpring()),
             modifier = Modifier.align(Alignment.BottomCenter),
         ) {
             BottomNav(
