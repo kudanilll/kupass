@@ -18,7 +18,11 @@
         android:theme="@style/Theme.Kupass.SplashScreen"
         tools:targetApi="37"
     >
-        <activity android:name=".MainActivity" android:exported="true">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:windowSoftInputMode="adjustResize"
+        >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

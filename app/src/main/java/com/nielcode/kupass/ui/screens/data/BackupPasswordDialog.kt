@@ -3,16 +3,9 @@ package com.nielcode.kupass.ui.screens.data
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -24,13 +17,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import com.nielcode.kupass.R
 import com.nielcode.kupass.data.backup.BackupCodec
+import com.nielcode.kupass.ui.components.PasswordVisibilityToggle
+import com.nielcode.kupass.ui.components.SecretKeyboardOptions
+import com.nielcode.kupass.ui.components.VaultTextField
 
 /**
  * Asks for a new backup password before export. [onConfirm] receives a fresh [CharArray]; the
@@ -154,28 +149,21 @@ private fun PasswordField(
     onValueChange: (String) -> Unit,
     label: String,
     error: String?,
+    modifier: Modifier = Modifier,
 ) {
     var visible by remember { mutableStateOf(false) }
-    OutlinedTextField(
+    VaultTextField(
         value = value,
         onValueChange = onValueChange,
-        label = { Text(label) },
-        singleLine = true,
-        isError = error != null,
-        supportingText = error?.let { { Text(it) } },
+        label = label,
+        modifier = modifier,
+        keyboardOptions = SecretKeyboardOptions,
         visualTransformation =
             if (visible) VisualTransformation.None else PasswordVisualTransformation(),
-        keyboardOptions =
-            KeyboardOptions(keyboardType = KeyboardType.Password, autoCorrectEnabled = false),
+        isError = error != null,
+        supportingText = error,
         trailingIcon = {
-            IconButton(onClick = { visible = !visible }) {
-                Icon(
-                    imageVector =
-                        if (visible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                    contentDescription = stringResource(R.string.show_password),
-                )
-            }
+            PasswordVisibilityToggle(visible = visible, onToggle = { visible = !visible })
         },
-        modifier = Modifier.fillMaxWidth(),
     )
 }

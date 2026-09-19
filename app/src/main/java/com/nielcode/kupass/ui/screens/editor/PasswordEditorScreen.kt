@@ -4,25 +4,19 @@ import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.Notes
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Language
-import androidx.compose.material.icons.filled.Link
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -37,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -45,9 +40,25 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nielcode.kupass.R
 import com.nielcode.kupass.data.local.db.PasswordEntity
+import com.nielcode.kupass.ui.components.PasswordVisibilityToggle
+import com.nielcode.kupass.ui.components.SecretKeyboardOptions
 import com.nielcode.kupass.ui.components.VaultTextField
 
 private const val URL_PLACEHOLDER = "https://..."
+
+private val NextFieldKeyboard = KeyboardOptions(imeAction = ImeAction.Next)
+private val UsernameKeyboard =
+    KeyboardOptions(
+        keyboardType = KeyboardType.Email,
+        autoCorrectEnabled = false,
+        imeAction = ImeAction.Next,
+    )
+private val UrlKeyboard =
+    KeyboardOptions(
+        keyboardType = KeyboardType.Uri,
+        autoCorrectEnabled = false,
+        imeAction = ImeAction.Next,
+    )
 
 /**
  * Creates a password entry, or edits one when [passwordId] is positive.
@@ -179,6 +190,7 @@ private fun EditorForm(form: EditorFormState, modifier: Modifier = Modifier) {
         modifier =
             modifier
                 .fillMaxSize()
+                .imePadding() // keep the focused field above the keyboard (before verticalScroll)
                 .padding(horizontal = 20.dp)
                 .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -187,49 +199,41 @@ private fun EditorForm(form: EditorFormState, modifier: Modifier = Modifier) {
             value = form.siteName,
             onValueChange = { form.siteName = it },
             label = stringResource(R.string.site_or_app_hint),
-            icon = Icons.Default.Language,
             placeholder = stringResource(R.string.site_placeholder),
+            keyboardOptions = NextFieldKeyboard,
         )
         VaultTextField(
             value = form.username,
             onValueChange = { form.username = it },
             label = stringResource(R.string.username_hint),
-            icon = Icons.Default.Person,
-            keyboardType = KeyboardType.Email,
+            keyboardOptions = UsernameKeyboard,
         )
         VaultTextField(
             value = form.password,
             onValueChange = { form.password = it },
             label = stringResource(R.string.password_hint),
-            icon = Icons.Default.Lock,
-            keyboardType = KeyboardType.Password,
+            keyboardOptions = SecretKeyboardOptions,
             visualTransformation =
                 if (form.passwordVisible) VisualTransformation.None
                 else PasswordVisualTransformation(),
             trailingIcon = {
-                IconButton(onClick = { form.passwordVisible = !form.passwordVisible }) {
-                    Icon(
-                        imageVector =
-                            if (form.passwordVisible) Icons.Default.Visibility
-                            else Icons.Default.VisibilityOff,
-                        contentDescription = stringResource(R.string.show_password),
-                    )
-                }
+                PasswordVisibilityToggle(
+                    visible = form.passwordVisible,
+                    onToggle = { form.passwordVisible = !form.passwordVisible },
+                )
             },
         )
         VaultTextField(
             value = form.url,
             onValueChange = { form.url = it },
             label = stringResource(R.string.url_label),
-            icon = Icons.Default.Link,
             placeholder = URL_PLACEHOLDER,
-            keyboardType = KeyboardType.Uri,
+            keyboardOptions = UrlKeyboard,
         )
         VaultTextField(
             value = form.notes,
             onValueChange = { form.notes = it },
             label = stringResource(R.string.note_hint),
-            icon = Icons.AutoMirrored.Filled.Notes,
             singleLine = false,
         )
     }
