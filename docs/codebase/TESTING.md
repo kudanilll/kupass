@@ -12,6 +12,7 @@
 ./gradlew :app:testDebugUnitTest            # all unit tests (verified: BUILD SUCCESSFUL, 9/9 pass, 2026-09-18)
 ./gradlew :app:testDebugUnitTest --tests "com.nielcode.kupass.security.CryptoManagerTest"
 ANDROID_SERIAL=<device> ./gradlew :app:connectedDebugAndroidTest   # instrumented. It UNINSTALLS the app afterwards, so use a dedicated/read-only emulator, never a device with real vault data
+./gradlew :app:testDebugUnitTest -Pkupass.snapshots --tests "*UiSnapshotTest"   # renders screens to app/build/ui-snapshots/*.png (own JVM, opt-in)
 # coverage: [TODO] not configured (no JaCoCo/Kover)
 ```
 
@@ -36,6 +37,8 @@ Results land in `app/build/test-results/testDebugUnitTest/*.xml` and `app/build/
 | Manual E2E | Yes | Android 17 emulator: no screen lock → guidance; PIN set → system prompt; wrong PIN stays locked; correct PIN opens vault; back after 5 s stays open; back after 32 s re-locks | Done with the `android-cli` skill (`android layout`); screenshots are black by design (`FLAG_SECURE`) |
 | Unit: repository | Yes (7) | Full-field encryption at rest, case-insensitive sort, in-memory search on all fields, legacy upgrade + idempotence, undecryptable rows untouched , import dedupe/validation, atomic import on crypto failure | `data/repository/PasswordRepositoryTest.kt`. Device: `androidTest/.../PasswordRepositoryUpgradeTest` (real Keystore + Room) |
 | Integration: Room | Yes (1) | Schema v1 opens with the current schema + all `MIGRATIONS`, rows preserved | `androidTest/.../KupassDatabaseMigrationTest.kt` via `MigrationTestHelper` (schemas from `app/schemas/`) |
+| Unit: site icons | Yes (20) | Domain extraction (credentials/path stripped, IPs/private names rejected), Favget client against a local `HttpServer` (key only in header, no non-HTTPS redirect, status mapping, size cap), repository (off by default, dedupe, memory cache, miss/failure retry, clear on disable) | `data/siteicon/*Test.kt` |
+| UI snapshots | Yes (9, opt-in) | Home (entries, site icons, empty, no results), Data, Settings, Editor, Detail, BottomNav rendered to PNG for review | `ui/UiSnapshotTest.kt`: Robolectric native graphics on SDK 35 (Espresso lacks SDK 37). Device screenshots are blank (`FLAG_SECURE`), so this is how UI is checked |
 | UI / E2E            | No       | create/edit/delete/export/import flows                                        | Compose test deps present, unused                                                                                          |
 
 ## 4) Mocking and Isolation Strategy

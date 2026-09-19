@@ -8,6 +8,8 @@
 #   RELEASE_STORE_PASSWORD   keystore password
 #   RELEASE_KEY_ALIAS        key alias
 #   RELEASE_KEY_PASSWORD     key password
+# Optional:
+#   FAVGET_API_KEY           enables opt-in site icons; without it the feature is hidden
 name: Release
 
 on:
@@ -65,6 +67,7 @@ jobs:
           RELEASE_STORE_PASSWORD: ${{ secrets.RELEASE_STORE_PASSWORD }}
           RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
           RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+          FAVGET_API_KEY: ${{ secrets.FAVGET_API_KEY }}
         run: |
           if [ -z "$RELEASE_KEYSTORE_BASE64" ] || [ -z "$RELEASE_STORE_PASSWORD" ] \
             || [ -z "$RELEASE_KEY_ALIAS" ] || [ -z "$RELEASE_KEY_PASSWORD" ]; then
@@ -78,7 +81,13 @@ jobs:
             printf 'RELEASE_STORE_PASSWORD=%s\n' "$RELEASE_STORE_PASSWORD"
             printf 'RELEASE_KEY_ALIAS=%s\n' "$RELEASE_KEY_ALIAS"
             printf 'RELEASE_KEY_PASSWORD=%s\n' "$RELEASE_KEY_PASSWORD"
+            if [ -n "$FAVGET_API_KEY" ]; then
+              printf 'FAVGET_API_KEY=%s\n' "$FAVGET_API_KEY"
+            fi
           } > secrets.properties
+          if [ -z "$FAVGET_API_KEY" ]; then
+            echo "::warning::FAVGET_API_KEY is not set; site icons will be unavailable"
+          fi
 
       - name: Test
         run: ./gradlew :app:testReleaseUnitTest --console=plain

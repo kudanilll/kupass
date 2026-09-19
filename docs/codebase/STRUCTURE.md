@@ -47,14 +47,16 @@ com/nielcode/kupass/
 │   │   └── PasswordEntity.kt      table "passwords"
 │   ├── backup/BackupCodec.kt      portable backup v2 (PBKDF2 + AES-GCM) + strict legacy v1 import
 │   ├── local/prefs/PreferenceManager.kt SharedPreferences "kupass_preferences"
+│   ├── siteicon/                  opt-in site icons: SiteDomain (domain extraction), FavgetIconSource (HTTP), SiteIconRepository (memory cache, dedupe, decode)
 │   └── repository/PasswordRepository.kt encrypt/decrypt all text fields, in-memory sort+search, legacy format upgrade
 │       └── repository/VaultEntityMapping.kt  field encrypt/decrypt, identity, search match, sort
 ├── ui/
-│   ├── components/                BottomNav + MainTab, SectionHeader, SectionItem, VaultTextField, DeletePasswordDialog, SingleChoiceDialog
+│   ├── components/                BottomNav (+ navSpring, BottomNavHeight), MainTab, EmptyState, SectionHeader, SectionItem, VaultTextField (+ PasswordVisibilityToggle), DeletePasswordDialog, SingleChoiceDialog
 │   ├── screens/
 │   │   ├── MainAppScreen.kt       routes, MainPager (MainTab pages + hide-on-scroll BottomNav), backup dialogs + SAF launchers, event toasts
 │   │   ├── FlowDefaults.kt        `WhileUiSubscribed`, `recoverable {}` (I/O, SecurityException, crypto, SQL)
 │   │   ├── VaultEvent.kt          one-shot UI events (toasts) shared by Home and Backup
+│   │   ├── PageInsets.kt          `pagerPageInsets()`: pager pages take top/side insets, bottom comes from the floating nav
 │   │   ├── home/                  HomeScreen (stateless), HomeViewModel (list, search, delete), components/{VaultList, PasswordListItem}
 │   │   ├── data/DataScreen.kt     export/import buttons only
 │   │   ├── data/BackupPasswordDialog.kt  export/import password dialogs + progress
@@ -62,7 +64,7 @@ com/nielcode/kupass/
 │   │   ├── lock/LockScreen.kt     locked state / "set up a screen lock" guidance
 │   │   ├── detail/                PasswordDetailScreen (+ copyToClipboard), PasswordDetailViewModel
 │   │   ├── editor/                PasswordEditorScreen (EditorFormState, top bar, form), PasswordEditorViewModel
-│   │   └── settings/SettingsScreen.kt   language/theme/dynamic color dialogs, about links, SingleChoiceDialog
+│   │   └── settings/SettingsScreen.kt   language/auto-lock/site icons/theme/dynamic color dialogs, about links, SingleChoiceDialog
 │   └── theme/                     Color.kt, Theme.kt (KupassTheme), Type.kt (Heming display, Google Sans Flex body) + AppearanceSettings.kt (apply language/night mode)
 └── utils/
     ├── AppConfig.kt               int codes for language/theme/dynamic color
@@ -103,9 +105,9 @@ Current violations: `SettingsScreen` uses `PreferenceManager` directly (no ViewM
 
 ## 5) Naming and Organization Rules
 
-- Files: PascalCase, named after the main declaration (`PasswordDetailScreen.kt`, `HomeViewModel.kt`). The exception is `Util.kt`, which holds top-level functions.
+- Files: PascalCase, named after the main declaration (`PasswordDetailScreen.kt`, `HomeViewModel.kt`). Files of top-level functions are named for their topic (`UrlUtils.kt`, `SiteDomain.kt`).
 - Directories: lowercase feature names under `ui/screens/` (feature-based), layer names under `data/` (layer-based).
-- Packages mirror directories, with one exception: `ui/screens/editor/components/TextField.kt` declares `package com.nielcode.kupass.ui.components`.
+- Packages mirror directories.
 - No path aliases. Plain Kotlin package imports.
 
 ## 6) Evidence
@@ -114,4 +116,3 @@ Current violations: `SettingsScreen` uses `PreferenceManager` directly (no ViewM
 - `app/src/main/AndroidManifest.xml`
 - `app/src/main/java/com/nielcode/kupass/App.kt`, `MainActivity.kt`, `ui/screens/MainAppScreen.kt`
 - `app/src/main/java/com/nielcode/kupass/data/local/db/PasswordEntity.kt`
-- `app/src/main/java/com/nielcode/kupass/ui/screens/editor/components/TextField.kt` (package mismatch)

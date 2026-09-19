@@ -14,6 +14,12 @@ android {
     namespace = "com.nielcode.kupass"
     compileSdk = 37
 
+    val properties = Properties()
+    val secretsFile = rootProject.file("secrets.properties")
+    if (secretsFile.exists() && secretsFile.isFile) {
+        secretsFile.inputStream().use { properties.load(it) }
+    }
+
     defaultConfig {
         applicationId = "com.nielcode.kupass"
         minSdk = 27
@@ -22,12 +28,24 @@ android {
         versionName = "3.1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    }
 
-    val properties = Properties()
-    val secretsFile = rootProject.file("secrets.properties")
-    if (secretsFile.exists() && secretsFile.isFile) {
-        secretsFile.inputStream().use { properties.load(it) }
+        buildConfigField("String", "GIT_URL", "\"https://github.com/kudanilll/kupass\"")
+        buildConfigField("String", "DEV_URL", "\"https://www.kudaniel.my.id\"")
+        buildConfigField("String", "DEV_NAME", "\"Achmad Daniel Syahputra\"")
+
+        // Favget site icons (opt-in). Without a key the feature stays hidden in Settings.
+        buildConfigField("String", "FAVGET_API_URL", "\"https://favget.nielcode.web.id\"")
+        // Escaped so the key stays a valid Java string literal in the generated BuildConfig.
+        val favgetKey =
+            properties
+                .getProperty("FAVGET_API_KEY")
+                .orEmpty()
+                .trim()
+                // Tolerate KEY="value": .properties files keep quotes as part of the value.
+                .removeSurrounding("\"")
+                .replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+        buildConfigField("String", "FAVGET_API_KEY", "\"$favgetKey\"")
     }
 
     signingConfigs {
@@ -51,23 +69,7 @@ android {
     }
 
     buildTypes {
-        debug {
-            buildConfigField("String", "GIT_URL", "\"https://github.com/kudanilll/kupass\"")
-            buildConfigField("String", "DEV_URL", "\"https://www.kudaniel.my.id\"")
-            buildConfigField("String", "DEV_NAME", "\"Achmad Daniel Syahputra\"")
-
-            // Favget API
-            buildConfigField("String", "FAVGET_API_URL", "\"https://favget.nielcode.web.id\"")
-        }
-
         release {
-            buildConfigField("String", "GIT_URL", "\"https://github.com/kudanilll/kupass\"")
-            buildConfigField("String", "DEV_URL", "\"https://www.kudaniel.my.id\"")
-            buildConfigField("String", "DEV_NAME", "\"Achmad Daniel Syahputra\"")
-
-            // Favget API
-            buildConfigField("String", "FAVGET_API_URL", "\"https://favget.nielcode.web.id\"")
-
             isMinifyEnabled = true
             isShrinkResources = true
             signingConfig = signingConfigs.getByName("release")

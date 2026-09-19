@@ -47,6 +47,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.nielcode.kupass.App
+import com.nielcode.kupass.data.siteicon.SiteIcons
 import com.nielcode.kupass.security.AppLock
 import com.nielcode.kupass.ui.components.BottomNav
 import com.nielcode.kupass.ui.components.BottomNavHeight
@@ -132,6 +133,7 @@ fun MainPagerScreen(
     val searchQuery by homeViewModel.searchQuery.collectAsStateWithLifecycle()
     val importPrompt by backupViewModel.importPrompt.collectAsStateWithLifecycle()
     val backupBusy by backupViewModel.backupBusy.collectAsStateWithLifecycle()
+    val siteIcons = rememberSiteIcons()
 
     val filePickers =
         rememberBackupFilePickers(
@@ -173,6 +175,7 @@ fun MainPagerScreen(
                     onNavigateToDetail = onNavigateToDetail,
                     onAddPassword = onNavigateToEditor,
                     contentPadding = contentPadding,
+                    siteIcons = siteIcons,
                 )
             MainTab.Data ->
                 DataScreen(
@@ -183,6 +186,15 @@ fun MainPagerScreen(
             MainTab.Settings -> SettingsScreen(contentPadding = contentPadding)
         }
     }
+}
+
+/** The site icon loader while the user has site icons turned on, otherwise null. */
+@Composable
+private fun rememberSiteIcons(): SiteIcons? {
+    val appContext = LocalContext.current.applicationContext
+    val repository = remember(appContext) { (appContext as App).container.siteIcons }
+    val enabled by repository.enabled.collectAsStateWithLifecycle()
+    return repository.takeIf { enabled }
 }
 
 /** Storage Access Framework pickers for backups. Leaving for the picker never locks the vault. */

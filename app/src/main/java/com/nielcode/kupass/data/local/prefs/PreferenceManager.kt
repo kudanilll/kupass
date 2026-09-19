@@ -32,11 +32,17 @@ class PreferenceManager(context: Context) {
         get() = sharedPreferences.getInt(KEY_AUTO_LOCK_SECONDS, AppLock.DEFAULT_TIMEOUT_SECONDS)
         set(value) = edit { putInt(KEY_AUTO_LOCK_SECONDS, value) }
 
+    /** Opt-in: fetch site icons from Favget (sends entry domains off-device). Off by default. */
+    var siteIconsEnabled: Boolean
+        get() = sharedPreferences.getBoolean(KEY_SITE_ICONS, false)
+        set(value) = edit { putBoolean(KEY_SITE_ICONS, value) }
+
     companion object {
         private const val PREF_NAME = "kupass_preferences"
         private const val KEY_LANGUAGE = "language"
         private const val KEY_THEME = "theme"
         private const val KEY_DYNAMIC_COLOR = "dynamic_color"
         private const val KEY_AUTO_LOCK_SECONDS = "auto_lock_seconds"
+        private const val KEY_SITE_ICONS = "site_icons_enabled"
     }
 }

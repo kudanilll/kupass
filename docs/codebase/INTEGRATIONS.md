@@ -12,9 +12,9 @@
 | Clipboard (`ClipboardManager`) | Platform | Copy fields. Password flagged `EXTRA_IS_SENSITIVE` (API 33+) and cleared after 45 s on all APIs | none | Medium (secret exposure) | `security/SecureClipboard.kt` |
 | Browser via `ACTION_VIEW`                   | Implicit intent                         | Open developer/GitHub URLs                                                               | none                                                    | Low                                              | `Util.kt`, `SettingsScreen.kt`                                                        |
 | `OssLicensesMenuActivity`                   | Play services lib                       | Open-source license screen                                                               | none                                                    | Low                                              | `SettingsScreen.kt`                                                                   |
-| Favget API `https://favget.nielcode.web.id` | HTTP API (**planned, not wired; keep**) | Site favicons, opt-in (PRD FEAT-2)                                                       | [TODO]                                                  | n/a                                              | `BuildConfig.FAVGET_API_URL` in `app/build.gradle.kts`, TODO in `PasswordListItem.kt` |
+| Favget API `https://favget.nielcode.web.id` | HTTP API (`GET /v1/icon?domain=` → 302 to Cloudinary) | Site icons in the vault list. **Opt-in, off by default** (Settings → Security → Site icons, with a privacy note). Sends only the bare domain | `Authorization: Bearer FAVGET_API_KEY`, sent only to the Favget host; the redirected image is fetched over HTTPS without it | Low (cosmetic; failures fall back to the initial) | `data/siteicon/FavgetIconSource.kt`, `SiteIconRepository.kt`, `SiteDomain.kt` |
 
-No analytics, crash reporting, network client, or push service is present. The `INTERNET` permission is declared in `AndroidManifest.xml` but currently unused by app code.
+No analytics, crash reporting, or push service is present. The only network use is the opt-in Favget lookup above (plain `HttpURLConnection`, no HTTP library). Icons are cached in memory only, because a disk cache would reveal which sites are in the vault.
 
 ## 2) Data Stores
 
@@ -27,12 +27,12 @@ No analytics, crash reporting, network client, or push service is present. The `
 ## 3) Secrets and Credentials Handling
 
 - Signing secrets come from gitignored `secrets.properties` + `release-key.jks`. If the keystore is missing, release falls back to debug signing (`app/build.gradle.kts`).
-- Hardcoding check: `BuildConfig` has only public URLs and a name. No API keys (the earlier `FAVGET_API_KEY` is gone).
+- `BuildConfig.FAVGET_API_KEY` is read from `secrets.properties` (`FAVGET_API_KEY`, surrounding quotes tolerated) or, in the release workflow, from the optional `FAVGET_API_KEY` repository secret. It is extractable from the APK by design (accepted 2026-09-19); Favget's server-side rate limiting is the control. Without a key, Settings shows the feature as not available.
 - Vault key lifecycle: created lazily on first `encrypt`, never rotated. It's deleted by the OS on uninstall/clear data. [TODO] no rotation or re-key procedure exists.
 
 ## 4) Reliability and Failure Behavior
 
-- Retry/timeout: n/a (no network).
+- Retry/timeout: Favget requests time out after 8 s, at most 4 run at once, and concurrent requests for one domain share a fetch. Misses are remembered for 6 h and failures (network, 401/403/429, 5xx) for 5 min, in memory.
 - Crypto failure policy (EN-06): fail-closed. `CryptoManager.encrypt`/`decrypt` throw `CryptoException`. ViewModels catch it: the list shows the `toast_vault_read_failed` toast and never ciphertext.
 - SAF failures are caught generically and surfaced as the `export_failed`/`import_failed` toasts.
 - Import cap: rejects more than 2000 entries, but only after the full file is read and parsed.
@@ -50,4 +50,4 @@ No analytics, crash reporting, network client, or push service is present. The `
 - `app/src/main/java/com/nielcode/kupass/ui/screens/home/HomeViewModel.kt`, `ui/screens/MainAppScreen.kt`
 - `app/src/main/java/com/nielcode/kupass/ui/screens/detail/PasswordDetailScreen.kt`
 - `app/src/main/AndroidManifest.xml`, `app/build.gradle.kts`
-- `app/src/main/java/com/nielcode/kupass/ui/screens/home/components/PasswordListItem.kt` (favicon TODO)
+- `app/src/main/java/com/nielcode/kupass/data/siteicon/` (site icons)

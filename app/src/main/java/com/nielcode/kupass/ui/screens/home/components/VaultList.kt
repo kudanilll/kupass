@@ -26,21 +26,31 @@ import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.nielcode.kupass.R
 import com.nielcode.kupass.data.local.db.PasswordEntity
+import com.nielcode.kupass.data.siteicon.SiteIcons
+import com.nielcode.kupass.data.siteicon.siteDomainOf
 import com.nielcode.kupass.ui.components.EmptyState
 import kotlinx.coroutines.launch
 
 private const val EMPTY_STATE_HEIGHT_FRACTION = 0.7f
 
-/** Scrollable vault: headline, sticky search bar, and swipe-to-delete rows. */
+/**
+ * Scrollable vault: headline, sticky search bar, and swipe-to-delete rows.
+ *
+ * @param siteIcons icon loader, or null when site icons are turned off.
+ */
 @Composable
 fun VaultList(
     passwords: List<PasswordEntity>,
@@ -53,6 +63,7 @@ fun VaultList(
     onAddClick: () -> Unit,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
+    siteIcons: SiteIcons? = null,
 ) {
     Box(modifier = modifier.fillMaxSize()) {
         LazyColumn(
@@ -89,6 +100,7 @@ fun VaultList(
                 items(items = passwords, key = { it.id }, contentType = { "entry" }) { password ->
                     SwipeToDeleteRow(
                         password = password,
+                        siteIcons = siteIcons,
                         onClick = { onItemClick(password) },
                         onDelete = { onDeleteItem(password) },
                     )
@@ -187,6 +199,7 @@ private fun VaultEmptyState(query: String, onAddClick: () -> Unit, modifier: Mod
 @Composable
 private fun SwipeToDeleteRow(
     password: PasswordEntity,
+    siteIcons: SiteIcons?,
     onClick: () -> Unit,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier,
@@ -227,8 +240,25 @@ private fun SwipeToDeleteRow(
             subtitle = password.username.ifBlank { password.url },
             fallbackChar = password.siteName.firstOrNull()?.uppercase() ?: "?",
             onClick = onClick,
+            icon = rememberSiteIcon(password, siteIcons),
         )
     }
+}
+
+/** The row's site icon: from memory right away, otherwise loaded in the background. */
+@Composable
+private fun rememberSiteIcon(password: PasswordEntity, siteIcons: SiteIcons?): ImageBitmap? {
+    val domain =
+        remember(password.url, password.siteName) { siteDomainOf(password.url, password.siteName) }
+    val icon by
+        produceState(domain?.let { siteIcons?.peek(it) }, domain, siteIcons) {
+            // produceState keeps the old value when its keys change, so reset it first.
+            value = domain?.let { siteIcons?.peek(it) }
+            if (value == null && domain != null && siteIcons != null) {
+                value = siteIcons.load(domain)
+            }
+        }
+    return icon
 }
 
 /** Fades list content out behind the floating bottom navigation. */

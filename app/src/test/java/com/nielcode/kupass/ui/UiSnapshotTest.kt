@@ -8,7 +8,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
@@ -16,6 +18,7 @@ import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.unit.dp
 import com.nielcode.kupass.App
 import com.nielcode.kupass.data.local.db.PasswordEntity
+import com.nielcode.kupass.data.siteicon.SiteIcons
 import com.nielcode.kupass.security.CryptoManager
 import com.nielcode.kupass.ui.components.BottomNav
 import com.nielcode.kupass.ui.components.MainTab
@@ -78,6 +81,10 @@ class UiSnapshotTest {
 
     @Test fun homeWithEntries() = snapshot("home") { home(sample) }
 
+    @Test
+    fun homeWithSiteIcons() =
+        snapshot("home_site_icons") { home(sample, siteIcons = FakeSiteIcons) }
+
     @Test fun homeEmpty() = snapshot("home_empty") { home(emptyList()) }
 
     @Test
@@ -138,9 +145,10 @@ class UiSnapshotTest {
         }
 
     @Composable
-    private fun home(passwords: List<PasswordEntity>) =
+    private fun home(passwords: List<PasswordEntity>, siteIcons: SiteIcons? = null) =
         HomeScreen(
             passwords = passwords,
+            siteIcons = siteIcons,
             searchQuery = "",
             onSearchQueryChange = {},
             onDeletePassword = {},
@@ -168,5 +176,20 @@ class UiSnapshotTest {
                 .asAndroidBitmap()
                 .compress(Bitmap.CompressFormat.PNG, 100, it)
         }
+    }
+
+    /** Solid squares stand in for fetched icons; entries without a domain keep their initial. */
+    private object FakeSiteIcons : SiteIcons {
+        private val colors =
+            mapOf("github.com" to 0xFF24292F.toInt(), "netflix.com" to 0xFFE50914.toInt())
+
+        override fun peek(domain: String): ImageBitmap? =
+            colors[domain]?.let { color ->
+                Bitmap.createBitmap(96, 96, Bitmap.Config.ARGB_8888)
+                    .apply { eraseColor(color) }
+                    .asImageBitmap()
+            }
+
+        override suspend fun load(domain: String): ImageBitmap? = peek(domain)
     }
 }

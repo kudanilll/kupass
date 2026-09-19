@@ -11,6 +11,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.nielcode.kupass.data.local.db.PasswordEntity
+import com.nielcode.kupass.data.siteicon.SiteIcons
 import com.nielcode.kupass.ui.components.DeletePasswordDialog
 import com.nielcode.kupass.ui.screens.home.components.VaultList
 import com.nielcode.kupass.ui.screens.pagerPageInsets
@@ -26,6 +27,7 @@ fun HomeScreen(
     onAddPassword: () -> Unit,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(),
+    siteIcons: SiteIcons? = null,
 ) {
     var isSearchActive by remember { mutableStateOf(false) }
     var passwordToDelete by remember { mutableStateOf<PasswordEntity?>(null) }
@@ -54,6 +56,7 @@ fun HomeScreen(
             onAddClick = onAddPassword,
             modifier = Modifier.padding(top = innerPadding.calculateTopPadding()),
             contentPadding = contentPadding,
+            siteIcons = siteIcons,
         )
     }
 }

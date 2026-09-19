@@ -20,7 +20,7 @@
 - CI green on every PR: build, unit tests, lint (0 errors), format check.
 - A backup exported on phone A restores correctly on phone B with the backup password (automated test + manual check).
 - The vault opens only after biometric/device-credential authentication.
-- Release APK size is recorded per release. The target is < 8 MB (proposed), and the font subset should cut the current ~3.9 MB font substantially.
+- Release APK size is recorded per release. The target is < 8 MB (proposed). The font is down from ~3.9 MB to 236 KB (S-5.1).
 - Every Room schema change ships with a migration test.
 
 **Milestones** (the app version stays `3.1.0`; milestones are not releases, see the Decision Log)
@@ -132,7 +132,7 @@ Confirmed decision: biometric with device-credential fallback, no master passwor
 | ID     | Type    | Title                                                                                                                        | Pts | Pri | Blocked by   | Source            |
 | ------ | ------- | ---------------------------------------------------------------------------------------------------------------------------- | --- | --- | ------------ | ----------------- |
 | EN-5.0 | Enabler | Record the APK size baseline in CI (release build size in the job summary)                                                   | 1   | P1  | EN-01        | Lightweight goal  |
-| S-5.1  | Story   | Subset/optimize `googlesansflex.ttf` (Latin + Indonesian glyphs, only the needed axis ranges). Keep the font                 | 3   | P1  | EN-5.0       | QA-3              |
+| S-5.1  | Story   | ✅ Done 2026-09-19. Subset/optimize `googlesansflex.ttf` (Latin + Indonesian glyphs, only the needed axis ranges). Keep the font                 | 3   | P1  | EN-5.0       | QA-3              |
 | EN-5.2 | Enabler | List without decrypting passwords (projection), debounce search, crypto on `Dispatchers.Default`                             | 3   | P1  | EN-06, EN-07 | CONCERNS §4       |
 | EN-5.3 | Enabler | Replace `material-icons-extended` with the few vector icons used. Merge `mipmap-anydpi-v26`. Move bitmaps out of `drawable/` | 2   | P2  | none         | CONCERNS §4, lint |
 
@@ -149,7 +149,7 @@ Confirmed decision: biometric with device-credential fallback, no master passwor
 | ------ | ------- | --------------------------------------------------------------------------------------------------------------------- | --- | --- | ---------- | ------------- |
 | S-7.1  | Story   | Password generator (length, character sets, strength meter) in the editor                                             | 5   | P2  | none       | SEC-7         |
 | F-7.2  | Feature | **Android Autofill service** (proposed, needs approval): split with the `breakdown-feature-prd` skill before starting | 13+ | P1? | E2, E3     | FEAT-1        |
-| S-7.3  | Story   | Opt-in favicons via Favget (domain only, cached, off by default)                                                      | 5   | P2  | EN-01      | FEAT-2        |
+| S-7.3  | Story   | ✅ Done 2026-09-19. Opt-in favicons via Favget (domain only, cached, off by default)                                                      | 5   | P2  | EN-01      | FEAT-2        |
 | S-7.4  | Story   | Categories/tags and favorites (proposed)                                                                              | 5   | P3  | EN-03      | FEAT-3        |
 | S-7.5  | Story   | Adaptive list-detail layout for tablets/foldables (proposed)                                                          | 5   | P3  | none       | FEAT-4        |
 | EN-7.6 | Enabler | Migrate Navigation 2.x (maintenance mode) → Navigation 3                                                              | 5   | P3  | EN-04      | CONCERNS debt |
