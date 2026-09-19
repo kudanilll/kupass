@@ -1,4 +1,5 @@
-# Continuous integration: build, unit tests, and lint for every push to master and every PR.
+# Continuous integration: formatting, static analysis, build, unit tests, and lint for every push
+# to master and every PR.
 # Fork PRs run with a read-only token and no secrets; no job here needs secrets.
 name: CI
 
@@ -18,7 +19,7 @@ concurrency:
 
 jobs:
   build:
-    name: Build, test, lint
+    name: Format, analyze, build, test, lint
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -38,6 +39,12 @@ jobs:
       - name: Set up Gradle
         # Cache is written only from master; PR builds read it (default behavior).
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+
+      - name: Check formatting (ktfmt via Spotless)
+        run: ./gradlew spotlessCheck --console=plain
+
+      - name: Static analysis (detekt + Compose rules)
+        run: ./gradlew :app:detektMain :app:detektTest --console=plain
 
       - name: Build, unit test, lint
         run: ./gradlew :app:assembleDebug :app:testDebugUnitTest :app:lintDebug --console=plain
