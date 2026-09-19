@@ -23,6 +23,9 @@ import org.robolectric.annotation.GraphicsMode
  * Renders key screens on the JVM and writes PNGs to `app/build/ui-snapshots/` for visual review
  * (device screenshots are blank because of FLAG_SECURE). Doubles as a smoke test that each screen
  * composes without crashing.
+ *
+ * Opt-in, in its own run: `./gradlew :app:testDebugUnitTest -Pkupass.snapshots --tests
+ * "*UiSnapshotTest"`
  */
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
