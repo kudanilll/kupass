@@ -84,6 +84,18 @@ android {
         targetCompatibility = JavaVersion.VERSION_11
     }
 
+    testOptions {
+        // Robolectric needs merged resources/manifest (Compose UI tests, UiSnapshotTest).
+        unitTests.isIncludeAndroidResources = true
+        // Robolectric's SDK 37 runtime reaches into java.io.FileDescriptor via jdk.internal.access.
+        unitTests.all {
+            it.jvmArgs(
+                "--add-opens=java.base/java.io=ALL-UNNAMED",
+                "--add-exports=java.base/jdk.internal.access=ALL-UNNAMED",
+            )
+        }
+    }
+
     buildFeatures {
         compose = true
         buildConfig = true
@@ -134,6 +146,8 @@ dependencies {
     detektPlugins(libs.compose.rules.detekt)
     ksp(libs.androidx.room.compiler)
     testImplementation(libs.junit)
+    testImplementation(libs.androidx.compose.ui.test.junit4)
+    testImplementation(platform(libs.androidx.compose.bom))
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.robolectric)
 }
