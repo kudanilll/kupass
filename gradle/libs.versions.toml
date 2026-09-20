@@ -2,7 +2,7 @@
 activityCompose = "1.13.0"
 appcompat = "1.8.0"
 biometric = "1.1.0"
-agp = "9.4.0"
+agp = "9.4.1"
 composeBom = "2026.09.00"
 coreKtx = "1.19.0"
 composeRulesDetekt = "0.6.6"
