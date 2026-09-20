@@ -7,23 +7,29 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.nielcode.kupass.data.local.db.PasswordEntity
 import com.nielcode.kupass.data.repository.PasswordRepository
+import com.nielcode.kupass.data.repository.filterByQuery
 import com.nielcode.kupass.di.appContainer
+import com.nielcode.kupass.ui.screens.VaultEvent
 import com.nielcode.kupass.ui.screens.WhileUiSubscribed
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 /** ViewModel for the Home tab: the decrypted vault list, search, and delete. */
-@OptIn(ExperimentalCoroutinesApi::class)
-class HomeViewModel(private val repository: PasswordRepository) : ViewModel() {
+class HomeViewModel(
+    private val repository: PasswordRepository,
+    filterDispatcher: CoroutineDispatcher = Dispatchers.Default,
+) : ViewModel() {
 
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
@@ -36,26 +42,21 @@ class HomeViewModel(private val repository: PasswordRepository) : ViewModel() {
     val events: Flow<VaultEvent> = _events.receiveAsFlow()
 
     init {
-        passwords =
-            _searchQuery
-                .flatMapLatest { query ->
-                    val source =
-                        if (query.isBlank()) {
-                            repository.getAllPasswords()
-                        } else {
-                            repository.searchPasswords(query)
-                        }
-                    // Never crash or show ciphertext when the vault can't be decrypted.
-                    source.catch {
-                        _events.trySend(VaultEvent.VaultReadFailed)
-                        emit(emptyList())
-                    }
+        // Decrypt the vault once per database change and keep it while the UI is subscribed...
+        val vault =
+            repository
+                .getAllPasswords()
+                // Never crash or show ciphertext when the vault can't be decrypted.
+                .catch {
+                    _events.trySend(VaultEvent.VaultReadFailed)
+                    emit(emptyList())
                 }
-                .stateIn(
-                    scope = viewModelScope,
-                    started = WhileUiSubscribed,
-                    initialValue = emptyList(),
-                )
+                .stateIn(viewModelScope, WhileUiSubscribed, emptyList())
+        // ...so each search keystroke only filters the in-memory list instead of decrypting again.
+        passwords =
+            combine(vault, _searchQuery) { entries, query -> entries.filterByQuery(query) }
+                .flowOn(filterDispatcher)
+                .stateIn(viewModelScope, WhileUiSubscribed, emptyList())
     }
 
     fun onSearchQueryChange(query: String) {

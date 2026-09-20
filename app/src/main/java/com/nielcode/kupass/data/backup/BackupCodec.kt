@@ -1,8 +1,8 @@
 package com.nielcode.kupass.data.backup
 
 import com.nielcode.kupass.data.local.db.PasswordEntity
-import com.nielcode.kupass.utils.CryptoException
-import com.nielcode.kupass.utils.CryptoManager
+import com.nielcode.kupass.security.CryptoException
+import com.nielcode.kupass.security.CryptoManager
 import java.security.GeneralSecurityException
 import java.security.SecureRandom
 import java.util.Base64

@@ -74,5 +74,5 @@ User action (Compose) -> ViewModel (viewModelScope) -> PasswordRepository (encry
 - `app/src/main/java/com/nielcode/kupass/ui/screens/home/HomeViewModel.kt`, `editor/PasswordEditorViewModel.kt`, `detail/PasswordDetailViewModel.kt`
 - `app/src/main/java/com/nielcode/kupass/data/repository/PasswordRepository.kt`
 - `app/src/main/java/com/nielcode/kupass/data/local/db/KupassDatabase.kt`, `PasswordDao.kt`
-- `app/src/main/java/com/nielcode/kupass/utils/CryptoManager.kt`, `data/backup/BackupCodec.kt`
+- `app/src/main/java/com/nielcode/kupass/security/CryptoManager.kt`, `data/backup/BackupCodec.kt`
 - `app/src/main/java/com/nielcode/kupass/ui/theme/Theme.kt`

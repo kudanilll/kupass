@@ -29,11 +29,11 @@
 | `play-services-oss-licenses` (+ `oss-licenses` plugin 0.13.0)                                   | 17.5.2                       | `OssLicensesMenuActivity`                           | `SettingsScreen.kt`                   |
 | **AppCompat** (`AppCompatActivity`, `AppCompatDelegate`)                                        | 1.8.0 (declared)             | Per-app locale, night mode                          | `MainActivity.kt`, `App.kt`           |
 | **Material Components** (`com.google.android.material.color.DynamicColors`)                     | 1.14.0 (declared)            | Dynamic color check/apply                           | `App.kt`, `SettingsScreen.kt`         |
-| Android Keystore / `javax.crypto` (platform)                                                    | platform                     | AES-GCM encryption of every vault field (`kp2:` format)        | `utils/CryptoManager.kt`              |
+| Android Keystore / `javax.crypto` (platform)                                                    | platform                     | AES-GCM encryption of every vault field (`kp2:` format)        | `security/CryptoManager.kt`              |
 | `androidx.biometric` | 1.1.0 | `BiometricPrompt` for the UI-level app lock | `MainActivity.kt` |
 | `lifecycle-runtime-compose` | 2.11.0 | `collectAsStateWithLifecycle` | `ui/screens/**` |
 
-Bundled assets that affect APK size: `res/font/googlesansflex.ttf` (**~3.9 MB**, variable font) and `res/font/heming.ttf` (~30 KB), referenced in `ui/theme/Type.kt`.
+Bundled assets that affect APK size: `res/font/googlesansflex.ttf` (236 KB, instanced from the ~3.9 MB variable font to opsz 18 / wght 400–700 with fonttools `varLib.instancer`) and `res/font/heming.ttf` (~30 KB), referenced in `ui/theme/Type.kt`.
 
 ## 3) Development Toolchain
 
@@ -64,7 +64,7 @@ Bundled assets that affect APK size: `res/font/googlesansflex.ttf` (**~3.9 MB**,
 ## 5) Environment and Config
 
 - Config sources: `local.properties` (SDK path, gitignored), `secrets.properties` (gitignored; keys `RELEASE_STORE_PASSWORD`, `RELEASE_KEY_ALIAS`, `RELEASE_KEY_PASSWORD`), `release-key.jks` (gitignored).
-- `BuildConfig` fields (same values in debug and release): `GIT_URL`, `DEV_URL`, `DEV_NAME`, `FAVGET_API_URL`. None are secrets.
+- `BuildConfig` fields (set in `defaultConfig`, same in debug and release): `GIT_URL`, `DEV_URL`, `DEV_NAME`, `FAVGET_API_URL`, and `FAVGET_API_KEY` (from `secrets.properties`, empty if absent; extractable from the APK by design, see INTEGRATIONS.md).
 - No environment variables are read. There is no `.env` template.
 - Runtime constraints: offline-first. `INTERNET` permission is declared but no network client exists yet (see `INTEGRATIONS.md`).
 

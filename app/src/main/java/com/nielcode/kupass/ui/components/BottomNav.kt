@@ -1,28 +1,31 @@
 package com.nielcode.kupass.ui.components
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Home
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -33,16 +36,25 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.nielcode.kupass.R
+import com.nielcode.kupass.ui.theme.KupassTheme
 
-private const val NAV_ANIMATION_MILLIS = 250
-private const val ITEM_ANIMATION_MILLIS = 200
+/** Spring used by every bottom navigation animation, so they feel consistent and interruptible. */
+internal fun <T> navSpring() =
+    spring<T>(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessMediumLow)
+
+/** Height the floating navigation occupies (FAB plus vertical padding); pages pad by this. */
+val BottomNavHeight = 80.dp
+
+private val NavShadow = 8.dp
+private val PillToAddSpacing = 12.dp
 
 /** Floating pill navigation with an "add" button that only shows on the Home tab. */
 @Composable
@@ -53,35 +65,39 @@ fun BottomNav(
     modifier: Modifier = Modifier,
 ) {
     val addVisible = currentTab == MainTab.Home
-    val offsetX by
+    // Shift the pill left to keep the pill + add button pair centered.
+    val pillOffset: Dp by
         animateDpAsState(
-            // Shift the pill left to make room for the add button next to it.
-            targetValue = if (addVisible) (-12).dp else 0.dp,
-            animationSpec = tween(NAV_ANIMATION_MILLIS, easing = LinearEasing),
+            targetValue = if (addVisible) -PillToAddSpacing else 0.dp,
+            animationSpec = navSpring(),
             label = "nav_offset",
         )
 
     Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center,
+        modifier = modifier.fillMaxWidth().padding(vertical = 12.dp),
+        horizontalArrangement =
+            Arrangement.spacedBy(PillToAddSpacing, Alignment.CenterHorizontally),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         TabPill(
             currentTab = currentTab,
             onTabClick = onTabClick,
-            modifier = Modifier.offset { IntOffset(offsetX.roundToPx(), 0) },
+            modifier = Modifier.offset { IntOffset(pillOffset.roundToPx(), 0) },
         )
         AnimatedVisibility(
             visible = addVisible,
-            enter =
-                slideInHorizontally(tween(NAV_ANIMATION_MILLIS, easing = LinearEasing)) { it / 2 } +
-                    fadeIn(tween(NAV_ANIMATION_MILLIS, easing = LinearEasing)),
-            exit =
-                slideOutHorizontally(tween(NAV_ANIMATION_MILLIS, easing = LinearEasing)) {
-                    it / 2
-                } + fadeOut(tween(NAV_ANIMATION_MILLIS, easing = LinearEasing)),
+            enter = scaleIn(navSpring()) + fadeIn(navSpring()),
+            exit = scaleOut(navSpring()) + fadeOut(navSpring()),
         ) {
-            AddButton(onClick = onAddClick)
+            FloatingActionButton(
+                onClick = onAddClick,
+                shape = RoundedCornerShape(18.dp),
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                elevation = FloatingActionButtonDefaults.elevation(defaultElevation = NavShadow),
+            ) {
+                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.fab_open))
+            }
         }
     }
 }
@@ -92,43 +108,26 @@ private fun TabPill(
     onTabClick: (MainTab) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val background =
-        if (isSystemInDarkTheme()) MaterialTheme.colorScheme.surfaceContainer
-        else MaterialTheme.colorScheme.surfaceVariant
-    Row(
-        modifier = modifier.clip(RoundedCornerShape(50)).background(background).padding(8.dp),
-        horizontalArrangement = Arrangement.SpaceEvenly,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        MainTab.entries.forEach { tab ->
-            NavItem(
-                title = stringResource(tab.title),
-                icon = tab.icon,
-                isSelected = tab == currentTab,
-                onClick = { onTabClick(tab) },
-            )
-        }
-    }
-}
-
-@Composable
-private fun AddButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
     Surface(
-        modifier =
-            modifier
-                .size(56.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .clickable(role = Role.Button, onClick = onClick),
-        shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.secondary,
-        contentColor = MaterialTheme.colorScheme.onSecondary,
-        tonalElevation = 4.dp,
+        modifier = modifier,
+        shape = CircleShape,
+        color = MaterialTheme.colorScheme.surfaceContainer,
+        shadowElevation = NavShadow,
     ) {
-        Icon(
-            imageVector = Icons.Default.Add,
-            contentDescription = stringResource(R.string.fab_open),
-            modifier = Modifier.padding(16.dp),
-        )
+        Row(
+            modifier = Modifier.padding(6.dp).selectableGroup(),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            MainTab.entries.forEach { tab ->
+                NavItem(
+                    title = stringResource(tab.title),
+                    icon = tab.icon,
+                    selected = tab == currentTab,
+                    onClick = { onTabClick(tab) },
+                )
+            }
+        }
     }
 }
 
@@ -136,55 +135,59 @@ private fun AddButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
 private fun NavItem(
     title: String,
     icon: ImageVector,
-    isSelected: Boolean,
+    selected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val scale by
-        animateFloatAsState(
-            targetValue = if (isSelected) 1.1f else 1.0f,
-            animationSpec = tween(ITEM_ANIMATION_MILLIS, easing = LinearEasing),
-            label = "nav_item_scale",
+    val colors = MaterialTheme.colorScheme
+    val background by
+        animateColorAsState(
+            targetValue = if (selected) colors.secondaryContainer else Color.Transparent,
+            animationSpec = navSpring(),
+            label = "nav_item_background",
         )
-    val alpha by
-        animateFloatAsState(
-            targetValue = if (isSelected) 1.0f else 0.6f,
-            animationSpec = tween(ITEM_ANIMATION_MILLIS, easing = LinearEasing),
-            label = "nav_item_alpha",
+    val content by
+        animateColorAsState(
+            targetValue = if (selected) colors.onSecondaryContainer else colors.onSurfaceVariant,
+            animationSpec = navSpring(),
+            label = "nav_item_content",
         )
 
     Row(
         modifier =
             modifier
-                .clip(RoundedCornerShape(50))
-                .background(
-                    if (isSelected) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
-                    else Color.Transparent
-                )
-                .clickable(onClick = onClick)
-                .padding(horizontal = 12.dp, vertical = 8.dp)
-                .animateContentSize(tween(ITEM_ANIMATION_MILLIS, easing = LinearEasing))
-                .graphicsLayer {
-                    scaleX = scale
-                    scaleY = scale
-                    this.alpha = alpha
-                },
+                .clip(CircleShape)
+                .background(background)
+                .selectable(selected = selected, onClick = onClick, role = Role.Tab)
+                .padding(horizontal = 16.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center,
     ) {
         Icon(
             imageVector = icon,
             contentDescription = title,
             modifier = Modifier.size(24.dp),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = alpha),
+            tint = content,
         )
-        if (isSelected) {
+        AnimatedVisibility(
+            visible = selected,
+            enter = expandHorizontally(navSpring()) + fadeIn(navSpring()),
+            exit = shrinkHorizontally(navSpring()) + fadeOut(navSpring()),
+        ) {
             Text(
                 text = title,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = content,
                 style = MaterialTheme.typography.labelLarge,
-                modifier = Modifier.padding(horizontal = 8.dp),
+                maxLines = 1,
+                modifier = Modifier.padding(start = 8.dp),
             )
         }
+    }
+}
+
+@Preview
+@Composable
+private fun BottomNavPreview() {
+    KupassTheme(dynamicColor = false) {
+        BottomNav(currentTab = MainTab.Home, onTabClick = {}, onAddClick = {})
     }
 }

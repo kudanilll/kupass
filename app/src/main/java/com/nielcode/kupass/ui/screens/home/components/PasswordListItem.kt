@@ -1,5 +1,6 @@
 package com.nielcode.kupass.ui.screens.home.components
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,10 +18,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 
+/** A vault row: the site icon (or the site's initial), title, and subtitle. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PasswordListItem(
@@ -29,7 +32,7 @@ fun PasswordListItem(
     fallbackChar: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    imageUrl: String? = null,
+    icon: ImageBitmap? = null,
 ) {
     Card(
         onClick = onClick,
@@ -46,13 +49,16 @@ fun PasswordListItem(
                 modifier =
                     Modifier.size(48.dp)
                         .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primaryContainer),
+                        .background(
+                            if (icon == null) MaterialTheme.colorScheme.primaryContainer
+                            else MaterialTheme.colorScheme.surfaceContainerHigh
+                        ),
                 contentAlignment = Alignment.Center,
             ) {
-                // imageUrl is reserved for site favicons (roadmap FEAT-2, opt-in Favget). Until
-                // that
-                // ships, rows without one show the site's initial.
-                if (imageUrl == null) {
+                if (icon != null) {
+                    // Decorative: the title next to it names the site.
+                    Image(bitmap = icon, contentDescription = null, modifier = Modifier.size(28.dp))
+                } else {
                     Text(
                         text = fallbackChar.uppercase(),
                         style = MaterialTheme.typography.titleLarge,

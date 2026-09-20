@@ -1,4 +1,4 @@
-package com.nielcode.kupass.utils
+package com.nielcode.kupass.security
 
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties

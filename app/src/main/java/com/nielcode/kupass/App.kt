@@ -7,8 +7,8 @@ import android.view.WindowManager
 import com.google.android.material.color.DynamicColors
 import com.nielcode.kupass.data.local.prefs.PreferenceManager
 import com.nielcode.kupass.di.AppContainer
+import com.nielcode.kupass.ui.theme.AppearanceSettings
 import com.nielcode.kupass.utils.AppConfig
-import com.nielcode.kupass.utils.AppearanceSettings
 import kotlinx.coroutines.launch
 
 class App : Application() {

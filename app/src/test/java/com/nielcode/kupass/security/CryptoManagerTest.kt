@@ -1,4 +1,4 @@
-package com.nielcode.kupass.utils
+package com.nielcode.kupass.security
 
 import android.util.Base64
 import javax.crypto.Cipher

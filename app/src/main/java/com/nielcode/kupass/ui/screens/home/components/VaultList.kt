@@ -13,7 +13,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Key
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.SearchOff
 import androidx.compose.material3.DockedSearchBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -24,18 +26,31 @@ import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.nielcode.kupass.R
 import com.nielcode.kupass.data.local.db.PasswordEntity
+import com.nielcode.kupass.data.siteicon.SiteIcons
+import com.nielcode.kupass.data.siteicon.siteDomainOf
+import com.nielcode.kupass.ui.components.EmptyState
 import kotlinx.coroutines.launch
 
-/** Scrollable vault: headline, sticky search bar, and swipe-to-delete rows. */
+private const val EMPTY_STATE_HEIGHT_FRACTION = 0.7f
+
+/**
+ * Scrollable vault: headline, sticky search bar, and swipe-to-delete rows.
+ *
+ * @param siteIcons icon loader, or null when site icons are turned off.
+ */
 @Composable
 fun VaultList(
     passwords: List<PasswordEntity>,
@@ -45,15 +60,17 @@ fun VaultList(
     onSearchActiveChange: (Boolean) -> Unit,
     onItemClick: (PasswordEntity) -> Unit,
     onDeleteItem: (PasswordEntity) -> Unit,
+    onAddClick: () -> Unit,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
+    siteIcons: SiteIcons? = null,
 ) {
     Box(modifier = modifier.fillMaxSize()) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(bottom = contentPadding.calculateBottomPadding()),
         ) {
-            item {
+            item(contentType = "headline") {
                 if (!searchActive) {
                     Text(
                         text = stringResource(R.string.headline),
@@ -63,7 +80,7 @@ fun VaultList(
                     )
                 }
             }
-            stickyHeader {
+            stickyHeader(contentType = "search") {
                 VaultSearchBar(
                     query = query,
                     onQueryChange = onQueryChange,
@@ -72,16 +89,18 @@ fun VaultList(
                 )
             }
             if (passwords.isEmpty()) {
-                item {
-                    Text(
-                        text = stringResource(R.string.empty_vault),
-                        modifier = Modifier.padding(16.dp),
+                item(contentType = "empty") {
+                    VaultEmptyState(
+                        query = query,
+                        onAddClick = onAddClick,
+                        modifier = Modifier.fillParentMaxHeight(EMPTY_STATE_HEIGHT_FRACTION),
                     )
                 }
             } else {
-                items(items = passwords, key = { it.id }) { password ->
+                items(items = passwords, key = { it.id }, contentType = { "entry" }) { password ->
                     SwipeToDeleteRow(
                         password = password,
+                        siteIcons = siteIcons,
                         onClick = { onItemClick(password) },
                         onDelete = { onDeleteItem(password) },
                     )
@@ -154,10 +173,33 @@ private fun VaultSearchBar(
     }
 }
 
+/** Empty vault (with an "add" action) or a search without results. */
+@Composable
+private fun VaultEmptyState(query: String, onAddClick: () -> Unit, modifier: Modifier = Modifier) {
+    Box(modifier = modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+        if (query.isBlank()) {
+            EmptyState(
+                icon = Icons.Default.Key,
+                title = stringResource(R.string.empty_vault_title),
+                body = stringResource(R.string.empty_vault_body),
+                actionLabel = stringResource(R.string.empty_vault_action),
+                onAction = onAddClick,
+            )
+        } else {
+            EmptyState(
+                icon = Icons.Default.SearchOff,
+                title = stringResource(R.string.empty_search_title),
+                body = stringResource(R.string.empty_search_body, query.trim()),
+            )
+        }
+    }
+}
+
 /** A vault row. Swiping it asks for confirmation (via [onDelete]) and slides back. */
 @Composable
 private fun SwipeToDeleteRow(
     password: PasswordEntity,
+    siteIcons: SiteIcons?,
     onClick: () -> Unit,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier,
@@ -198,8 +240,25 @@ private fun SwipeToDeleteRow(
             subtitle = password.username.ifBlank { password.url },
             fallbackChar = password.siteName.firstOrNull()?.uppercase() ?: "?",
             onClick = onClick,
+            icon = rememberSiteIcon(password, siteIcons),
         )
     }
+}
+
+/** The row's site icon: from memory right away, otherwise loaded in the background. */
+@Composable
+private fun rememberSiteIcon(password: PasswordEntity, siteIcons: SiteIcons?): ImageBitmap? {
+    val domain =
+        remember(password.url, password.siteName) { siteDomainOf(password.url, password.siteName) }
+    val icon by
+        produceState(domain?.let { siteIcons?.peek(it) }, domain, siteIcons) {
+            // produceState keeps the old value when its keys change, so reset it first.
+            value = domain?.let { siteIcons?.peek(it) }
+            if (value == null && domain != null && siteIcons != null) {
+                value = siteIcons.load(domain)
+            }
+        }
+    return icon
 }
 
 /** Fades list content out behind the floating bottom navigation. */

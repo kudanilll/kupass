@@ -2,7 +2,7 @@ package com.nielcode.kupass.data.repository
 
 import com.nielcode.kupass.data.local.db.PasswordDao
 import com.nielcode.kupass.data.local.db.PasswordEntity
-import com.nielcode.kupass.utils.CryptoException
+import com.nielcode.kupass.security.CryptoException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -33,12 +33,8 @@ class PasswordRepository(
             .flowOn(cryptoDispatcher)
 
     /** Case-insensitive match on site name, username, URL, and notes. */
-    fun searchPasswords(query: String): Flow<List<PasswordEntity>> {
-        val needle = query.trim()
-        return getAllPasswords()
-            .map { list -> list.filter { it.matches(needle) } }
-            .flowOn(cryptoDispatcher)
-    }
+    fun searchPasswords(query: String): Flow<List<PasswordEntity>> =
+        getAllPasswords().map { it.filterByQuery(query) }.flowOn(cryptoDispatcher)
 
     fun getPasswordById(id: Long): Flow<PasswordEntity?> =
         passwordDao.getById(id).map { it?.decrypted() }.flowOn(cryptoDispatcher)

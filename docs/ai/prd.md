@@ -51,7 +51,7 @@ Priority: **P0** blocks a trustworthy release, **P1** is important, **P2** is ni
 | ---- | --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | QA-1 | P1  | ✅ _Confirmed._ Enforced formatting and static analysis (ktfmt or ktlint + detekt) wired into Gradle.                                                           |
 | QA-2 | P1  | ✅ _Confirmed._ GitHub Actions CI: build, unit tests, lint, and format check on push/PR (hardened: pinned actions, least-privilege token).                      |
-| QA-3 | P1  | ✅ _Confirmed._ Optimize `googlesansflex.ttf` (~3.9 MB): subset to the needed glyphs (Latin + Indonesian) and trim unused variation axes. Keep the font itself. |
+| QA-3 | P1  | ✅ _Done 2026-09-19 (236 KB)._ Optimize `googlesansflex.ttf` (~3.9 MB): subset to the needed glyphs (Latin + Indonesian) and trim unused variation axes. Keep the font itself. |
 
 ### Reliability
 
@@ -67,7 +67,7 @@ Priority: **P0** blocks a trustworthy release, **P1** is important, **P2** is ni
 | ID     | Pri | Requirement                                                                                                                                                                                                               |
 | ------ | --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | FEAT-1 | P1  | **Android Autofill service** **(proposed)**. This is the core value of a password manager on Android.                                                                                                                     |
-| FEAT-2 | P2  | ✅ _Keep, not scheduled._ Site favicons via the Favget API (keep `BuildConfig.FAVGET_API_URL`). Must be opt-in and send only the domain, because it sends data off-device.                                                |
+| FEAT-2 | P2  | ✅ _Done 2026-09-19: opt-in, off by default, key in BuildConfig._ Site favicons via the Favget API (keep `BuildConfig.FAVGET_API_URL`). Must be opt-in and send only the domain, because it sends data off-device.                                                |
 | FEAT-5 | P1  | ✅ _Confirmed._ **Feedback & bug report** in Settings. User-initiated only (e.g. a prefilled email or GitHub issue link, with app version/device info the user can see and edit before sending). Never attach vault data. |
 | FEAT-3 | P2  | Categories/tags and favorites **(proposed)**.                                                                                                                                                                             |
 | FEAT-4 | P2  | Adaptive layout for tablets/foldables (list-detail) **(proposed)**.                                                                                                                                                       |
@@ -91,6 +91,7 @@ A change is done when it builds, passes unit tests and lint, has tests for new l
 | 2026-09-18 | App lock = biometric with device-credential fallback. No master password (SEC-2). | Danil |
 | 2026-09-18 | Keep the Favget favicon config/plan, not used yet (FEAT-2).                       | Danil |
 | 2026-09-18 | Keep the Google Sans Flex font. Optimize its size (QA-3).                         | Danil |
+| 2026-09-19 | Favget: embed the API key in BuildConfig (extractable; server rate limiting). Site icons opt-in, off by default. | Danil |
 | 2026-09-18 | Add enforced formatting/lint and CI (QA-1, QA-2).                                 | Danil |
 | 2026-09-18 | 100% telemetry-free. Manual feedback/bug report feature instead (FEAT-5).         | Danil |
 | 2026-09-18 | License is GPL-3.0. The AGPLv3 mention in commit `d1f7eff` is incorrect.          | Danil |

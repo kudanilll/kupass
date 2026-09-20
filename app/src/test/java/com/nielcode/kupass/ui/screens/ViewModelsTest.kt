@@ -3,6 +3,8 @@ package com.nielcode.kupass.ui.screens
 import android.net.Uri
 import com.nielcode.kupass.data.local.db.PasswordEntity
 import com.nielcode.kupass.data.repository.PasswordRepository
+import com.nielcode.kupass.security.CryptoException
+import com.nielcode.kupass.security.CryptoManager
 import com.nielcode.kupass.testing.FakePasswordDao
 import com.nielcode.kupass.testing.MainDispatcherRule
 import com.nielcode.kupass.ui.screens.data.BackupViewModel
@@ -11,9 +13,6 @@ import com.nielcode.kupass.ui.screens.detail.PasswordDetailViewModel
 import com.nielcode.kupass.ui.screens.editor.PasswordEditorViewModel
 import com.nielcode.kupass.ui.screens.editor.SaveState
 import com.nielcode.kupass.ui.screens.home.HomeViewModel
-import com.nielcode.kupass.ui.screens.home.VaultEvent
-import com.nielcode.kupass.utils.CryptoException
-import com.nielcode.kupass.utils.CryptoManager
 import javax.crypto.KeyGenerator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.first
@@ -87,7 +86,7 @@ class ViewModelsTest {
         repository.insertPassword(
             PasswordEntity(siteName = "GitHub", username = "bob", password = "p2")
         )
-        val vm = HomeViewModel(repository)
+        val vm = HomeViewModel(repository, filterDispatcher = mainDispatcher.dispatcher)
         backgroundScope.launchCollect(vm)
 
         assertEquals(listOf("GitHub", "Google"), vm.passwords.value.map { it.siteName })

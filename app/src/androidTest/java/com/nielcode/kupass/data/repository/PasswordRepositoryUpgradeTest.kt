@@ -5,7 +5,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.nielcode.kupass.data.local.db.KupassDatabase
 import com.nielcode.kupass.data.local.db.PasswordEntity
-import com.nielcode.kupass.utils.CryptoManager
+import com.nielcode.kupass.security.CryptoManager
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After

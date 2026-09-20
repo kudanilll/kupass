@@ -3,6 +3,7 @@ package com.nielcode.kupass.ui.screens.settings
 import android.content.Context
 import android.content.Intent
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -15,6 +16,7 @@ import androidx.compose.material.icons.filled.Contrast
 import androidx.compose.material.icons.filled.Gavel
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Public
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -40,12 +42,14 @@ import com.nielcode.kupass.BuildConfig
 import com.nielcode.kupass.MainActivity
 import com.nielcode.kupass.R
 import com.nielcode.kupass.data.local.prefs.PreferenceManager
+import com.nielcode.kupass.data.siteicon.SiteIconRepository
 import com.nielcode.kupass.security.AppLock
 import com.nielcode.kupass.ui.components.SectionHeader
 import com.nielcode.kupass.ui.components.SectionItem
 import com.nielcode.kupass.ui.components.SingleChoiceDialog
+import com.nielcode.kupass.ui.screens.pagerPageInsets
+import com.nielcode.kupass.ui.theme.AppearanceSettings
 import com.nielcode.kupass.utils.AppConfig
-import com.nielcode.kupass.utils.AppearanceSettings
 import com.nielcode.kupass.utils.openUrl
 
 private const val SECONDS_PER_MINUTE = 60
@@ -53,26 +57,32 @@ private const val SECONDS_PER_MINUTE = 60
 private enum class SettingsDialog {
     Language,
     AutoLock,
+    SiteIcons,
     Theme,
     DynamicColor,
     Restart,
 }
 
-/** App settings: language, auto-lock, theme, dynamic color, and about links. */
+/** App settings: language, auto-lock, site icons, theme, dynamic color, and about links. */
 @Composable
-fun SettingsScreen(modifier: Modifier = Modifier) {
+fun SettingsScreen(modifier: Modifier = Modifier, contentPadding: PaddingValues = PaddingValues()) {
     val context = LocalContext.current
     val container = remember(context) { (context.applicationContext as App).container }
-    val settings = remember(container) { SettingsController(context, container.preferenceManager) }
+    val settings =
+        remember(container) {
+            SettingsController(context, container.preferenceManager, container.siteIcons)
+        }
     var openDialog by remember { mutableStateOf<SettingsDialog?>(null) }
 
-    Scaffold(modifier = modifier.fillMaxSize()) { innerPadding ->
+    Scaffold(modifier = modifier.fillMaxSize(), contentWindowInsets = pagerPageInsets()) {
+        innerPadding ->
         Column(
             modifier =
                 Modifier.fillMaxSize()
                     .padding(innerPadding)
-                    .padding(vertical = 16.dp)
                     .verticalScroll(rememberScrollState())
+                    // Inside the scroll: the last item can scroll above the floating navigation.
+                    .padding(top = 16.dp, bottom = 16.dp + contentPadding.calculateBottomPadding())
         ) {
             GeneralSection(
                 languageIndex = settings.language,
@@ -81,6 +91,9 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
             SecuritySection(
                 autoLockSeconds = settings.autoLockSeconds,
                 onAutoLockClick = { openDialog = SettingsDialog.AutoLock },
+                siteIconsAvailable = settings.siteIconsAvailable,
+                siteIconsEnabled = settings.siteIconsEnabled,
+                onSiteIconsClick = { openDialog = SettingsDialog.SiteIcons },
             )
             AppearanceSection(
                 themeIndex = settings.theme,
@@ -113,6 +126,7 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
 private class SettingsController(
     private val context: Context,
     private val prefs: PreferenceManager,
+    private val siteIcons: SiteIconRepository,
 ) {
     var language by mutableIntStateOf(prefs.language)
         private set
@@ -124,6 +138,12 @@ private class SettingsController(
         private set
 
     var autoLockSeconds by mutableIntStateOf(prefs.autoLockSeconds)
+        private set
+
+    val siteIconsAvailable: Boolean
+        get() = siteIcons.isAvailable
+
+    var siteIconsEnabled by mutableStateOf(siteIcons.enabled.value)
         private set
 
     fun selectLanguage(index: Int) {
@@ -155,6 +175,11 @@ private class SettingsController(
         prefs.autoLockSeconds = seconds
         autoLockSeconds = seconds
     }
+
+    fun selectSiteIcons(enabled: Boolean) {
+        siteIcons.setEnabled(enabled)
+        siteIconsEnabled = siteIcons.enabled.value
+    }
 }
 
 @Composable
@@ -179,6 +204,9 @@ private fun GeneralSection(
 private fun SecuritySection(
     autoLockSeconds: Int,
     onAutoLockClick: () -> Unit,
+    siteIconsAvailable: Boolean,
+    siteIconsEnabled: Boolean,
+    onSiteIconsClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier) {
@@ -188,6 +216,19 @@ private fun SecuritySection(
             title = stringResource(R.string.settings_auto_lock_title),
             subtitle = autoLockLabel(autoLockSeconds),
             onClick = onAutoLockClick,
+        )
+        SectionItem(
+            icon = Icons.Default.Public,
+            title = stringResource(R.string.settings_site_icons_title),
+            subtitle =
+                stringResource(
+                    when {
+                        !siteIconsAvailable -> R.string.settings_site_icons_unavailable
+                        siteIconsEnabled -> R.string.enable
+                        else -> R.string.disable
+                    }
+                ),
+            onClick = { if (siteIconsAvailable) onSiteIconsClick() },
         )
     }
 }
@@ -286,6 +327,12 @@ private fun SettingsDialogHost(
                     onDismiss()
                 },
             )
+        SettingsDialog.SiteIcons ->
+            SiteIconsDialog(
+                enabled = settings.siteIconsEnabled,
+                onConfirm = settings::selectSiteIcons,
+                onDismiss = onDismiss,
+            )
         SettingsDialog.Theme ->
             SingleChoiceDialog(
                 title = stringResource(R.string.settings_theme_title),
@@ -311,6 +358,39 @@ private fun SettingsDialogHost(
             )
         SettingsDialog.Restart -> RestartDialog()
     }
+}
+
+/**
+ * Explains what turning on site icons sends off the device before the user opts in.
+ *
+ * @param onConfirm receives the new choice; the dialog dismisses itself afterwards.
+ */
+@Composable
+private fun SiteIconsDialog(
+    enabled: Boolean,
+    onConfirm: (Boolean) -> Unit,
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        modifier = modifier,
+        title = { Text(stringResource(R.string.settings_site_icons_title)) },
+        text = { Text(stringResource(R.string.dialog_site_icons_message)) },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onConfirm(!enabled)
+                    onDismiss()
+                }
+            ) {
+                Text(stringResource(if (enabled) R.string.disable else R.string.enable))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.button_cancel)) }
+        },
+    )
 }
 
 /** Dynamic colors only apply after a restart; this dialog can't be dismissed without one. */

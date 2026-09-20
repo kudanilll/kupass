@@ -11,7 +11,7 @@ import com.nielcode.kupass.data.backup.BackupCodec
 import com.nielcode.kupass.data.backup.BackupException
 import com.nielcode.kupass.data.repository.PasswordRepository
 import com.nielcode.kupass.di.appContainer
-import com.nielcode.kupass.ui.screens.home.VaultEvent
+import com.nielcode.kupass.ui.screens.VaultEvent
 import com.nielcode.kupass.ui.screens.recoverable
 import java.io.IOException
 import kotlinx.coroutines.CoroutineDispatcher

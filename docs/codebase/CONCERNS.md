@@ -27,7 +27,7 @@
 | ~~`collectAsState()`~~ | **Fixed (EN-05)**: `collectAsStateWithLifecycle()` everywhere, events collected with `repeatOnLifecycle(STARTED)` | all screens | none | none |
 | ~~AppCompat and Material Components used but not declared~~   | **Fixed 2026-09-18**: declared in the catalog                | `gradle/libs.versions.toml`                                                                                                                                                       | none                                 | none                                                                                                           |
 | ~~Robolectric 4.11.1 hardcoded outside the catalog~~          | **Fixed 2026-09-18**: 4.17 via the catalog (supports SDK 37) | `gradle/libs.versions.toml`                                                                                                                                                       | none                                 | none                                                                                                           |
-| Unused code                                                   | Leftovers                                                    | `AppConfig.FILES_PREFIX`, `EMPTY_STRING`, `Language.ENGLISH_TAG/INDONESIA_TAG`, `PasswordListItem.itemCount`, `PasswordDao.deleteById` → `repository.deletePasswordById` (unused) | Noise                                | Remove or use. **Keep** `BuildConfig.FAVGET_API_URL` and `PasswordListItem.imageUrl` (planned favicon feature) |
+| Unused code                                                   | Leftovers                                                    | `AppConfig.FILES_PREFIX`, `EMPTY_STRING`, `Language.ENGLISH_TAG/INDONESIA_TAG`, `PasswordListItem.itemCount`, `PasswordDao.deleteById` → `repository.deletePasswordById` (unused) | Noise                                | Remove or use. Favget is now wired (`data/siteicon/`) |
 | ~~Package mismatch~~ | **Fixed (EN-02)**: `TextField.kt` became `ui/components/VaultTextField.kt` | none | none | none |
 | ~~Placeholder tests~~ | **Fixed (EN-02)**: `ExampleUnitTest`/`ExampleInstrumentedTest` removed | none | none | none |
 | ~~Duplicate route-transition code~~ | **Fixed (EN-02)**: `slideUpEnter()` / `slideDownExit()` helpers | none | none | none |
@@ -47,14 +47,14 @@
 | D2D transfer of the DB | MASVS-STORAGE | C-6 | `allowBackup=false` + explicit exclusions for every domain | none |
 | Screenshots/recents                     | MASVS-PLATFORM              | `App.kt`                                         | `FLAG_SECURE` on all Activities  | none                                              |
 | Exported components                     | MASVS-PLATFORM              | Manifest: only the launcher Activity is exported | OK                               | none                                              |
-| Future favicon fetch leaks site domains | MASVS-PRIVACY               | `FAVGET_API_URL`, `INTERNET` permission          | Not implemented yet              | Must be opt-in, domain only (PRD FEAT-2)          |
+| Site icons send domains to Favget | MASVS-PRIVACY | `data/siteicon/`, `INTERNET` permission | Opt-in, off by default, privacy note; bare public domain only (no IPs/private names); memory-only cache; key never sent to the CDN | Favget/Cloudinary can see which domains a user looks up |
 
 ## 4) Performance and Size Concerns
 
 | Concern                                                                                                                                  | Evidence                                                              | Current symptom           | Scaling risk                                                         | Suggested improvement                                                                                   |
 | ---------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- | ------------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| `googlesansflex.ttf` is ~3.9 MB, while the whole release APK in `app/release/` is ~3.9 MB. The font is likely the biggest single payload | scan CODE METRICS, `res/font/`, `Type.kt`                             | Larger download/install   | Grows with any extra weights                                         | Subset the font and keep Google Sans Flex, per decision (PRD QA-3)                                      |
-| Decrypt every field of every row on each list/search emission (5 AES-GCM ops per row) | `PasswordRepository.getAllPasswords/searchPasswords` | Negligible for small vaults. Runs on `Dispatchers.Default` | Linear per keystroke on large vaults | Cache the decrypted list in memory while unlocked and filter it. Debounce search (EN-5.2) |
+| ~~`googlesansflex.ttf` ~3.9 MB~~ | **Fixed 2026-09-19**: instanced to the axes in use (opsz 18, wght 400–700), 236 KB, pixel-identical in snapshots | none | none | none |
+| ~~Decrypt the vault on every search keystroke~~ | **Fixed 2026-09-19**: `HomeViewModel` decrypts once per vault change and filters the decrypted list in memory (`filterByQuery`, off the main thread) | none | Decryption still runs per vault change | Debounce search if large vaults need it (EN-5.2) |
 | ~~SQL `LIKE` search~~ | Removed (EN-07): search is in memory over decrypted rows | none | none | none |
 | `material-icons-extended`                                                                                                                | `app/build.gradle.kts`                                                | Relies on R8 to strip     | Slow debug builds                                                    | Copy the needed icons as vectors                                                                        |
 | No Baseline Profile (but `app/release/baselineProfiles/` exists as build output)                                                         | `app/release/`                                                        | [TODO] measure cold start | n/a                                                                  | Add a baseline profile module if startup is slow                                                        |
@@ -63,7 +63,7 @@
 
 | Area                                        | Why fragile                                            | Churn signal                     | Safe change strategy                                                                |
 | ------------------------------------------- | ------------------------------------------------------ | -------------------------------- | ----------------------------------------------------------------------------------- |
-| `utils/CryptoManager.kt`                    | Security-critical, fail-open, has a test-only key path | 2 commits (`26a489b`, `8de433b`) | Change only with tests. Never break decryption of existing data. Version the format |
+| `security/CryptoManager.kt`                    | Security-critical, fail-open, has a test-only key path | 2 commits (`26a489b`, `8de433b`) | Change only with tests. Never break decryption of existing data. Version the format |
 | `ui/screens/detail/PasswordDetailScreen.kt` | Clipboard + API-level branches + delete flow           | 2 commits                        | Test on API 27, 32, and 33+                                                         |
 | `app/build.gradle.kts`                      | Signing fallback, BuildConfig                          | 2 commits                        | Never commit secrets. Verify the release build                                      |
 
@@ -71,7 +71,7 @@
 
 1. Portable backups? **Yes.** Fix C-1 with password-based backup encryption (PRD SEC-1).
 2. App lock? **Biometric with device PIN/pattern fallback** (PRD SEC-2).
-3. Favget favicons? **Keep the config and plan.** Not used yet. `FAVGET_API_URL` is _not_ dead code (PRD FEAT-2).
+3. Favget favicons? **Keep the config and plan** (PRD FEAT-2). Implemented 2026-09-19: opt-in, off by default, key embedded in BuildConfig.
 4. Font? **Keep Google Sans Flex, but optimize/compress it** (PRD QA-3).
 5. Formatter/lint + CI? **Yes** (PRD QA-1, QA-2).
 6. Telemetry? **None, ever.** Add a user-initiated feedback/bug-report feature instead (PRD FEAT-5).
@@ -80,7 +80,7 @@
 ## 7) Evidence
 
 - `docs/codebase/.codebase-scan.txt` (TODO, HIGH-CHURN, CODE METRICS sections)
-- `app/src/main/java/com/nielcode/kupass/utils/CryptoManager.kt`
+- `app/src/main/java/com/nielcode/kupass/security/CryptoManager.kt`
 - `app/src/main/java/com/nielcode/kupass/data/backup/BackupCodec.kt`, `data/repository/PasswordRepository.kt`, `data/local/db/KupassDatabase.kt`
 - `app/src/main/java/com/nielcode/kupass/ui/screens/home/HomeViewModel.kt`, `ui/screens/MainAppScreen.kt`, `ui/screens/detail/PasswordDetailScreen.kt`
 - `app/src/main/res/xml/data_extraction_rules.xml`, `app/src/main/res/font/`

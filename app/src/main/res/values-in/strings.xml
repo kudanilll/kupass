@@ -11,7 +11,6 @@
     <string name="edit_password">Edit kata sandi</string>
     <string name="password_detail">Detail kata sandi</string>
     <string name="show_password">Tampilkan kata sandi</string>
-    <string name="empty_vault">Tidak ada sandi yang disimpan</string>
     <string name="copied">Disalin ke papan klip</string>
     <string name="copy">Salin</string>
 
@@ -128,6 +127,9 @@
     <string name="toast_url_failed">Tidak ada aplikasi yang dapat membuka tautan ini</string>
     <string name="settings_category_security">Keamanan</string>
     <string name="settings_auto_lock_title">Kunci otomatis</string>
+    <string name="settings_site_icons_title">Ikon situs</string>
+    <string name="settings_site_icons_unavailable">Tidak tersedia di build ini</string>
+    <string name="dialog_site_icons_message">Tampilkan ikon setiap situs di daftar brankas. Untuk mengambilnya, Kupass hanya mengirim domain situs (misalnya github.com) ke layanan ikon Favget melalui HTTPS. Nama pengguna, kata sandi, dan catatan tidak pernah keluar dari perangkat, dan ikon hanya disimpan di memori.</string>
     <string name="auto_lock_immediately">Segera</string>
     <string name="lock_title">Kupass terkunci</string>
     <string name="lock_message">Buka dengan sidik jari, wajah, atau kunci layar untuk membuka vault kamu.</string>
@@ -157,4 +159,12 @@
     <plurals name="backup_password_too_short">
         <item quantity="other">Gunakan minimal %1$d karakter</item>
     </plurals>
+    <string name="menu_edit">Ubah</string>
+    <string name="menu_delete">Hapus</string>
+    <string name="more_options">Opsi lainnya</string>
+    <string name="empty_vault_title">Vault kamu masih kosong</string>
+    <string name="empty_vault_body">Simpan kata sandi pertamamu. Semuanya tetap terenkripsi di perangkat ini.</string>
+    <string name="empty_vault_action">Tambah kata sandi</string>
+    <string name="empty_search_title">Tidak ditemukan</string>
+    <string name="empty_search_body">Tidak ada isi vault yang cocok dengan “%1$s”.</string>
 </resources>

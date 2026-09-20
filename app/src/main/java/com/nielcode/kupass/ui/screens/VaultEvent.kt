@@ -1,4 +1,4 @@
-package com.nielcode.kupass.ui.screens.home
+package com.nielcode.kupass.ui.screens
 
 import android.content.Context
 import com.nielcode.kupass.R

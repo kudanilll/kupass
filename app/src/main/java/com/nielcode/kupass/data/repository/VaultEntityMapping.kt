@@ -1,7 +1,7 @@
 package com.nielcode.kupass.data.repository
 
 import com.nielcode.kupass.data.local.db.PasswordEntity
-import com.nielcode.kupass.utils.CryptoManager
+import com.nielcode.kupass.security.CryptoManager
 
 /*
  * Field-level mapping between stored rows (every text field encrypted) and plaintext entities,
@@ -38,3 +38,9 @@ internal fun PasswordEntity.matches(needle: String) =
 
 internal fun List<PasswordEntity>.sortedForDisplay() =
     sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.siteName })
+
+/** Entries matching [query] on site, username, URL, or notes (case-insensitive); all if blank. */
+fun List<PasswordEntity>.filterByQuery(query: String): List<PasswordEntity> {
+    val needle = query.trim()
+    return if (needle.isEmpty()) this else filter { it.matches(needle) }
+}
