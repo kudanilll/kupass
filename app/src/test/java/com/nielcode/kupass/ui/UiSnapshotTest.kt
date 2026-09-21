@@ -79,13 +79,13 @@ class UiSnapshotTest {
             ),
         )
 
-    @Test fun homeWithEntries() = snapshot("home") { home(sample) }
+    @Test fun homeWithEntries() = snapshot("home") { HomeSnapshot(sample) }
 
     @Test
     fun homeWithSiteIcons() =
-        snapshot("home_site_icons") { home(sample, siteIcons = FakeSiteIcons) }
+        snapshot("home_site_icons") { HomeSnapshot(sample, siteIcons = FakeSiteIcons) }
 
-    @Test fun homeEmpty() = snapshot("home_empty") { home(emptyList()) }
+    @Test fun homeEmpty() = snapshot("home_empty") { HomeSnapshot(emptyList()) }
 
     @Test
     fun homeNoResults() =
@@ -145,7 +145,7 @@ class UiSnapshotTest {
         }
 
     @Composable
-    private fun home(passwords: List<PasswordEntity>, siteIcons: SiteIcons? = null) =
+    private fun HomeSnapshot(passwords: List<PasswordEntity>, siteIcons: SiteIcons? = null) =
         HomeScreen(
             passwords = passwords,
             siteIcons = siteIcons,

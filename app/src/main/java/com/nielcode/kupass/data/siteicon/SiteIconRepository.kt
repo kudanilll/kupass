@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory
 import android.util.LruCache
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.core.graphics.scale
 import kotlin.reflect.KMutableProperty0
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -156,11 +157,10 @@ private fun downscale(bitmap: Bitmap): Bitmap {
     val longest = maxOf(bitmap.width, bitmap.height)
     if (longest <= ICON_SIZE_PX) return bitmap
     val scale = ICON_SIZE_PX.toFloat() / longest
-    return Bitmap.createScaledBitmap(
-            bitmap,
-            (bitmap.width * scale).toInt().coerceAtLeast(1),
-            (bitmap.height * scale).toInt().coerceAtLeast(1),
-            true,
+    return bitmap
+        .scale(
+            width = (bitmap.width * scale).toInt().coerceAtLeast(1),
+            height = (bitmap.height * scale).toInt().coerceAtLeast(1),
         )
         .also { if (it !== bitmap) bitmap.recycle() }
 }

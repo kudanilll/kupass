@@ -42,6 +42,8 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -88,10 +90,7 @@ fun MainAppScreen(modifier: Modifier = Modifier) {
                 onNavigateToDetail = { id -> navController.navigate(PasswordDetail(id)) },
             )
         }
-        composable<PasswordDetail>(
-            enterTransition = { slideUpEnter() },
-            popExitTransition = { slideDownExit() },
-        ) { backStackEntry ->
+        fullScreenRoute<PasswordDetail> { backStackEntry ->
             PasswordDetailScreen(
                 passwordId = backStackEntry.toRoute<PasswordDetail>().passwordId,
                 onNavigateBack = { navController.popBackStack() },
@@ -100,10 +99,7 @@ fun MainAppScreen(modifier: Modifier = Modifier) {
                 },
             )
         }
-        composable<PasswordEditor>(
-            enterTransition = { slideUpEnter() },
-            popExitTransition = { slideDownExit() },
-        ) { backStackEntry ->
+        fullScreenRoute<PasswordEditor> { backStackEntry ->
             PasswordEditorScreen(
                 passwordId = backStackEntry.toRoute<PasswordEditor>().passwordId,
                 onNavigateBack = { navController.popBackStack() },
@@ -111,6 +107,20 @@ fun MainAppScreen(modifier: Modifier = Modifier) {
         }
     }
 }
+
+/**
+ * A route that covers the pager: it slides up over it and slides back down when popped. Every
+ * full-screen route shares these transitions, so they are declared once here.
+ */
+private inline fun <reified T : Any> NavGraphBuilder.fullScreenRoute(
+    crossinline content: @Composable (NavBackStackEntry) -> Unit
+) =
+    composable<T>(
+        enterTransition = { slideUpEnter() },
+        popExitTransition = { slideDownExit() },
+    ) { backStackEntry ->
+        content(backStackEntry)
+    }
 
 private fun slideUpEnter(): EnterTransition =
     slideInVertically(tween(SCREEN_TRANSITION_MILLIS, easing = FastOutSlowInEasing)) { it } +
