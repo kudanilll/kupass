@@ -41,13 +41,12 @@ class AppContainer(
         AppLock(timeoutMillis = { preferenceManager.autoLockSeconds * 1000L })
     }
 
-    /** Opt-in site icons; unavailable when the build has no Favget API key. */
+    /** Site icons; fetches gracefully return null when the build has no Favget API key. */
     val siteIcons: SiteIconRepository by lazy {
         SiteIconRepository(
             source =
                 BuildConfig.FAVGET_API_KEY.takeIf { it.isNotEmpty() }
                     ?.let { FavgetIconSource(BuildConfig.FAVGET_API_URL, it) },
-            enabledSetting = preferenceManager::siteIconsEnabled,
             scope = applicationScope,
         )
     }

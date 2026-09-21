@@ -67,7 +67,7 @@ Priority: **P0** blocks a trustworthy release, **P1** is important, **P2** is ni
 | ID     | Pri | Requirement                                                                                                                                                                                                               |
 | ------ | --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | FEAT-1 | P1  | **Android Autofill service** **(proposed)**. This is the core value of a password manager on Android.                                                                                                                     |
-| FEAT-2 | P2  | ✅ _Done 2026-09-19: opt-in, off by default, key in BuildConfig._ Site favicons via the Favget API (keep `BuildConfig.FAVGET_API_URL`). Must be opt-in and send only the domain, because it sends data off-device.                                                |
+| FEAT-2 | P2  | ✅ _Done 2026-09-19; revised 2026-09-21._ Site favicons via the Favget API (keep `BuildConfig.FAVGET_API_URL`) are always enabled. Send only the bare public domain and cache icons in memory only. |
 | FEAT-5 | P1  | ✅ _Confirmed._ **Feedback & bug report** in Settings. User-initiated only (e.g. a prefilled email or GitHub issue link, with app version/device info the user can see and edit before sending). Never attach vault data. |
 | FEAT-3 | P2  | Categories/tags and favorites **(proposed)**.                                                                                                                                                                             |
 | FEAT-4 | P2  | Adaptive layout for tablets/foldables (list-detail) **(proposed)**.                                                                                                                                                       |
@@ -100,3 +100,4 @@ A change is done when it builds, passes unit tests and lint, has tests for new l
 | 2026-09-18 | App lock is UI-level only. The vault key isn't bound to user auth yet (SEC-2). | Danil |
 | 2026-09-18 | The Autofill service is an important feature (FEAT-1). | Danil |
 | 2026-09-18 | The app version stays `3.1.0`. Agents never bump `versionName`/`versionCode`. | Danil |
+| 2026-09-21 | Site icons are always enabled and no longer have a Settings toggle. This supersedes the 2026-09-19 opt-in decision. | Danil |

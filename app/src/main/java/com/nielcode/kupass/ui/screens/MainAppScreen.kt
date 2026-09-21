@@ -183,7 +183,6 @@ fun MainPagerScreen(
                     onSearchQueryChange = homeViewModel::onSearchQueryChange,
                     onDeletePassword = homeViewModel::deletePassword,
                     onNavigateToDetail = onNavigateToDetail,
-                    onAddPassword = onNavigateToEditor,
                     contentPadding = contentPadding,
                     siteIcons = siteIcons,
                 )
@@ -198,13 +197,11 @@ fun MainPagerScreen(
     }
 }
 
-/** The site icon loader while the user has site icons turned on, otherwise null. */
+/** The process-wide site icon loader. */
 @Composable
-private fun rememberSiteIcons(): SiteIcons? {
+private fun rememberSiteIcons(): SiteIcons {
     val appContext = LocalContext.current.applicationContext
-    val repository = remember(appContext) { (appContext as App).container.siteIcons }
-    val enabled by repository.enabled.collectAsStateWithLifecycle()
-    return repository.takeIf { enabled }
+    return remember(appContext) { (appContext as App).container.siteIcons }
 }
 
 /** Storage Access Framework pickers for backups. Leaving for the picker never locks the vault. */

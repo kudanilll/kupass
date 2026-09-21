@@ -10,9 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Key
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -28,7 +26,7 @@ import com.nielcode.kupass.ui.theme.KupassTheme
 
 /**
  * Centered placeholder for screens with nothing to show: an icon badge, a title, an explanation,
- * and an optional action.
+ * and an explanation.
  */
 @Composable
 fun EmptyState(
@@ -36,8 +34,6 @@ fun EmptyState(
     title: String,
     body: String,
     modifier: Modifier = Modifier,
-    actionLabel: String? = null,
-    onAction: () -> Unit = {},
 ) {
     Column(
         modifier = modifier.fillMaxWidth().padding(horizontal = 32.dp),
@@ -68,14 +64,6 @@ fun EmptyState(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
-        if (actionLabel != null) {
-            Spacer(Modifier.height(24.dp))
-            FilledTonalButton(onClick = onAction) {
-                Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
-                Spacer(Modifier.size(8.dp))
-                Text(actionLabel)
-            }
-        }
     }
 }
 
@@ -87,7 +75,6 @@ private fun EmptyStatePreview() {
             icon = Icons.Default.Key,
             title = "Your vault is empty",
             body = "Save your first password. Everything stays encrypted on this device.",
-            actionLabel = "Add password",
         )
     }
 }

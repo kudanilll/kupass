@@ -60,7 +60,6 @@ fun VaultList(
     onSearchActiveChange: (Boolean) -> Unit,
     onItemClick: (PasswordEntity) -> Unit,
     onDeleteItem: (PasswordEntity) -> Unit,
-    onAddClick: () -> Unit,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     siteIcons: SiteIcons? = null,
@@ -92,7 +91,6 @@ fun VaultList(
                 item(contentType = "empty") {
                     VaultEmptyState(
                         query = query,
-                        onAddClick = onAddClick,
                         modifier = Modifier.fillParentMaxHeight(EMPTY_STATE_HEIGHT_FRACTION),
                     )
                 }
@@ -173,17 +171,15 @@ private fun VaultSearchBar(
     }
 }
 
-/** Empty vault (with an "add" action) or a search without results. */
+/** Empty vault or a search without results. */
 @Composable
-private fun VaultEmptyState(query: String, onAddClick: () -> Unit, modifier: Modifier = Modifier) {
+private fun VaultEmptyState(query: String, modifier: Modifier = Modifier) {
     Box(modifier = modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
         if (query.isBlank()) {
             EmptyState(
                 icon = Icons.Default.Key,
                 title = stringResource(R.string.empty_vault_title),
                 body = stringResource(R.string.empty_vault_body),
-                actionLabel = stringResource(R.string.empty_vault_action),
-                onAction = onAddClick,
             )
         } else {
             EmptyState(

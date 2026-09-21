@@ -96,7 +96,6 @@ class UiSnapshotTest {
                 onSearchQueryChange = {},
                 onDeletePassword = {},
                 onNavigateToDetail = {},
-                onAddPassword = {},
             )
         }
 
@@ -153,7 +152,6 @@ class UiSnapshotTest {
             onSearchQueryChange = {},
             onDeletePassword = {},
             onNavigateToDetail = {},
-            onAddPassword = {},
         )
 
     private fun snapshot(

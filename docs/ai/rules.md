@@ -40,7 +40,7 @@ If a skill or MCP server fits the task, use it and name it in the end-of-turn re
 - Never ship a Room schema change without a `Migration` and a migration test. Do not use `fallbackToDestructiveMigration()`.
 - Never add a network call that sends vault data (site names, URLs, usernames) off-device without explicit approval from Danil.
 - **Never add telemetry**: no analytics, crash-reporting SDKs (Firebase Crashlytics, Sentry, etc.), or automatic usage collection. Feedback and bug reports are user-initiated only.
-- Site icons (Favget, `data/siteicon/`) must stay opt-in and off by default, send only the bare domain, keep the API key off every host except Favget, and cache in memory only.
+- Site icons (Favget, `data/siteicon/`) always load when a public domain is available. Send only the bare domain, keep the API key off every host except Favget, and cache in memory only.
 - Never add a dependency without checking its size, maintenance status, and license (GPL-3.0 compatible). Prefer AndroidX and the Kotlin stdlib.
 - User-facing text goes in `res/values/strings.xml` **and** `res/values-in/strings.xml`. No hardcoded UI strings.
 - Do not touch `secrets.properties`, `release-key.jks`, or signing config values.

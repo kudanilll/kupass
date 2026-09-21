@@ -25,9 +25,16 @@ class SiteDomainTest {
     }
 
     @Test
-    fun `ignores site names that are not domains`() {
+    fun `guesses dot com for a single-word site name`() {
+        assertEquals("netflix.com", siteDomainOf("", "Netflix"))
+        assertEquals("github.com", siteDomainOf("", "GitHub"))
+    }
+
+    @Test
+    fun `does not guess domains for ambiguous or private site names`() {
         assertNull(siteDomainOf("", "My Bank"))
-        assertNull(siteDomainOf("", "Netflix"))
+        assertNull(siteDomainOf("", "localhost"))
+        assertNull(siteDomainOf("", "internal"))
     }
 
     @Test

@@ -51,7 +51,7 @@ Read the relevant file **before** you work in that area:
 | [`STRUCTURE.md`](docs/codebase/STRUCTURE.md)       | Finding code, entry points, routes, data model, where new files go.                             |
 | [`ARCHITECTURE.md`](docs/codebase/ARCHITECTURE.md) | Layers, data flow (save/export/import), patterns, architectural risks.                          |
 | [`CONVENTIONS.md`](docs/codebase/CONVENTIONS.md)   | Naming, error handling, logging, localization as actually practiced.                            |
-| [`INTEGRATIONS.md`](docs/codebase/INTEGRATIONS.md) | Keystore, SAF, clipboard, data stores, the opt-in Favget site-icon API.                         |
+| [`INTEGRATIONS.md`](docs/codebase/INTEGRATIONS.md) | Keystore, SAF, clipboard, data stores, and the Favget site-icon API.                            |
 | [`TESTING.md`](docs/codebase/TESTING.md)           | Test stack, layout, what is and isn't covered.                                                  |
 | [`CONCERNS.md`](docs/codebase/CONCERNS.md)         | **Known bugs, security risks, tech debt, open `[ASK USER]` questions.** Single source of truth. |
 
