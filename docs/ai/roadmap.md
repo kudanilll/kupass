@@ -149,7 +149,7 @@ Confirmed decision: biometric with device-credential fallback, no master passwor
 | ------ | ------- | --------------------------------------------------------------------------------------------------------------------- | --- | --- | ---------- | ------------- |
 | S-7.1  | Story   | Password generator (length, character sets, strength meter) in the editor                                             | 5   | P2  | none       | SEC-7         |
 | F-7.2  | Feature | **Android Autofill service** (proposed, needs approval): split with the `breakdown-feature-prd` skill before starting | 13+ | P1? | E2, E3     | FEAT-1        |
-| S-7.3  | Story   | ✅ Done 2026-09-19. Opt-in favicons via Favget (domain only, cached, off by default)                                                      | 5   | P2  | EN-01      | FEAT-2        |
+| S-7.3  | Story   | ✅ Done 2026-09-19; revised 2026-09-21. Always-on favicons via Favget (public domain only, memory cached)                                 | 5   | P2  | EN-01      | FEAT-2        |
 | S-7.4  | Story   | Categories/tags and favorites (proposed)                                                                              | 5   | P3  | EN-03      | FEAT-3        |
 | S-7.5  | Story   | Adaptive list-detail layout for tablets/foldables (proposed)                                                          | 5   | P3  | none       | FEAT-4        |
 | EN-7.6 | Enabler | Migrate Navigation 2.x (maintenance mode) → Navigation 3                                                              | 5   | P3  | EN-04      | CONCERNS debt |

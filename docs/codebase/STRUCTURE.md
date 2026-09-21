@@ -47,7 +47,7 @@ com/nielcode/kupass/
 │   │   └── PasswordEntity.kt      table "passwords"
 │   ├── backup/BackupCodec.kt      portable backup v2 (PBKDF2 + AES-GCM) + strict legacy v1 import
 │   ├── local/prefs/PreferenceManager.kt SharedPreferences "kupass_preferences"
-│   ├── siteicon/                  opt-in site icons: SiteDomain (domain extraction), FavgetIconSource (HTTP), SiteIconRepository (memory cache, dedupe, decode)
+│   ├── siteicon/                  site icons: SiteDomain (domain extraction), FavgetIconSource (HTTP), SiteIconRepository (memory cache, dedupe, decode)
 │   └── repository/PasswordRepository.kt encrypt/decrypt all text fields, in-memory sort+search, legacy format upgrade
 │       └── repository/VaultEntityMapping.kt  field encrypt/decrypt, identity, search match, sort
 ├── ui/
@@ -64,7 +64,7 @@ com/nielcode/kupass/
 │   │   ├── lock/LockScreen.kt     locked state / "set up a screen lock" guidance
 │   │   ├── detail/                PasswordDetailScreen (+ copyToClipboard), PasswordDetailViewModel
 │   │   ├── editor/                PasswordEditorScreen (EditorFormState, top bar, form), PasswordEditorViewModel
-│   │   └── settings/SettingsScreen.kt   language/auto-lock/site icons/theme/dynamic color dialogs, about links, SingleChoiceDialog
+│   │   └── settings/SettingsScreen.kt   language/auto-lock/theme/dynamic color dialogs, about links, SingleChoiceDialog
 │   └── theme/                     Color.kt, Theme.kt (KupassTheme), Type.kt (Heming display, Google Sans Flex body) + AppearanceSettings.kt (apply language/night mode)
 └── utils/
     ├── AppConfig.kt               int codes for language/theme/dynamic color

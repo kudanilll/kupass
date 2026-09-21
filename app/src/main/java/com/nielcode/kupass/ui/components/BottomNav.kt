@@ -3,7 +3,6 @@ package com.nielcode.kupass.ui.components
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
@@ -15,7 +14,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.selection.selectable
@@ -40,8 +38,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.nielcode.kupass.R
 import com.nielcode.kupass.ui.theme.KupassTheme
@@ -53,7 +49,7 @@ internal fun <T> navSpring() =
 /** Height the floating navigation occupies (FAB plus vertical padding); pages pad by this. */
 val BottomNavHeight = 80.dp
 
-private val NavShadow = 8.dp
+private val NavShadow = 4.dp
 private val PillToAddSpacing = 12.dp
 
 /** Floating pill navigation with an "add" button that only shows on the Home tab. */
@@ -65,13 +61,6 @@ fun BottomNav(
     modifier: Modifier = Modifier,
 ) {
     val addVisible = currentTab == MainTab.Home
-    // Shift the pill left to keep the pill + add button pair centered.
-    val pillOffset: Dp by
-        animateDpAsState(
-            targetValue = if (addVisible) -PillToAddSpacing else 0.dp,
-            animationSpec = navSpring(),
-            label = "nav_offset",
-        )
 
     Row(
         modifier = modifier.fillMaxWidth().padding(vertical = 12.dp),
@@ -82,7 +71,6 @@ fun BottomNav(
         TabPill(
             currentTab = currentTab,
             onTabClick = onTabClick,
-            modifier = Modifier.offset { IntOffset(pillOffset.roundToPx(), 0) },
         )
         AnimatedVisibility(
             visible = addVisible,

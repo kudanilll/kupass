@@ -6,16 +6,12 @@ import android.util.LruCache
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.core.graphics.scale
-import kotlin.reflect.KMutableProperty0
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 
 /** Site icons as the UI sees them: a synchronous cache peek and a suspending load. */
 interface SiteIcons {
@@ -27,31 +23,22 @@ interface SiteIcons {
 }
 
 /**
- * Opt-in site icons (roadmap FEAT-2), off by default.
+ * Site icons fetched from Favget when this build has an API key.
  *
  * Icons are cached in memory only. A disk cache would reveal which sites are in the vault even
  * though the vault itself is encrypted. Concurrent requests for a domain share one fetch, and
  * misses and failures are remembered for a while so scrolling doesn't hammer the API.
  *
  * @param source null when this build has no Favget API key; the feature is then unavailable.
- * @param enabledSetting where the opt-in choice is stored.
  */
 class SiteIconRepository(
     private val source: IconSource?,
-    private val enabledSetting: KMutableProperty0<Boolean>,
     private val scope: CoroutineScope,
     private val decode: (ByteArray) -> ImageBitmap? = ::decodeSiteIcon,
     private val ioDispatcher: CoroutineDispatcher =
         Dispatchers.IO.limitedParallelism(MAX_CONCURRENT_FETCHES),
     private val clock: () -> Long = System::currentTimeMillis,
 ) : SiteIcons {
-
-    /** Whether this build can fetch icons at all. */
-    val isAvailable: Boolean
-        get() = source != null
-
-    private val _enabled = MutableStateFlow(enabledSetting.get() && source != null)
-    val enabled: StateFlow<Boolean> = _enabled.asStateFlow()
 
     private val icons =
         object : LruCache<String, ImageBitmap>(MEMORY_CACHE_BYTES) {
@@ -61,18 +48,10 @@ class SiteIconRepository(
     private val inFlight = HashMap<String, Deferred<ImageBitmap?>>()
     private val lock = Any()
 
-    fun setEnabled(enabled: Boolean) {
-        if (source == null || enabled == _enabled.value) return
-        enabledSetting.set(enabled)
-        _enabled.value = enabled
-        if (!enabled) clear()
-    }
-
-    override fun peek(domain: String): ImageBitmap? =
-        if (_enabled.value) icons.get(domain) else null
+    override fun peek(domain: String): ImageBitmap? = icons.get(domain)
 
     override suspend fun load(domain: String): ImageBitmap? {
-        val iconSource = source?.takeIf { _enabled.value } ?: return null
+        val iconSource = source ?: return null
         return icons.get(domain)
             ?: pendingFetch(iconSource, domain)?.run {
                 start()
@@ -98,8 +77,6 @@ class SiteIconRepository(
         val icon = (result as? IconFetchResult.Found)?.bytes?.let(decode)
         synchronized(lock) {
             inFlight.remove(domain)
-            // Turned off while fetching: keep nothing.
-            if (!_enabled.value) return null
             when {
                 icon != null -> icons.put(domain, icon)
                 result == IconFetchResult.Failed ->
@@ -108,15 +85,6 @@ class SiteIconRepository(
             }
         }
         return icon
-    }
-
-    private fun clear() {
-        synchronized(lock) {
-            inFlight.values.forEach { it.cancel() }
-            inFlight.clear()
-            retryAfter.clear()
-            icons.evictAll()
-        }
     }
 
     private companion object {

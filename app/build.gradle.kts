@@ -33,7 +33,7 @@ android {
         buildConfigField("String", "DEV_URL", "\"https://www.kudaniel.my.id\"")
         buildConfigField("String", "DEV_NAME", "\"Achmad Daniel Syahputra\"")
 
-        // Favget site icons (opt-in). Without a key the feature stays hidden in Settings.
+        // Favget site icons. Without a key, entries keep their letter fallback.
         buildConfigField("String", "FAVGET_API_URL", "\"https://favget.nielcode.web.id\"")
         // Escaped so the key stays a valid Java string literal in the generated BuildConfig.
         val favgetKey =

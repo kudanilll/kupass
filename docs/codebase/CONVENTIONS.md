@@ -48,7 +48,7 @@
 
 ## 6) Localization Conventions
 
-- Every resource string exists in `values/strings.xml` (EN) and `values-in/strings.xml` (ID): 81 strings each.
+- Every user-facing resource string exists in `values/strings.xml` (EN) and `values-in/strings.xml` (ID).
 - The language setting stores an **index** (`AppConfig.Language.Code`) into `arrays.xml` `language_values` (`en-US`, `id-ID`). `AppConfig.Language.ENGLISH_TAG`/`INDONESIA_TAG` are unused.
 - Known hardcoded strings: see `CONCERNS.md`.
 

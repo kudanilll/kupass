@@ -1,7 +1,9 @@
 package com.nielcode.kupass.ui.theme
 
+import android.content.Context
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
@@ -88,6 +90,20 @@ private val darkScheme =
         surfaceContainerHighest = surfaceContainerHighestDark,
     )
 
+internal fun kupassLightColorScheme(context: Context, dynamicColor: Boolean): ColorScheme =
+    if (dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        dynamicLightColorScheme(context)
+    } else {
+        lightScheme
+    }
+
+internal fun kupassDarkColorScheme(context: Context, dynamicColor: Boolean): ColorScheme =
+    if (dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        dynamicDarkColorScheme(context)
+    } else {
+        darkScheme
+    }
+
 @Composable
 fun KupassTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -95,16 +111,10 @@ fun KupassTheme(
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit,
 ) {
+    val context = LocalContext.current
     val colorScheme =
-        when {
-            dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-                val context = LocalContext.current
-                if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-            }
-
-            darkTheme -> darkScheme
-            else -> lightScheme
-        }
+        if (darkTheme) kupassDarkColorScheme(context, dynamicColor)
+        else kupassLightColorScheme(context, dynamicColor)
 
     MaterialTheme(colorScheme = colorScheme, typography = Typography, content = content)
 }

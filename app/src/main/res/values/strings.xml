@@ -128,9 +128,6 @@
     <string name="settings_category_security">Security</string>
     <string name="settings_auto_lock_title">Auto-lock</string>
     <string name="auto_lock_immediately">Immediately</string>
-    <string name="settings_site_icons_title">Site icons</string>
-    <string name="settings_site_icons_unavailable">Not available in this build</string>
-    <string name="dialog_site_icons_message">Show each site\'s icon in your vault list. To get it, Kupass sends only the site\'s domain (for example github.com) to the Favget icon service over HTTPS. Usernames, passwords, and notes never leave your device, and icons are only kept in memory.</string>
     <string name="lock_title">Kupass is locked</string>
     <string name="lock_message">Unlock with your fingerprint, face, or screen lock to open your vault.</string>
     <string name="lock_button_unlock">Unlock</string>
@@ -169,7 +166,6 @@
     <string name="more_options">More options</string>
     <string name="empty_vault_title">Your vault is empty</string>
     <string name="empty_vault_body">Save your first password. Everything stays encrypted on this device.</string>
-    <string name="empty_vault_action">Add password</string>
     <string name="empty_search_title">No results</string>
     <string name="empty_search_body">Nothing in your vault matches “%1$s”.</string>
 </resources>

@@ -14,7 +14,6 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
 import org.junit.After
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertSame
@@ -31,15 +30,8 @@ class SiteIconRepositoryTest {
     private val fetches = AtomicInteger()
     private var result: IconFetchResult = IconFetchResult.Found(byteArrayOf(1))
     private var now = 0L
-    private val stored = mutableListOf<Boolean>()
-
     /** Real threads for the test where a fetch blocks until every caller waits on it. */
     private val threads = Executors.newFixedThreadPool(4).asCoroutineDispatcher()
-    private var enabledSetting = false
-        set(value) {
-            field = value
-            stored += value
-        }
 
     @After
     fun closeThreads() {
@@ -47,18 +39,14 @@ class SiteIconRepositoryTest {
     }
 
     private fun repository(
-        enabled: Boolean = true,
         source: IconSource? = IconSource {
             fetches.incrementAndGet()
             result
         },
         ioDispatcher: CoroutineDispatcher = dispatcher,
     ): SiteIconRepository {
-        enabledSetting = enabled
-        stored.clear()
         return SiteIconRepository(
             source = source,
-            enabledSetting = this::enabledSetting,
             scope = scope,
             decode = { Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888).asImageBitmap() },
             ioDispatcher = ioDispatcher,
@@ -67,22 +55,11 @@ class SiteIconRepositoryTest {
     }
 
     @Test
-    fun `is off by default and does nothing while off`() = scope.runTest {
-        val icons = repository(enabled = false)
+    fun `does nothing without an api key`() = scope.runTest {
+        val icons = repository(source = null)
 
-        assertFalse(icons.enabled.value)
         assertNull(icons.load("github.com"))
         assertEquals(0, fetches.get())
-    }
-
-    @Test
-    fun `is unavailable without an api key`() = scope.runTest {
-        val icons = repository(enabled = true, source = null)
-        icons.setEnabled(true)
-
-        assertFalse(icons.isAvailable)
-        assertFalse(icons.enabled.value)
-        assertTrue(stored.isEmpty())
     }
 
     @Test
@@ -138,20 +115,5 @@ class SiteIconRepositoryTest {
         result = IconFetchResult.Found(byteArrayOf(1))
         assertNotNull(icons.load("down.example"))
         assertEquals(3, fetches.get())
-    }
-
-    @Test
-    fun `turning off persists the choice and forgets every icon`() = scope.runTest {
-        val icons = repository()
-        icons.load("github.com")
-
-        icons.setEnabled(false)
-
-        assertEquals(listOf(false), stored)
-        assertNull(icons.peek("github.com"))
-        icons.setEnabled(true)
-        assertNull(icons.peek("github.com"))
-        icons.load("github.com")
-        assertEquals(2, fetches.get())
     }
 }
