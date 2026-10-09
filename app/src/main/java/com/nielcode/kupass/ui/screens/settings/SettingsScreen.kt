@@ -21,6 +21,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -68,10 +69,7 @@ private enum class SettingsDialog {
 fun SettingsScreen(modifier: Modifier = Modifier, contentPadding: PaddingValues = PaddingValues()) {
     val context = LocalContext.current
     val container = remember(context) { (context.applicationContext as App).container }
-    val settings =
-        remember(container) {
-            SettingsController(context, container.preferenceManager)
-        }
+    val settings = remember(container) { SettingsController(context, container.preferenceManager) }
     var openDialog by remember { mutableStateOf<SettingsDialog?>(null) }
 
     Scaffold(modifier = modifier.fillMaxSize(), contentWindowInsets = pagerPageInsets()) {
@@ -361,6 +359,7 @@ private fun RestartDialog(modifier: Modifier = Modifier) {
 }
 
 @Composable
+@ReadOnlyComposable
 private fun autoLockLabel(seconds: Int): String =
     when {
         seconds == 0 -> stringResource(R.string.auto_lock_immediately)
