@@ -11,7 +11,7 @@ Kupass is an open-source (GPL-3.0) offline password manager for Android by **nie
 - Package: `com.nielcode.kupass`
 - Branch: `master` (main/default). Never code directly on `master`: every feature or fix gets its own branch
 - Version: `3.1.0` (versionCode `5`), minSdk 27, compile/target SDK 37
-- Stack: Kotlin 2.4.20, AGP 9.4, Gradle 9.7.1, Compose BOM 2026.09, Material 3, Navigation Compose (typed routes), Lifecycle ViewModel, Room 2.8 + KSP, Kotlinx Serialization, Android Keystore (AES-GCM)
+- Stack: Kotlin 2.4.21, AGP 9.4.1, Gradle 9.8.1, Compose BOM 2026.09, Material 3, Navigation Compose (typed routes), Lifecycle ViewModel, Room 2.8 + KSP, Kotlinx Serialization, Android Keystore (AES-GCM)
 - People: Danil (founder, lead software engineer at nielcode) owns product decisions.
 
 ## Architecture In One Glance
