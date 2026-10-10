@@ -157,7 +157,16 @@
         <item quantity="other">%1$d skipped</item>
     </plurals>
     <string name="search_close">Close search</string>
-    <string name="search_searching_for">Searching: %1$s</string>
+    <string name="search_clear">Clear search</string>
+    <string name="vault_group_expand">Expand group</string>
+    <string name="vault_group_collapse">Collapse group</string>
+    <string name="vault_group_expanded">Expanded</string>
+    <string name="vault_group_collapsed">Collapsed</string>
+    <string name="vault_group_unnamed">Unnamed site</string>
+    <plurals name="vault_group_accounts">
+        <item quantity="one">%1$d account</item>
+        <item quantity="other">%1$d accounts</item>
+    </plurals>
     <string name="site_placeholder">e.g. Netflix, Google</string>
     <plurals name="backup_password_too_short">
         <item quantity="one">Use at least %1$d character</item>

@@ -153,7 +153,15 @@
         <item quantity="other">%1$d dilewati</item>
     </plurals>
     <string name="search_close">Tutup pencarian</string>
-    <string name="search_searching_for">Mencari: %1$s</string>
+    <string name="search_clear">Hapus pencarian</string>
+    <string name="vault_group_expand">Buka grup</string>
+    <string name="vault_group_collapse">Tutup grup</string>
+    <string name="vault_group_expanded">Terbuka</string>
+    <string name="vault_group_collapsed">Tertutup</string>
+    <string name="vault_group_unnamed">Situs tanpa nama</string>
+    <plurals name="vault_group_accounts">
+        <item quantity="other">%1$d akun</item>
+    </plurals>
     <string name="site_placeholder">Cth: Netflix, Google</string>
     <plurals name="backup_password_too_short">
         <item quantity="other">Gunakan minimal %1$d karakter</item>
