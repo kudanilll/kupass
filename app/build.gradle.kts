@@ -1,4 +1,6 @@
 import java.util.Properties
+import org.gradle.api.tasks.compile.JavaCompile
+import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
 plugins {
     alias(libs.plugins.android.application)
@@ -30,7 +32,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         buildConfigField("String", "GIT_URL", "\"https://github.com/kudanilll/kupass\"")
-        buildConfigField("String", "DEV_URL", "\"https://www.kudaniel.my.id\"")
+        buildConfigField("String", "DEV_URL", "\"https://achmaddaniel.nielcode.com\"")
         buildConfigField("String", "DEV_NAME", "\"Achmad Daniel Syahputra\"")
 
         // Favget site icons. Without a key, entries keep their letter fallback.
@@ -118,6 +120,21 @@ detekt {
     config.setFrom(rootProject.file("config/detekt/detekt.yml"))
     buildUponDefaultConfig = true
     parallel = true
+}
+
+// Detekt's Android classpath omits generated Java bytecode, including BuildConfig.
+tasks.withType<dev.detekt.gradle.Detekt>().configureEach {
+    if (name == "detektDebug" || name == "detektRelease") {
+        val variant = name.removePrefix("detekt")
+        val kotlinCompile = tasks.named<KotlinJvmCompile>("compile${variant}Kotlin")
+        classpath.setFrom(
+            kotlinCompile.map { it.libraries },
+            kotlinCompile.flatMap { it.destinationDirectory },
+            tasks.named<JavaCompile>("compile${variant}JavaWithJavac").flatMap {
+                it.destinationDirectory
+            },
+        )
+    }
 }
 
 dependencies {

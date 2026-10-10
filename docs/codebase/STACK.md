@@ -6,10 +6,10 @@
 
 | Area                  | Value                                                                                                             | Evidence                                                                         |
 | --------------------- | ----------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| Primary language      | Kotlin 2.4.20 (33 `.kt` files, ~6.4k LOC total repo)                                                              | `gradle/libs.versions.toml` (`kotlin`), scan CODE METRICS                        |
+| Primary language      | Kotlin 2.4.21 (33 `.kt` files, ~6.4k LOC total repo)                                                              | `gradle/libs.versions.toml` (`kotlin`), scan CODE METRICS                        |
 | Runtime               | Android. minSdk 27 (8.1), compileSdk/targetSdk 37                                                                 | `app/build.gradle.kts`                                                           |
 | JVM                   | Gradle daemon toolchain JDK 21 (foojay auto-provisioned). Bytecode target Java 11                                 | `gradle/gradle-daemon-jvm.properties`, `app/build.gradle.kts` (`compileOptions`) |
-| Build system          | Gradle 9.7.1 (Kotlin DSL), AGP 9.4.0 (max API 37), single module `:app`                                           | `gradle/wrapper/gradle-wrapper.properties`, `settings.gradle.kts`                |
+| Build system          | Gradle 9.8.1 (Kotlin DSL), AGP 9.4.1 (max API 37), single module `:app`                                           | `gradle/wrapper/gradle-wrapper.properties`, `settings.gradle.kts`                |
 | Dependency management | Gradle version catalog `gradle/libs.versions.toml`, repos `google()` + `mavenCentral()` (`FAIL_ON_PROJECT_REPOS`) | `settings.gradle.kts`                                                            |
 | App identity          | `com.nielcode.kupass`, versionName `3.1.0`, versionCode `5`                                                       | `app/build.gradle.kts`                                                           |
 | License               | GPL-3.0                                                                                                           | `LICENSE`, `README.md`                                                           |
@@ -23,7 +23,7 @@
 | `navigation-compose`                                                                            | 2.10.1                       | Typed `@Serializable` routes                        | `MainAppScreen.kt`                    |
 | `lifecycle-runtime-ktx`, `lifecycle-viewmodel-compose`                                          | 2.11.0                       | `ViewModel` + `viewModelFactory`, `viewModelScope`, `viewModel(factory = …)` | `ui/screens/*/*ViewModel.kt`          |
 | Room (`runtime`, `ktx`, `compiler` via KSP 2.3.12)                                              | 2.8.5                        | Local DB `kupass_database`                          | `data/local/db/*`                     |
-| `kotlinx-serialization-json` (+ Kotlin serialization plugin 2.4.20)                             | 1.11.0                       | Backup JSON format and nav routes                   | `BackupCodec.kt`                 |
+| `kotlinx-serialization-json` (+ Kotlin serialization plugin 2.4.21)                             | 1.11.0                       | Backup JSON format and nav routes                   | `BackupCodec.kt`                 |
 | `core-ktx`                                                                                      | 1.19.0                       | `toUri()` and other extensions                      | `Util.kt`                             |
 | `core-splashscreen`                                                                             | 1.2.0                        | `installSplashScreen()`                             | `MainActivity.kt`                     |
 | `play-services-oss-licenses` (+ `oss-licenses` plugin 0.13.0)                                   | 17.5.2                       | `OssLicensesMenuActivity`                           | `SettingsScreen.kt`                   |
@@ -46,8 +46,8 @@ Bundled assets that affect APK size: `res/font/googlesansflex.ttf` (236 KB, inst
 | AndroidX Test (`junit` 1.3.0, `espresso-core` 3.7.0, `compose-ui-test-junit4`) | Instrumented tests                                                                                                                     | `libs.versions.toml`           |
 | R8 (`isMinifyEnabled`, `isShrinkResources` in release)                         | Shrinking/obfuscation                                                                                                                  | `app/build.gradle.kts`         |
 | Android Lint | Static checks, default config (0 errors) | `./gradlew :app:lintDebug` |
-| Spotless 8.10.2 + ktfmt 0.64 (kotlinlang style) | Formatting for `*.kt` / `*.gradle.kts` | root `build.gradle.kts` |
-| detekt 2.0.0-alpha.6 + compose-rules 0.6.6 | Static analysis with type resolution, no baseline | `app/build.gradle.kts`, `config/detekt/detekt.yml` |
+| Spotless 8.10.4 + ktfmt 0.64 (kotlinlang style) | Formatting for `*.kt` / `*.gradle.kts` | root `build.gradle.kts` |
+| detekt 2.0.0-alpha.6 + compose-rules 0.6.8 | Static analysis with type resolution, no baseline | `app/build.gradle.kts`, `config/detekt/detekt.yml` |
 | `kotlin.code.style=official`                                                   | Kotlin style hint for the IDE                                                                                                          | `gradle.properties`            |
 | CI/CD                                                                          | Release workflow only (`.github/workflows/release.yml`, tag `v*`). Dependabot (`.github/dependabot.yml`). `ci.yml`: spotlessCheck + detekt + build + unit tests + lint on push/PR to `master`, and dependency-graph submission on `master` | `.github/`                     |
 
@@ -65,6 +65,7 @@ Bundled assets that affect APK size: `res/font/googlesansflex.ttf` (236 KB, inst
 
 - Config sources: `local.properties` (SDK path, gitignored), `secrets.properties` (gitignored; keys `RELEASE_STORE_PASSWORD`, `RELEASE_KEY_ALIAS`, `RELEASE_KEY_PASSWORD`), `release-key.jks` (gitignored).
 - `BuildConfig` fields (set in `defaultConfig`, same in debug and release): `GIT_URL`, `DEV_URL`, `DEV_NAME`, `FAVGET_API_URL`, and `FAVGET_API_KEY` (from `secrets.properties`, empty if absent; extractable from the APK by design, see INTEGRATIONS.md).
+- `DEV_URL` opens `https://achmaddaniel.nielcode.com` from the developer entry in Settings.
 - No environment variables are read. There is no `.env` template.
 - Runtime constraints: offline-first. `INTERNET` permission is declared but no network client exists yet (see `INTEGRATIONS.md`).
 
