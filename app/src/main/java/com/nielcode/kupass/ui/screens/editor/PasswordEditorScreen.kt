@@ -20,6 +20,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
@@ -71,13 +72,16 @@ fun PasswordEditorScreen(
     passwordId: Long,
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: PasswordEditorViewModel = viewModel(factory = PasswordEditorViewModel.Factory),
+    viewModel: PasswordEditorViewModel =
+        viewModel(factory = PasswordEditorViewModel.factory(passwordId)),
 ) {
     val isEditMode = passwordId > 0
     val context = LocalContext.current
     val form = remember { EditorFormState() }
     val existingPassword by viewModel.existingPassword.collectAsStateWithLifecycle()
     val saveState by viewModel.saveState.collectAsStateWithLifecycle()
+    val loadFailed by viewModel.loadFailed.collectAsStateWithLifecycle()
+    DisposableEffect(viewModel) { onDispose { viewModel.clearSensitiveState() } }
     val currentOnNavigateBack by rememberUpdatedState(onNavigateBack)
     val saveFailedText = stringResource(R.string.toast_failed_save)
 
@@ -103,7 +107,10 @@ fun PasswordEditorScreen(
         topBar = {
             EditorTopBar(
                 isEditMode = isEditMode,
-                saveEnabled = form.isValid && saveState !is SaveState.Saving,
+                saveEnabled =
+                    form.isValid &&
+                        saveState !is SaveState.Saving &&
+                        (!isEditMode || existingPassword != null),
                 onBack = onNavigateBack,
                 onSave = {
                     viewModel.savePassword(
@@ -117,7 +124,14 @@ fun PasswordEditorScreen(
             )
         },
     ) { innerPadding ->
-        EditorForm(form = form, modifier = Modifier.padding(innerPadding))
+        if (loadFailed) {
+            Text(
+                text = stringResource(R.string.editor_load_failed),
+                modifier = Modifier.padding(innerPadding).padding(20.dp),
+            )
+        } else {
+            EditorForm(form = form, modifier = Modifier.padding(innerPadding))
+        }
     }
 }
 

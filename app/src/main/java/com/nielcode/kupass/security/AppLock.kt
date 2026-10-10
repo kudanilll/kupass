@@ -6,11 +6,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 /**
- * UI-level vault lock (decision Q3: the Keystore key is not bound to user authentication).
+ * Background timeout for sensitive entry screens and export consent (no Keystore auth binding).
  *
- * The vault starts locked in every new process and re-locks when the app has been in the background
- * for at least [timeoutMillis]. Leaving the app on purpose (file picker, device credential screen,
- * browser, licenses) can be exempted with [allowNextBackground].
+ * Sensitive access starts locked in every new process and re-locks when the app has been in the
+ * background for at least [timeoutMillis]. Leaving the app on purpose (file picker, device
+ * credential screen, browser, licenses) can be exempted with [allowNextBackground].
  *
  * Driven by [MainActivity][com.nielcode.kupass.MainActivity] lifecycle callbacks. Pure Kotlin so it
  * can be unit tested with a fake [clock].
@@ -37,6 +37,7 @@ class AppLock(
         _locked.value = false
         backgroundedAt = null
         exemptTrip = false
+        backgroundAllowedAt = null
     }
 
     fun lock() {
@@ -49,15 +50,18 @@ class AppLock(
     }
 
     /** Activity `onStop`. Configuration changes (rotation, theme) don't count as leaving. */
-    fun onBackground(isChangingConfigurations: Boolean) {
-        if (isChangingConfigurations) return
+    fun onBackground(isChangingConfigurations: Boolean): Boolean {
+        if (isChangingConfigurations) return false
         val allowedAt = backgroundAllowedAt
         backgroundAllowedAt = null
-        if (_locked.value) return
-        backgroundedAt = clock()
-        // Only honor an exemption requested just before leaving; a stale one (the activity never
-        // started) must not soften a later, real departure.
-        exemptTrip = allowedAt != null && clock() - allowedAt <= ALLOWANCE_WINDOW_MILLIS
+        return if (_locked.value) {
+            false
+        } else {
+            backgroundedAt = clock()
+            // A stale allowance must not soften a later, unrelated departure.
+            exemptTrip = allowedAt != null && clock() - allowedAt <= ALLOWANCE_WINDOW_MILLIS
+            exemptTrip
+        }
     }
 
     /**
@@ -66,11 +70,16 @@ class AppLock(
      * timed: a long absence that merely started there locks like any other.
      */
     fun onForeground() {
-        val since = backgroundedAt ?: return
+        checkTimeout()
         backgroundedAt = null
+        exemptTrip = false
+    }
+
+    /** Also check before accepting callbacks that can arrive before Activity.onStart. */
+    fun checkTimeout() {
+        val since = backgroundedAt ?: return
         val timeout =
             if (exemptTrip) maxOf(timeoutMillis(), EXEMPT_TRIP_GRACE_MILLIS) else timeoutMillis()
-        exemptTrip = false
         if (clock() - since >= timeout) lock()
     }
 

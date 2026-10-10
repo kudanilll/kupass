@@ -11,7 +11,6 @@ import com.nielcode.kupass.data.local.prefs.PreferenceManager
 import com.nielcode.kupass.data.repository.PasswordRepository
 import com.nielcode.kupass.data.siteicon.FavgetIconSource
 import com.nielcode.kupass.data.siteicon.SiteIconRepository
-import com.nielcode.kupass.security.AppLock
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -35,11 +34,6 @@ class AppContainer(
     }
 
     val preferenceManager: PreferenceManager by lazy { PreferenceManager(appContext) }
-
-    /** Process-wide vault lock; survives activity recreation, resets (locked) with the process. */
-    val appLock: AppLock by lazy {
-        AppLock(timeoutMillis = { preferenceManager.autoLockSeconds * 1000L })
-    }
 
     /** Site icons; fetches gracefully return null when the build has no Favget API key. */
     val siteIcons: SiteIconRepository by lazy {

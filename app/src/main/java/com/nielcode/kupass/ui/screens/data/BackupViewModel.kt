@@ -11,6 +11,8 @@ import com.nielcode.kupass.data.backup.BackupCodec
 import com.nielcode.kupass.data.backup.BackupException
 import com.nielcode.kupass.data.repository.PasswordRepository
 import com.nielcode.kupass.di.appContainer
+import com.nielcode.kupass.security.EntryAuthenticationViewModel
+import com.nielcode.kupass.security.ExportConsent
 import com.nielcode.kupass.ui.screens.VaultEvent
 import com.nielcode.kupass.ui.screens.recoverable
 import java.io.IOException
@@ -35,6 +37,7 @@ class BackupViewModel(
     private val contentResolver: ContentResolver,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
     private val cpuDispatcher: CoroutineDispatcher = Dispatchers.Default,
+    private val authentication: EntryAuthenticationViewModel? = null,
 ) : ViewModel() {
 
     private val _events = Channel<VaultEvent>(Channel.BUFFERED)
@@ -44,6 +47,7 @@ class BackupViewModel(
 
     /** Backup password held only between the password dialog and the file picker result. */
     private var pendingExportPassword: CharArray? = null
+    private var pendingExportToken: Long? = null
 
     private val _importPrompt = MutableStateFlow<ImportPrompt?>(null)
 
@@ -55,22 +59,51 @@ class BackupViewModel(
     /** True while a backup is being encrypted or decrypted (PBKDF2 takes a moment). */
     val backupBusy: StateFlow<Boolean> = _backupBusy.asStateFlow()
 
+    init {
+        authentication?.let { owner ->
+            viewModelScope.launch {
+                owner.state.collect { state ->
+                    if (
+                        state.export == null ||
+                            (pendingExportToken != null && state.export.token != pendingExportToken)
+                    ) {
+                        cancelExport()
+                    }
+                }
+            }
+        }
+    }
+
     /** Step 1 of export: remember the chosen password until the user picks a file. */
     fun prepareExport(password: CharArray) {
+        val consent = authentication?.state?.value?.export
+        if (consent?.phase != ExportConsent.Phase.Picker) {
+            password.fill('\u0000')
+            cancelExport()
+            return
+        }
         pendingExportPassword?.fill('\u0000')
         pendingExportPassword = password
+        pendingExportToken = consent.token
     }
 
     /** The user dismissed the file picker. */
     fun cancelExport() {
         pendingExportPassword?.fill('\u0000')
         pendingExportPassword = null
+        pendingExportToken = null
     }
 
     /** Step 2 of export: write an encrypted v2 backup to [uri]. */
     fun exportPasswords(uri: Uri) {
         val password = pendingExportPassword ?: return
+        val token = pendingExportToken
         pendingExportPassword = null
+        pendingExportToken = null
+        if (authentication?.consumeExportForWrite(token) != true) {
+            password.fill('\u0000')
+            return
+        }
         viewModelScope.launch {
             _backupBusy.value = true
             try {
@@ -189,5 +222,18 @@ class BackupViewModel(
                 BackupViewModel(container.passwordRepository, container.contentResolver)
             }
         }
+
+        /** Native consent is activity-retained, never process-wide or saved. */
+        fun factory(authentication: EntryAuthenticationViewModel): ViewModelProvider.Factory =
+            viewModelFactory {
+                initializer {
+                    val container = appContainer()
+                    BackupViewModel(
+                        container.passwordRepository,
+                        container.contentResolver,
+                        authentication = authentication,
+                    )
+                }
+            }
     }
 }
