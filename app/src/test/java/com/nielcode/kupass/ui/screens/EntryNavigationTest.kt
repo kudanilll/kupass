@@ -6,8 +6,10 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.ComposeNavigator
 import androidx.navigation.compose.composable
 import androidx.navigation.createGraph
+import androidx.navigation.toRoute
 import com.nielcode.kupass.security.EntryAuthenticationViewModel
 import com.nielcode.kupass.security.EntryAuthenticationViewModel.Action
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
@@ -41,6 +43,25 @@ class EntryNavigationTest {
         assertNotEquals(first, second)
         assertTrue(auth.canRead(second, ACCOUNT))
         assertFalse(auth.canRead(first, ACCOUNT))
+    }
+
+    @Test
+    fun `group page is public and opening its child still needs a fresh bound grant`() {
+        val nav = controller(auth)
+        auth.onForeground(true)
+        nav.navigate(PasswordGroup(ACCOUNT))
+        val group = requireNotNull(nav.currentBackStackEntry)
+        assertEquals(ACCOUNT, group.toRoute<PasswordGroup>().groupId)
+        assertTrue(group.protectedAccountId() == null)
+        assertFalse(auth.canRead(group.id, ACCOUNT))
+        val detail = openAccount(nav, group.id)
+        assertTrue(auth.canRead(detail, ACCOUNT))
+        nav.popBackStack()
+        assertFalse(auth.canRead(detail, ACCOUNT))
+        assertFalse(auth.canRead(group.id, ACCOUNT))
+        val second = openAccount(nav, group.id)
+        assertNotEquals(detail, second)
+        assertTrue(auth.canRead(second, ACCOUNT))
     }
 
     @Test
@@ -99,6 +120,7 @@ class EntryNavigationTest {
                 composable<HomeBase> {}
                 composable<PasswordDetail> {}
                 composable<PasswordEditor> {}
+                composable<PasswordGroup> {}
             }
     }
 

@@ -78,28 +78,26 @@ class GooglePasswordCsvTest {
                 "Bad,https://example.com,u,\"closed\"suffix,",
                 "Bad,https://example.com,u,p",
                 "Bad,https://example.com,u,p,,extra",
-                "Bad,https://example.com,u,p,\rNext,https://example.com,u,p,",
-                "\n",
             )
             .forEach { row ->
-                assertThrows(BackupException.Malformed::class.java) {
+                assertThrows(BackupException.InvalidCsv::class.java) {
                     GooglePasswordCsv.decode(valid + row)
                 }
             }
     }
 
     @Test
-    fun `missing duplicate unknown or misspelled headers are rejected`() {
+    fun `missing duplicate or unknown headers are rejected`() {
         listOf(
                 "",
                 "name,url,username",
                 "name,url,password,password",
-                "Name,url,username,password",
-                "name,url,username,password,notes",
+                "name,url,username,pass",
+                "name,url,username,password,note,notes",
                 "name,url,username,password,note,extra",
             )
             .forEach { csv ->
-                assertThrows(BackupException.Malformed::class.java) {
+                assertThrows(BackupException.InvalidCsv::class.java) {
                     GooglePasswordCsv.decode(csv)
                 }
             }
@@ -107,9 +105,36 @@ class GooglePasswordCsvTest {
     }
 
     @Test
+    fun `header spelling variants and blank lines do not change credentials`() {
+        val result =
+            GooglePasswordCsv.decode(
+                "\uFEFF\r\n\" Name \", URL , Username , Password , Notes\r\n\r\n" +
+                    "Example,https://example.com, me , \t , notes \r\n\r\n"
+            )
+        val account = result.entries.single()
+        assertEquals(" me ", account.username)
+        assertEquals(" \t ", account.password)
+        assertEquals(" notes ", account.notes)
+        assertEquals(0, result.skipped)
+    }
+
+    @Test
+    fun `semicolon and CR record separators preserve quoted delimiters and line breaks`() {
+        val result =
+            GooglePasswordCsv.decode(
+                "Name;Url;Username;Password;Notes\r" +
+                    "Example;https://example.com;user;\"x; y\r\nz\";\r\r"
+            )
+        assertEquals("x; y\r\nz", result.entries.single().password)
+        assertEquals("", result.entries.single().notes)
+        assertEquals(0, result.skipped)
+    }
+
+    @Test
     fun `data row cap includes skipped rows but not header or quoted newlines`() {
         val atLimit = HEADER + "\n" + "Missing,,u,,\n".repeat(BackupCodec.MAX_ENTRIES)
         assertEquals(BackupCodec.MAX_ENTRIES, GooglePasswordCsv.decode(atLimit).skipped)
+        assertEquals(BackupCodec.MAX_ENTRIES, GooglePasswordCsv.decode(atLimit + "\n").skipped)
         assertThrows(BackupException.TooLarge::class.java) {
             GooglePasswordCsv.decode(atLimit + "Missing,,u,,\n")
         }

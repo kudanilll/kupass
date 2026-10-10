@@ -17,6 +17,20 @@ class BackupInputTest {
     }
 
     @Test
+    fun `BOM marked UTF16 exports preserve Unicode and credential whitespace`() {
+        val content = "Name,Url,Username,Password,Notes\r\nCafé,https://example.com,用户, \t ,"
+        listOf(Charsets.UTF_16LE, Charsets.UTF_16BE).forEach { charset ->
+            assertEquals(
+                content,
+                BackupInput.read(ByteArrayInputStream(("\uFEFF" + content).toByteArray(charset))),
+            )
+        }
+        assertThrows(BackupException.Malformed::class.java) {
+            BackupInput.read(ByteArrayInputStream(byteArrayOf(0xFF.toByte(), 0xFE.toByte(), 0x41)))
+        }
+    }
+
+    @Test
     fun `invalid UTF8 is rejected rather than replacing password bytes`() {
         listOf(
                 byteArrayOf(0xc3.toByte(), 0x28),

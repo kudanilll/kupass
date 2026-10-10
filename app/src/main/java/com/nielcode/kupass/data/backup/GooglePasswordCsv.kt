@@ -3,6 +3,7 @@ package com.nielcode.kupass.data.backup
 import com.nielcode.kupass.data.local.db.PasswordEntity
 import java.net.URI
 import java.net.URISyntaxException
+import java.util.Locale
 
 private const val MAX_COLUMNS = 5
 
@@ -16,7 +17,7 @@ object GooglePasswordCsv {
 
     /** Validates the entire file before returning any entries for insertion. */
     fun decode(content: String): Result {
-        val reader = CsvReader(content.removePrefix("\uFEFF"))
+        val reader = csvReader(content)
         val header = readHeader(reader)
         val columns = header.withIndex().associate { it.value to it.index }
         val entries = mutableListOf<PasswordEntity>()
@@ -25,7 +26,7 @@ object GooglePasswordCsv {
         while (true) {
             val row = reader.nextRow() ?: break
             if (++rows > BackupCodec.MAX_ENTRIES) throw BackupException.TooLarge()
-            if (row.size != header.size) throw BackupException.Malformed()
+            if (row.size != header.size) throw BackupException.InvalidCsv()
             val name = row[columns.getValue("name")]
             val url = row[columns.getValue("url")]
             val password = row[columns.getValue("password")]
@@ -46,14 +47,26 @@ object GooglePasswordCsv {
     }
 
     private fun readHeader(reader: CsvReader): List<String> {
-        val header = reader.nextRow() ?: throw BackupException.Malformed()
+        val header =
+            (reader.nextRow() ?: throw BackupException.InvalidCsv()).map {
+                it.trim().lowercase(Locale.ROOT).let { name ->
+                    if (name == "notes") "note" else name
+                }
+            }
         val names = header.toSet()
         if (
             names !in listOf(requiredHeader, requiredHeader + "note") || names.size != header.size
         ) {
-            throw BackupException.Malformed()
+            throw BackupException.InvalidCsv()
         }
         return header
+    }
+
+    private fun csvReader(content: String): CsvReader {
+        val text = content.removePrefix("\uFEFF").trimStart('\r', '\n')
+        val firstLine = text.substringBefore('\n').substringBefore('\r')
+        val delimiter = if (';' in firstLine && ',' !in firstLine) ';' else ','
+        return CsvReader(text, delimiter)
     }
 
     private fun validUrl(url: String): Boolean =
@@ -68,28 +81,38 @@ object GooglePasswordCsv {
             }
 }
 
-/** RFC 4180 quoting with LF or CRLF record separators; bare CR and loose quotes fail closed. */
-private class CsvReader(private val content: String) {
+/**
+ * Quoted fields preserve every character; only record separators and header names are normalized.
+ */
+private class CsvReader(private val content: String, private val delimiter: Char) {
     private var position = 0
 
     fun nextRow(): List<String>? {
+        var row: List<String>?
+        do {
+            row = readRow()
+        } while (row?.let { it.size == 1 && it.single().isBlank() } == true)
+        return row
+    }
+
+    private fun readRow(): List<String>? {
         if (position == content.length) return null
         val row = mutableListOf<String>()
         var ended: Boolean
         do {
             row += field()
             // A valid Google row has at most five columns. Bound malformed delimiter floods too.
-            if (row.size > MAX_COLUMNS) throw BackupException.Malformed()
+            if (row.size > MAX_COLUMNS) throw BackupException.InvalidCsv()
             ended = position == content.length
             if (!ended) {
                 val separator = content[position++]
-                if (separator == '\r' && position < content.length && content[position] == '\n') {
-                    position++
+                if (separator == '\r') {
+                    if (position < content.length && content[position] == '\n') position++
                     ended = true
                 } else if (separator == '\n') {
                     ended = true
-                } else if (separator != ',') {
-                    throw BackupException.Malformed()
+                } else if (separator != delimiter) {
+                    throw BackupException.InvalidCsv()
                 }
             }
         } while (!ended)
@@ -108,11 +131,15 @@ private class CsvReader(private val content: String) {
                     value.append('"')
                 } else return value.toString()
             }
-            throw BackupException.Malformed()
+            throw BackupException.InvalidCsv()
         }
-        while (position < content.length && content[position] !in ",\r\n") {
+        while (
+            position < content.length &&
+                content[position] != delimiter &&
+                content[position] !in "\r\n"
+        ) {
             val char = content[position++]
-            if (char == '"') throw BackupException.Malformed()
+            if (char == '"') throw BackupException.InvalidCsv()
             value.append(char)
         }
         return value.toString()

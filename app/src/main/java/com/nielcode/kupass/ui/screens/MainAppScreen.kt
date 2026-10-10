@@ -48,6 +48,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import com.nielcode.kupass.App
 import com.nielcode.kupass.data.local.db.PasswordEntity
 import com.nielcode.kupass.data.siteicon.SiteIcons
@@ -58,6 +59,7 @@ import com.nielcode.kupass.ui.components.BottomNav
 import com.nielcode.kupass.ui.components.BottomNavHeight
 import com.nielcode.kupass.ui.components.MainTab
 import com.nielcode.kupass.ui.components.navSpring
+import com.nielcode.kupass.ui.screens.data.BackupOperation
 import com.nielcode.kupass.ui.screens.data.BackupProgressDialog
 import com.nielcode.kupass.ui.screens.data.BackupViewModel
 import com.nielcode.kupass.ui.screens.data.DataScreen
@@ -65,6 +67,7 @@ import com.nielcode.kupass.ui.screens.data.ExportPasswordDialog
 import com.nielcode.kupass.ui.screens.data.ImportPasswordDialog
 import com.nielcode.kupass.ui.screens.home.HomeScreen
 import com.nielcode.kupass.ui.screens.home.HomeViewModel
+import com.nielcode.kupass.ui.screens.home.PasswordGroupScreen
 import com.nielcode.kupass.ui.screens.lock.SensitiveActionGuidance
 import com.nielcode.kupass.ui.screens.settings.SettingsScreen
 import kotlinx.coroutines.flow.Flow
@@ -77,6 +80,8 @@ import kotlinx.serialization.Serializable
 @Serializable data class PasswordEditor(val passwordId: Long = -1L)
 
 @Serializable data class PasswordDetail(val passwordId: Long)
+
+@Serializable data class PasswordGroup(val groupId: Long)
 
 private const val BACKUP_MIME_TYPE = "application/octet-stream"
 private const val BACKUP_FILE_NAME = "kupass-backup.kupass"
@@ -126,6 +131,17 @@ fun MainAppScreen(
                 onNavigateToDetail = { id ->
                     authentication.request(Action.OpenAccount, entry.id, id)
                 },
+                onNavigateToGroup = { id -> navController.navigate(PasswordGroup(id)) },
+            )
+        }
+        composable<PasswordGroup> { entry ->
+            PasswordGroupScreen(
+                groupId = entry.toRoute<PasswordGroup>().groupId,
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToDetail = { id ->
+                    authentication.request(Action.OpenAccount, entry.id, id)
+                },
+                siteIcons = rememberSiteIcons(),
             )
         }
         accountRoutes(navController, authentication, onOpenSecuritySettings)
@@ -139,15 +155,17 @@ fun MainPagerScreen(
     authentication: EntryAuthenticationViewModel,
     onNavigateToEditor: () -> Unit,
     onNavigateToDetail: (Long) -> Unit,
+    onNavigateToGroup: (Long) -> Unit,
     modifier: Modifier = Modifier,
     homeViewModel: HomeViewModel = viewModel(factory = HomeViewModel.Factory),
     backupViewModel: BackupViewModel = viewModel(factory = BackupViewModel.factory(authentication)),
 ) {
     val authState by authentication.state.collectAsStateWithLifecycle()
-    val passwords by homeViewModel.passwords.collectAsStateWithLifecycle()
+    val passwords by homeViewModel.allPasswords.collectAsStateWithLifecycle()
     val searchQuery by homeViewModel.searchQuery.collectAsStateWithLifecycle()
     val importPrompt by backupViewModel.importPrompt.collectAsStateWithLifecycle()
     val backupBusy by backupViewModel.backupBusy.collectAsStateWithLifecycle()
+    val backupOperation by backupViewModel.operation.collectAsStateWithLifecycle()
     val siteIcons = rememberSiteIcons()
 
     val filePickers =
@@ -163,6 +181,7 @@ fun MainPagerScreen(
         showExportDialog = consent?.phase == ExportConsent.Phase.Password,
         importWrongPassword = importPrompt?.wrongPassword,
         busy = backupBusy,
+        operation = backupOperation,
         onExportConfirm = { password ->
             confirmExport(password, consent, authentication, backupViewModel, filePickers)
         },
@@ -183,6 +202,7 @@ fun MainPagerScreen(
         onSearchQueryChange = homeViewModel::onSearchQueryChange,
         onDeletePassword = homeViewModel::deletePassword,
         onNavigateToDetail = onNavigateToDetail,
+        onNavigateToGroup = onNavigateToGroup,
         onAddClick = onNavigateToEditor,
         onExportClick = {
             if (backupAvailable) authentication.request(Action.Export, entryId)
@@ -204,6 +224,7 @@ private fun MainPagerContent(
     onSearchQueryChange: (String) -> Unit,
     onDeletePassword: (PasswordEntity) -> Unit,
     onNavigateToDetail: (Long) -> Unit,
+    onNavigateToGroup: (Long) -> Unit,
     onAddClick: () -> Unit,
     onExportClick: () -> Unit,
     onImportClick: () -> Unit,
@@ -226,6 +247,7 @@ private fun MainPagerContent(
                     onNavigateToDetail = onNavigateToDetail,
                     contentPadding = contentPadding,
                     siteIcons = siteIcons,
+                    onNavigateToGroup = onNavigateToGroup,
                 )
             MainTab.Data ->
                 DataScreen(
@@ -334,19 +356,24 @@ private fun rememberBackupFilePickers(
  * @param page content for each tab.
  */
 @Composable
-private fun MainPager(
+internal fun MainPager(
     onAddClick: () -> Unit,
     onTabChange: () -> Unit,
     modifier: Modifier = Modifier,
     page: @Composable (tab: MainTab, contentPadding: PaddingValues) -> Unit,
 ) {
     val pagerState = rememberPagerState(pageCount = { MainTab.entries.size })
+    var bottomBarVisible by remember { mutableStateOf(true) }
     val currentOnTabChange by androidx.compose.runtime.rememberUpdatedState(onTabChange)
     LaunchedEffect(pagerState) {
-        snapshotFlow { pagerState.currentPage }.drop(1).collect { currentOnTabChange() }
+        snapshotFlow { pagerState.currentPage }
+            .drop(1)
+            .collect {
+                bottomBarVisible = true
+                currentOnTabChange()
+            }
     }
     val coroutineScope = rememberCoroutineScope()
-    var bottomBarVisible by remember { mutableStateOf(true) }
     val hideOnScroll = remember { HideOnScrollConnection { bottomBarVisible = it } }
 
     val navigationBar = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
@@ -359,7 +386,7 @@ private fun MainPager(
             }
         }
         AnimatedVisibility(
-            visible = bottomBarVisible,
+            visible = bottomBarVisible || pagerState.currentPage == MainTab.Data.ordinal,
             enter = slideInVertically(navSpring()) { it } + fadeIn(navSpring()),
             exit = slideOutVertically(navSpring()) { it } + fadeOut(navSpring()),
             modifier = Modifier.align(Alignment.BottomCenter),
@@ -390,6 +417,7 @@ private fun MainPager(
 private class HideOnScrollConnection(private val onVisibilityChange: (Boolean) -> Unit) :
     NestedScrollConnection {
     override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+        if (source != NestedScrollSource.UserInput) return Offset.Zero
         if (available.y < -SCROLL_THRESHOLD_PX) onVisibilityChange(false)
         if (available.y > SCROLL_THRESHOLD_PX) onVisibilityChange(true)
         return Offset.Zero
@@ -411,6 +439,7 @@ private fun BackupDialogs(
     showExportDialog: Boolean,
     importWrongPassword: Boolean?,
     busy: Boolean,
+    operation: BackupOperation?,
     onExportConfirm: (CharArray) -> Unit,
     onExportDismiss: () -> Unit,
     onImportPassword: (CharArray) -> Unit,
@@ -426,12 +455,12 @@ private fun BackupDialogs(
             onDismiss = onImportDismiss,
         )
     }
-    if (busy) BackupProgressDialog()
+    if (busy) BackupProgressDialog(operation = operation)
 }
 
 /** Shows each export/import result once, only while the screen is at least started. */
 @Composable
-private fun VaultEventToasts(events: Flow<VaultEvent>) {
+internal fun VaultEventToasts(events: Flow<VaultEvent>) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     LaunchedEffect(events, lifecycleOwner) {

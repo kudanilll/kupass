@@ -3,9 +3,15 @@ package com.nielcode.kupass.ui.screens.data
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -17,8 +23,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import com.nielcode.kupass.R
@@ -122,25 +132,49 @@ fun ImportPasswordDialog(
 
 /** Blocking progress while PBKDF2 and AES run. Can't be dismissed, to avoid double submits. */
 @Composable
-fun BackupProgressDialog() {
-    AlertDialog(
+@OptIn(ExperimentalMaterial3Api::class)
+fun BackupProgressDialog(modifier: Modifier = Modifier, operation: BackupOperation? = null) {
+    BasicAlertDialog(
         onDismissRequest = {},
+        modifier = modifier,
         properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false),
-        confirmButton = {},
-        text = {
+    ) {
+        Surface(
+            modifier = Modifier.widthIn(max = 320.dp).fillMaxWidth(),
+            shape = MaterialTheme.shapes.extraLarge,
+            color = MaterialTheme.colorScheme.surfaceContainerHigh,
+            tonalElevation = 6.dp,
+        ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                modifier =
+                    Modifier.fillMaxWidth().padding(24.dp).semantics {
+                        liveRegion = LiveRegionMode.Polite
+                    },
             ) {
-                CircularProgressIndicator()
+                CircularProgressIndicator(modifier = Modifier.size(40.dp), strokeWidth = 3.dp)
                 Text(
-                    text = stringResource(R.string.backup_working),
+                    text =
+                        stringResource(
+                            when (operation) {
+                                BackupOperation.Import -> R.string.backup_import_working
+                                BackupOperation.Export -> R.string.backup_export_working
+                                null -> R.string.backup_working
+                            }
+                        ),
+                    style = MaterialTheme.typography.titleMedium,
+                    textAlign = TextAlign.Center,
+                )
+                Text(
+                    text = stringResource(R.string.backup_working_message),
                     style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.fillMaxWidth(),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
                 )
             }
-        },
-    )
+        }
+    }
 }
 
 @Composable

@@ -27,6 +27,7 @@ fun HomeScreen(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(),
     siteIcons: SiteIcons? = null,
+    onNavigateToGroup: ((Long) -> Unit)? = null,
 ) {
     var isSearchActive by remember { mutableStateOf(false) }
     var passwordToDelete by remember { mutableStateOf<PasswordEntity?>(null) }
@@ -55,6 +56,7 @@ fun HomeScreen(
             modifier = Modifier.padding(top = innerPadding.calculateTopPadding()),
             contentPadding = contentPadding,
             siteIcons = siteIcons,
+            onGroupClick = onNavigateToGroup,
         )
     }
 }

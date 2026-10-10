@@ -63,12 +63,14 @@ class BackupViewModelTest {
 
             vm.importPasswords(INPUT)
             assertTrue(vm.backupBusy.value)
+            assertEquals(BackupOperation.Import, vm.operation.value)
             vm.importPasswords(INPUT)
             advanceUntilIdle()
 
             assertEquals(VaultEvent.ImportSucceeded(imported = 1, skipped = 2), vm.events.first())
             assertTrue(input.closed)
             assertFalse(vm.backupBusy.value)
+            assertNull(vm.operation.value)
             assertNull(vm.importPrompt.value)
             assertEquals(" padded ", repository.getAllPasswords().first().single().password)
         }
@@ -97,7 +99,7 @@ class BackupViewModelTest {
             val malformed = registerInput(CSV + "\nBad,https://example.org,u,\"unterminated,")
             vm.importPasswords(INPUT)
             advanceUntilIdle()
-            assertEquals(VaultEvent.ImportFailed, vm.events.first())
+            assertEquals(VaultEvent.CsvImportFailed, vm.events.first())
             assertTrue(malformed.closed)
             assertTrue(dao.stored.isEmpty())
 
@@ -110,6 +112,26 @@ class BackupViewModelTest {
             assertTrue(dao.stored.isEmpty())
             assertFalse(vm.backupBusy.value)
         }
+
+    @Test
+    fun `formatted Google CSV imports through the provider without a backup password`() = runTest {
+        val content =
+            "\uFEFFName;Url;Username;Password;Notes\r\n\r\n" +
+                "Example;https://example.com; user ;\"x; y\r\nz\"; notes \r\n\r\n"
+        val input = TrackingInput(content.toByteArray(Charsets.UTF_16LE))
+        shadowOf(resolver).registerInputStream(INPUT, input)
+        val vm = viewModel()
+        vm.importPasswords(INPUT)
+        advanceUntilIdle()
+        assertEquals(VaultEvent.ImportSucceeded(1, 0), vm.events.first())
+        assertTrue(input.closed)
+        assertNull(vm.importPrompt.value)
+        assertNull(vm.operation.value)
+        val account = repository.getAllPasswords().first().single()
+        assertEquals(" user ", account.username)
+        assertEquals("x; y\r\nz", account.password)
+        assertEquals(" notes ", account.notes)
+    }
 
     @Test
     fun `row limit includes invalid CSV records and refuses the entire import`() = runTest {
