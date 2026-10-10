@@ -7,6 +7,20 @@ import org.junit.Test
 class SiteDomainTest {
 
     @Test
+    fun `Android facets never leak a package or fall back to a guessed domain`() {
+        listOf(
+                "android://cert@com.example.app/",
+                "android://malformed",
+                " ANDROID://cert@com.example.app/",
+            )
+            .forEach { facet ->
+                assertNull(siteDomainOf(facet, "Google"))
+                assertNull(siteDomainOf(facet, "google.com"))
+            }
+        assertNull(siteDomainOf("", "android://cert@com.example.app/"))
+    }
+
+    @Test
     fun `keeps only the bare hostname of a url`() {
         assertEquals(
             "github.com",

@@ -147,7 +147,7 @@ private class EditorFormState {
     private var prefilled = false
 
     val isValid: Boolean
-        get() = siteName.isNotBlank() && password.isNotBlank()
+        get() = siteName.isNotBlank() && password.isNotEmpty()
 
     /** Copies [entry] into the form once, so later reloads never overwrite the user's edits. */
     fun prefillOnce(entry: PasswordEntity) {

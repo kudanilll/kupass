@@ -25,7 +25,7 @@ Kupass is a **simple, trustworthy, offline password manager** for Android. Users
 - Vault list with search (site name, username, URL, notes), empty state, and swipe-to-delete with a confirmation dialog.
 - Create/edit an entry: site name, username, password (show/hide), URL, and notes.
 - Detail view with copy-to-clipboard per field. The password copy is flagged sensitive on API 33+ and auto-cleared after 45 s on older APIs.
-- JSON export/import through the Storage Access Framework. The password field is encrypted with the device Keystore key.
+- Password-protected portable `.kupass` export after fresh native authentication; legacy v1/v2 JSON and Google Password Manager CSV import through the Storage Access Framework.
 - Settings: language (EN/ID), theme (system/light/dark), Material You dynamic color, OSS licenses, and developer/GitHub links.
 - Screenshot blocking (`FLAG_SECURE`), and `allowBackup="false"`.
 

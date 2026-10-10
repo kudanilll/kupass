@@ -47,6 +47,8 @@ com/nielcode/kupass/
 │   │   ├── PasswordDao.kt         Flow getAll/getById, getAllOnce, insert(REPLACE)/update/updateAll/delete (no SQL search: data is ciphertext)
 │   │   └── PasswordEntity.kt      table "passwords"
 │   ├── backup/BackupCodec.kt      portable backup v2 (PBKDF2 + AES-GCM) + strict legacy v1 import
+│   │   ├── GooglePasswordCsv.kt   strict Google/Chromium CSV import, optional note, exact credential fields
+│   │   └── BackupInput.kt         bounded strict UTF-8 input (32 MiB, optional BOM)
 │   ├── local/prefs/PreferenceManager.kt SharedPreferences "kupass_preferences"
 │   ├── siteicon/                  site icons: SiteDomain (domain extraction), FavgetIconSource (HTTP), SiteIconRepository (memory cache, dedupe, decode)
 │   └── repository/PasswordRepository.kt encrypt/decrypt all text fields, in-memory sort+search, legacy format upgrade
@@ -54,7 +56,7 @@ com/nielcode/kupass/
 ├── ui/
 │   ├── components/                BottomNav (+ navSpring, BottomNavHeight), MainTab, EmptyState, SectionHeader, SectionItem, VaultTextField (+ PasswordVisibilityToggle), DeletePasswordDialog, SingleChoiceDialog
 │   ├── screens/
-│   │   ├── MainAppScreen.kt       routes, MainPager (MainTab pages + hide-on-scroll BottomNav), backup dialogs + SAF launchers, event toasts
+│   │   ├── MainAppScreen.kt       routes, state-hoisting MainPagerScreen + stateless MainPagerContent, hide-on-scroll BottomNav, auth-bound backup dialogs + SAF launchers, event toasts
 │   │   ├── EntryNavigation.kt     protected detail/editor route registration and pre-ViewModel authorization gate
 │   │   ├── FlowDefaults.kt        `WhileUiSubscribed`, `recoverable {}` (I/O, SecurityException, crypto, SQL)
 │   │   ├── VaultEvent.kt          one-shot UI events (toasts) shared by Home and Backup
@@ -62,7 +64,7 @@ com/nielcode/kupass/
 │   │   ├── home/                  HomeScreen (stateless), HomeViewModel (list, search, delete), components/{VaultList, PasswordListItem}
 │   │   ├── data/DataScreen.kt     export/import buttons only
 │   │   ├── data/BackupPasswordDialog.kt  export/import password dialogs + progress
-│   │   ├── data/BackupViewModel.kt  export/import: backup password, encrypted-import prompt, busy state, events
+│   │   ├── data/BackupViewModel.kt  auth-bound export token/password, strict JSON/Google CSV import, encrypted-import prompt, synchronous busy state, events
 │   │   ├── lock/LockScreen.kt     locked state / "set up a screen lock" guidance
 │   │   ├── detail/                PasswordDetailScreen (+ copyToClipboard), PasswordDetailViewModel
 │   │   ├── editor/                PasswordEditorScreen (EditorFormState, top bar, form), PasswordEditorViewModel

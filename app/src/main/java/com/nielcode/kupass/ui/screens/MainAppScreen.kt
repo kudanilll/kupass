@@ -49,6 +49,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.nielcode.kupass.App
+import com.nielcode.kupass.data.local.db.PasswordEntity
 import com.nielcode.kupass.data.siteicon.SiteIcons
 import com.nielcode.kupass.security.EntryAuthenticationViewModel
 import com.nielcode.kupass.security.EntryAuthenticationViewModel.Action
@@ -77,8 +78,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable data class PasswordDetail(val passwordId: Long)
 
-private const val BACKUP_MIME_TYPE = "application/json"
-private const val BACKUP_FILE_NAME = "kupass-backup.json"
+private const val BACKUP_MIME_TYPE = "application/octet-stream"
+private const val BACKUP_FILE_NAME = "kupass-backup.kupass"
 
 /** Root navigation: the tabbed home pager plus full-screen detail and editor routes. */
 @Composable
@@ -172,9 +173,47 @@ fun MainPagerScreen(
     VaultEventToasts(events = homeViewModel.events)
     VaultEventToasts(events = backupViewModel.events)
 
-    MainPager(
+    val backupAvailable = !backupBusy && importPrompt == null
+    val exportPending =
+        authState.pending != null || authState.nativeRequest != null || authState.export != null
+    MainPagerContent(
+        passwords = passwords,
+        searchQuery = searchQuery,
+        siteIcons = siteIcons,
+        onSearchQueryChange = homeViewModel::onSearchQueryChange,
+        onDeletePassword = homeViewModel::deletePassword,
+        onNavigateToDetail = onNavigateToDetail,
         onAddClick = onNavigateToEditor,
+        onExportClick = {
+            if (backupAvailable) authentication.request(Action.Export, entryId)
+        },
+        onImportClick = {
+            if (backupAvailable && !exportPending) filePickers.pickImportFile()
+        },
         onTabChange = authentication::cancelPending,
+        onAllowBackground = authentication::allowNextBackground,
+        modifier = modifier,
+    )
+}
+
+@Composable
+private fun MainPagerContent(
+    passwords: List<PasswordEntity>,
+    searchQuery: String,
+    siteIcons: SiteIcons,
+    onSearchQueryChange: (String) -> Unit,
+    onDeletePassword: (PasswordEntity) -> Unit,
+    onNavigateToDetail: (Long) -> Unit,
+    onAddClick: () -> Unit,
+    onExportClick: () -> Unit,
+    onImportClick: () -> Unit,
+    onTabChange: () -> Unit,
+    onAllowBackground: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    MainPager(
+        onAddClick = onAddClick,
+        onTabChange = onTabChange,
         modifier = modifier,
     ) { tab, contentPadding ->
         when (tab) {
@@ -182,22 +221,22 @@ fun MainPagerScreen(
                 HomeScreen(
                     passwords = passwords,
                     searchQuery = searchQuery,
-                    onSearchQueryChange = homeViewModel::onSearchQueryChange,
-                    onDeletePassword = homeViewModel::deletePassword,
+                    onSearchQueryChange = onSearchQueryChange,
+                    onDeletePassword = onDeletePassword,
                     onNavigateToDetail = onNavigateToDetail,
                     contentPadding = contentPadding,
                     siteIcons = siteIcons,
                 )
             MainTab.Data ->
                 DataScreen(
-                    onExportClick = { authentication.request(Action.Export, entryId) },
-                    onImportClick = filePickers::pickImportFile,
+                    onExportClick = onExportClick,
+                    onImportClick = onImportClick,
                     contentPadding = contentPadding,
                 )
             MainTab.Settings ->
                 SettingsScreen(
                     contentPadding = contentPadding,
-                    onAllowBackground = authentication::allowNextBackground,
+                    onAllowBackground = onAllowBackground,
                 )
         }
     }
@@ -260,7 +299,8 @@ private class BackupFilePickers(
 
     fun pickImportFile() {
         onAllowBackground()
-        importLauncher.launch(arrayOf(BACKUP_MIME_TYPE))
+        // Providers may mislabel .kupass, JSON, or CSV. The content is validated after selection.
+        importLauncher.launch(arrayOf("*/*"))
     }
 }
 

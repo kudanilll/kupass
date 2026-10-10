@@ -89,10 +89,10 @@ class PasswordEditorViewModel(
                     val updated =
                         existing.copy(
                             siteName = siteName.trim(),
-                            username = username.trim(),
+                            username = username,
                             password = password,
                             url = url.trim(),
-                            notes = notes.trim(),
+                            notes = notes,
                             updatedAt = System.currentTimeMillis(),
                         )
                     repository.updatePassword(updated)

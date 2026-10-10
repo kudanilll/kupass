@@ -1,6 +1,7 @@
 package com.nielcode.kupass.ui.screens
 
 import android.net.Uri
+import com.nielcode.kupass.data.backup.GooglePasswordCsv
 import com.nielcode.kupass.data.local.db.PasswordEntity
 import com.nielcode.kupass.data.repository.PasswordRepository
 import com.nielcode.kupass.security.CryptoException
@@ -81,6 +82,41 @@ class ViewModelsTest {
         assertEquals("New", CryptoManager.decrypt(dao.stored.single().siteName))
         assertEquals("b", CryptoManager.decrypt(dao.stored.single().password))
     }
+
+    @Test
+    fun `editing another field preserves imported username password notes ID and creation time`() =
+        runTest {
+            val notes = " \nformatted note\n\t "
+            val csv =
+                "name,url,username,password,note\n" +
+                    "Imported,https://example.com, me , \t ,\"$notes\""
+            assertEquals(
+                1,
+                repository.importPasswords(GooglePasswordCsv.decode(csv).entries).imported,
+            )
+            val original = repository.getAllPasswords().first().single()
+            val vm = PasswordEditorViewModel(repository, requestedId = original.id)
+            vm.loadPassword(original.id)
+
+            vm.savePassword(
+                "Renamed",
+                original.username,
+                original.password,
+                original.url,
+                original.notes,
+            )
+
+            assertEquals(SaveState.Success, vm.saveState.value)
+            val saved = repository.getPasswordById(original.id).first()
+            assertEquals(
+                original.copy(siteName = "Renamed", updatedAt = saved?.updatedAt ?: 0),
+                saved,
+            )
+            assertEquals(" me ", saved?.username)
+            assertEquals(" \t ", saved?.password)
+            assertEquals(notes, saved?.notes)
+            assertEquals(1, dao.stored.size)
+        }
 
     @Test
     fun `home lists decrypted entries and filters by search`() = runTest {

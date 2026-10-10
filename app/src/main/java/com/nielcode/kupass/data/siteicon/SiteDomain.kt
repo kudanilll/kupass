@@ -18,10 +18,12 @@ private val PrivateSuffixes =
  * Uses the entry's URL, falling back to the site name when it looks like a domain. A single-word
  * public site name such as `GitHub` is conservatively treated as `github.com`. Only the bare
  * hostname is returned (lowercase, no `www.`, no path, port, or credentials). IP addresses and
- * private names are rejected so nothing internal leaves the device.
+ * private names are rejected so nothing internal leaves the device. Android-facet URLs disable
+ * lookup altogether, including site-name fallback.
  */
 fun siteDomainOf(url: String, siteName: String): String? =
-    hostOf(url) ?: hostOf(siteName) ?: guessedDotComDomain(siteName)
+    if (url.trim().startsWith("android://", ignoreCase = true)) null
+    else hostOf(url) ?: hostOf(siteName) ?: guessedDotComDomain(siteName)
 
 private fun guessedDotComDomain(siteName: String): String? {
     val name = siteName.trim().lowercase(Locale.ROOT)
@@ -30,6 +32,7 @@ private fun guessedDotComDomain(siteName: String): String? {
 
 private fun hostOf(value: String): String? {
     val trimmed = value.trim()
+    if (trimmed.startsWith("android://", ignoreCase = true)) return null
     val withScheme = if ("://" in trimmed) trimmed else "https://$trimmed"
     val host =
         try {
