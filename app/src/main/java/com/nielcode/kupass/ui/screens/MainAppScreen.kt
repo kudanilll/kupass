@@ -1,13 +1,12 @@
 package com.nielcode.kupass.ui.screens
 
+import android.content.ActivityNotFoundException
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -24,12 +23,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -42,15 +44,16 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavBackStackEntry
-import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.toRoute
 import com.nielcode.kupass.App
+import com.nielcode.kupass.data.local.db.PasswordEntity
 import com.nielcode.kupass.data.siteicon.SiteIcons
-import com.nielcode.kupass.security.AppLock
+import com.nielcode.kupass.security.EntryAuthenticationViewModel
+import com.nielcode.kupass.security.EntryAuthenticationViewModel.Action
+import com.nielcode.kupass.security.ExportConsent
 import com.nielcode.kupass.ui.components.BottomNav
 import com.nielcode.kupass.ui.components.BottomNavHeight
 import com.nielcode.kupass.ui.components.MainTab
@@ -60,12 +63,12 @@ import com.nielcode.kupass.ui.screens.data.BackupViewModel
 import com.nielcode.kupass.ui.screens.data.DataScreen
 import com.nielcode.kupass.ui.screens.data.ExportPasswordDialog
 import com.nielcode.kupass.ui.screens.data.ImportPasswordDialog
-import com.nielcode.kupass.ui.screens.detail.PasswordDetailScreen
-import com.nielcode.kupass.ui.screens.editor.PasswordEditorScreen
 import com.nielcode.kupass.ui.screens.home.HomeScreen
 import com.nielcode.kupass.ui.screens.home.HomeViewModel
+import com.nielcode.kupass.ui.screens.lock.SensitiveActionGuidance
 import com.nielcode.kupass.ui.screens.settings.SettingsScreen
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 
@@ -75,70 +78,72 @@ import kotlinx.serialization.Serializable
 
 @Serializable data class PasswordDetail(val passwordId: Long)
 
-private const val SCREEN_TRANSITION_MILLIS = 400
-private const val BACKUP_MIME_TYPE = "application/json"
-private const val BACKUP_FILE_NAME = "kupass-backup.json"
+private const val BACKUP_MIME_TYPE = "application/octet-stream"
+private const val BACKUP_FILE_NAME = "kupass-backup.kupass"
 
 /** Root navigation: the tabbed home pager plus full-screen detail and editor routes. */
 @Composable
-fun MainAppScreen(modifier: Modifier = Modifier) {
+// One activity-retained controller owns native requests across destinations and rotation.
+@Suppress("ViewModelForwarding")
+fun MainAppScreen(
+    authentication: EntryAuthenticationViewModel,
+    authState: EntryAuthenticationViewModel.State,
+    onOpenSecuritySettings: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val navController = rememberNavController()
-    NavHost(navController = navController, startDestination = HomeBase, modifier = modifier) {
-        composable<HomeBase> {
-            MainPagerScreen(
-                onNavigateToEditor = { navController.navigate(PasswordEditor()) },
-                onNavigateToDetail = { id -> navController.navigate(PasswordDetail(id)) },
-            )
+    DisposableEffect(navController, authentication) {
+        val listener = NavController.OnDestinationChangedListener { controller, _, _ ->
+            controller.currentBackStackEntry?.let { entry ->
+                authentication.setDestination(entry.id, entry.protectedAccountId())
+            }
         }
-        fullScreenRoute<PasswordDetail> { backStackEntry ->
-            PasswordDetailScreen(
-                passwordId = backStackEntry.toRoute<PasswordDetail>().passwordId,
-                onNavigateBack = { navController.popBackStack() },
-                onNavigateToEdit = { id ->
-                    navController.navigate(PasswordEditor(passwordId = id))
+        navController.addOnDestinationChangedListener(listener)
+        onDispose { navController.removeOnDestinationChangedListener(listener) }
+    }
+    SideEffect(authState.approvedOpen) {
+        authState.approvedOpen?.let { request ->
+            authentication.openApprovedAccount(request.token) { id ->
+                navController.navigate(PasswordDetail(id))
+                navController.currentBackStackEntry?.id
+            }
+        }
+    }
+    SensitiveActionGuidance(
+        visible =
+            authState.pending != null &&
+                authState.pending.action != Action.UnlockDestination &&
+                !authState.deviceSecure,
+        onOpenSecuritySettings = onOpenSecuritySettings,
+        onDismiss = authentication::cancelPending,
+    )
+    NavHost(navController = navController, startDestination = HomeBase, modifier = modifier) {
+        composable<HomeBase> { entry ->
+            MainPagerScreen(
+                entryId = entry.id,
+                authentication = authentication,
+                onNavigateToEditor = { navController.navigate(PasswordEditor()) },
+                onNavigateToDetail = { id ->
+                    authentication.request(Action.OpenAccount, entry.id, id)
                 },
             )
         }
-        fullScreenRoute<PasswordEditor> { backStackEntry ->
-            PasswordEditorScreen(
-                passwordId = backStackEntry.toRoute<PasswordEditor>().passwordId,
-                onNavigateBack = { navController.popBackStack() },
-            )
-        }
+        accountRoutes(navController, authentication, onOpenSecuritySettings)
     }
 }
-
-/**
- * A route that covers the pager: it slides up over it and slides back down when popped. Every
- * full-screen route shares these transitions, so they are declared once here.
- */
-private inline fun <reified T : Any> NavGraphBuilder.fullScreenRoute(
-    crossinline content: @Composable (NavBackStackEntry) -> Unit
-) =
-    composable<T>(
-        enterTransition = { slideUpEnter() },
-        popExitTransition = { slideDownExit() },
-    ) { backStackEntry ->
-        content(backStackEntry)
-    }
-
-private fun slideUpEnter(): EnterTransition =
-    slideInVertically(tween(SCREEN_TRANSITION_MILLIS, easing = FastOutSlowInEasing)) { it } +
-        fadeIn(tween(SCREEN_TRANSITION_MILLIS))
-
-private fun slideDownExit(): ExitTransition =
-    slideOutVertically(tween(SCREEN_TRANSITION_MILLIS, easing = FastOutSlowInEasing)) { it } +
-        fadeOut(tween(SCREEN_TRANSITION_MILLIS))
 
 /** Home, Data, and Settings pages with the floating bottom navigation and backup flows. */
 @Composable
 fun MainPagerScreen(
+    entryId: String,
+    authentication: EntryAuthenticationViewModel,
     onNavigateToEditor: () -> Unit,
     onNavigateToDetail: (Long) -> Unit,
     modifier: Modifier = Modifier,
     homeViewModel: HomeViewModel = viewModel(factory = HomeViewModel.Factory),
-    backupViewModel: BackupViewModel = viewModel(factory = BackupViewModel.Factory),
+    backupViewModel: BackupViewModel = viewModel(factory = BackupViewModel.factory(authentication)),
 ) {
+    val authState by authentication.state.collectAsStateWithLifecycle()
     val passwords by homeViewModel.passwords.collectAsStateWithLifecycle()
     val searchQuery by homeViewModel.searchQuery.collectAsStateWithLifecycle()
     val importPrompt by backupViewModel.importPrompt.collectAsStateWithLifecycle()
@@ -147,32 +152,68 @@ fun MainPagerScreen(
 
     val filePickers =
         rememberBackupFilePickers(
+            onAllowBackground = authentication::allowNextBackground,
             onExportFilePick = { uri ->
-                if (uri != null) backupViewModel.exportPasswords(uri)
-                else backupViewModel.cancelExport()
+                finishExportPicker(uri, authentication, backupViewModel)
             },
             onImportFilePick = backupViewModel::importPasswords,
         )
-    var showExportDialog by remember { mutableStateOf(false) }
-
+    val consent = authState.export?.takeIf { it.entryId == entryId }
     BackupDialogs(
-        showExportDialog = showExportDialog,
+        showExportDialog = consent?.phase == ExportConsent.Phase.Password,
         importWrongPassword = importPrompt?.wrongPassword,
         busy = backupBusy,
         onExportConfirm = { password ->
-            showExportDialog = false
-            backupViewModel.prepareExport(password)
-            filePickers.pickExportFile()
+            confirmExport(password, consent, authentication, backupViewModel, filePickers)
         },
-        onExportDismiss = { showExportDialog = false },
+        onExportDismiss = authentication::cancelPending,
         onImportPassword = backupViewModel::submitImportPassword,
         onImportDismiss = backupViewModel::cancelImport,
     )
     VaultEventToasts(events = homeViewModel.events)
     VaultEventToasts(events = backupViewModel.events)
 
-    MainPager(
+    val backupAvailable = !backupBusy && importPrompt == null
+    val exportPending =
+        authState.pending != null || authState.nativeRequest != null || authState.export != null
+    MainPagerContent(
+        passwords = passwords,
+        searchQuery = searchQuery,
+        siteIcons = siteIcons,
+        onSearchQueryChange = homeViewModel::onSearchQueryChange,
+        onDeletePassword = homeViewModel::deletePassword,
+        onNavigateToDetail = onNavigateToDetail,
         onAddClick = onNavigateToEditor,
+        onExportClick = {
+            if (backupAvailable) authentication.request(Action.Export, entryId)
+        },
+        onImportClick = {
+            if (backupAvailable && !exportPending) filePickers.pickImportFile()
+        },
+        onTabChange = authentication::cancelPending,
+        onAllowBackground = authentication::allowNextBackground,
+        modifier = modifier,
+    )
+}
+
+@Composable
+private fun MainPagerContent(
+    passwords: List<PasswordEntity>,
+    searchQuery: String,
+    siteIcons: SiteIcons,
+    onSearchQueryChange: (String) -> Unit,
+    onDeletePassword: (PasswordEntity) -> Unit,
+    onNavigateToDetail: (Long) -> Unit,
+    onAddClick: () -> Unit,
+    onExportClick: () -> Unit,
+    onImportClick: () -> Unit,
+    onTabChange: () -> Unit,
+    onAllowBackground: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    MainPager(
+        onAddClick = onAddClick,
+        onTabChange = onTabChange,
         modifier = modifier,
     ) { tab, contentPadding ->
         when (tab) {
@@ -180,20 +221,56 @@ fun MainPagerScreen(
                 HomeScreen(
                     passwords = passwords,
                     searchQuery = searchQuery,
-                    onSearchQueryChange = homeViewModel::onSearchQueryChange,
-                    onDeletePassword = homeViewModel::deletePassword,
+                    onSearchQueryChange = onSearchQueryChange,
+                    onDeletePassword = onDeletePassword,
                     onNavigateToDetail = onNavigateToDetail,
                     contentPadding = contentPadding,
                     siteIcons = siteIcons,
                 )
             MainTab.Data ->
                 DataScreen(
-                    onExportClick = { showExportDialog = true },
-                    onImportClick = filePickers::pickImportFile,
+                    onExportClick = onExportClick,
+                    onImportClick = onImportClick,
                     contentPadding = contentPadding,
                 )
-            MainTab.Settings -> SettingsScreen(contentPadding = contentPadding)
+            MainTab.Settings ->
+                SettingsScreen(
+                    contentPadding = contentPadding,
+                    onAllowBackground = onAllowBackground,
+                )
         }
+    }
+}
+
+private fun finishExportPicker(
+    uri: Uri?,
+    authentication: EntryAuthenticationViewModel,
+    backupViewModel: BackupViewModel,
+) {
+    if (authentication.completeExportPicker(uri != null) && uri != null) {
+        backupViewModel.exportPasswords(uri)
+    } else {
+        backupViewModel.cancelExport()
+    }
+}
+
+private fun confirmExport(
+    password: CharArray,
+    consent: ExportConsent?,
+    authentication: EntryAuthenticationViewModel,
+    backupViewModel: BackupViewModel,
+    filePickers: BackupFilePickers,
+) {
+    if (consent != null && authentication.startExportPicker(consent.token)) {
+        backupViewModel.prepareExport(password)
+        if (!filePickers.pickExportFile()) {
+            authentication.completeExportPicker(false)
+            backupViewModel.cancelExport()
+        }
+    } else {
+        password.fill('\u0000')
+        authentication.cancelPending()
+        backupViewModel.cancelExport()
     }
 }
 
@@ -204,20 +281,26 @@ private fun rememberSiteIcons(): SiteIcons {
     return remember(appContext) { (appContext as App).container.siteIcons }
 }
 
-/** Storage Access Framework pickers for backups. Leaving for the picker never locks the vault. */
+/** Storage Access Framework pickers; trips have the existing bounded background grace. */
 private class BackupFilePickers(
-    private val appLock: AppLock,
+    private val onAllowBackground: () -> Unit,
     private val exportLauncher: ManagedActivityResultLauncher<String, Uri?>,
     private val importLauncher: ManagedActivityResultLauncher<Array<String>, Uri?>,
 ) {
-    fun pickExportFile() {
-        appLock.allowNextBackground()
-        exportLauncher.launch(BACKUP_FILE_NAME)
+    fun pickExportFile(): Boolean {
+        onAllowBackground()
+        return try {
+            exportLauncher.launch(BACKUP_FILE_NAME)
+            true
+        } catch (_: ActivityNotFoundException) {
+            false
+        }
     }
 
     fun pickImportFile() {
-        appLock.allowNextBackground()
-        importLauncher.launch(arrayOf(BACKUP_MIME_TYPE))
+        onAllowBackground()
+        // Providers may mislabel .kupass, JSON, or CSV. The content is validated after selection.
+        importLauncher.launch(arrayOf("*/*"))
     }
 }
 
@@ -227,10 +310,10 @@ private class BackupFilePickers(
  */
 @Composable
 private fun rememberBackupFilePickers(
+    onAllowBackground: () -> Unit,
     onExportFilePick: (Uri?) -> Unit,
     onImportFilePick: (Uri) -> Unit,
 ): BackupFilePickers {
-    val appContext = LocalContext.current.applicationContext
     val exportLauncher =
         rememberLauncherForActivityResult(
             ActivityResultContracts.CreateDocument(BACKUP_MIME_TYPE),
@@ -240,8 +323,8 @@ private fun rememberBackupFilePickers(
         rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
             uri?.let(onImportFilePick)
         }
-    return remember(appContext, exportLauncher, importLauncher) {
-        BackupFilePickers((appContext as App).container.appLock, exportLauncher, importLauncher)
+    return remember(onAllowBackground, exportLauncher, importLauncher) {
+        BackupFilePickers(onAllowBackground, exportLauncher, importLauncher)
     }
 }
 
@@ -253,10 +336,15 @@ private fun rememberBackupFilePickers(
 @Composable
 private fun MainPager(
     onAddClick: () -> Unit,
+    onTabChange: () -> Unit,
     modifier: Modifier = Modifier,
     page: @Composable (tab: MainTab, contentPadding: PaddingValues) -> Unit,
 ) {
     val pagerState = rememberPagerState(pageCount = { MainTab.entries.size })
+    val currentOnTabChange by androidx.compose.runtime.rememberUpdatedState(onTabChange)
+    LaunchedEffect(pagerState) {
+        snapshotFlow { pagerState.currentPage }.drop(1).collect { currentOnTabChange() }
+    }
     val coroutineScope = rememberCoroutineScope()
     var bottomBarVisible by remember { mutableStateOf(true) }
     val hideOnScroll = remember { HideOnScrollConnection { bottomBarVisible = it } }

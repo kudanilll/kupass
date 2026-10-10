@@ -26,7 +26,7 @@
 ## 2) Entry Points
 
 - Process entry: `App.kt` (`android:name=".App"`). It blocks screenshots on every Activity (`FLAG_SECURE`) and applies the saved locale, night mode, and dynamic colors.
-- UI entry: `MainActivity.kt`, the only Activity, exported with the LAUNCHER intent filter. It runs `installSplashScreen()`, `enableEdgeToEdge()`, creates the `BiometricPrompt`, then shows `LockScreen` or `MainAppScreen` depending on `AppLock.locked`.
+- UI entry: `MainActivity.kt`, the only exported launcher Activity. It installs splash/edge-to-edge, reattaches `BiometricPrompt` to the activity-retained authentication request, and always hosts public `MainAppScreen`. Sensitive destinations show `LockScreen` until their entry/account-bound grant permits screen/ViewModel creation. There is no global launch gate.
 - Navigation root: `ui/screens/MainAppScreen.kt` (`NavHost`, start destination `HomeBase`).
 - Secondary entry points: none (no services, receivers, providers, or workers in `AndroidManifest.xml`).
 
@@ -38,7 +38,8 @@ com/nielcode/kupass/
 ├── MainActivity.kt                AppCompatActivity host for Compose
 ├── di/AppContainer.kt             manual DI: repository, prefs, ContentResolver; `CreationExtras.appContainer()`
 ├── security/CryptoManager.kt     Keystore AES-GCM (`kp2:` format), CryptoException, alias "kupass_vault_key"
-├── security/AppLock.kt           UI-level vault lock state machine (auto-lock timeout, background exemptions)
+├── security/AppLock.kt           sensitive-access background timer (timeout, bounded exemptions)
+├── security/EntryAuthenticationViewModel.kt activity-retained native requests, entry-bound grants, single-use export consent
 ├── security/SecureClipboard.kt   sensitive clipboard copy + 45 s auto-clear on every API level
 ├── data/
 │   ├── local/db/
@@ -46,6 +47,8 @@ com/nielcode/kupass/
 │   │   ├── PasswordDao.kt         Flow getAll/getById, getAllOnce, insert(REPLACE)/update/updateAll/delete (no SQL search: data is ciphertext)
 │   │   └── PasswordEntity.kt      table "passwords"
 │   ├── backup/BackupCodec.kt      portable backup v2 (PBKDF2 + AES-GCM) + strict legacy v1 import
+│   │   ├── GooglePasswordCsv.kt   strict Google/Chromium CSV import, optional note, exact credential fields
+│   │   └── BackupInput.kt         bounded strict UTF-8 input (32 MiB, optional BOM)
 │   ├── local/prefs/PreferenceManager.kt SharedPreferences "kupass_preferences"
 │   ├── siteicon/                  site icons: SiteDomain (domain extraction), FavgetIconSource (HTTP), SiteIconRepository (memory cache, dedupe, decode)
 │   └── repository/PasswordRepository.kt encrypt/decrypt all text fields, in-memory sort+search, legacy format upgrade
@@ -53,14 +56,15 @@ com/nielcode/kupass/
 ├── ui/
 │   ├── components/                BottomNav (+ navSpring, BottomNavHeight), MainTab, EmptyState, SectionHeader, SectionItem, VaultTextField (+ PasswordVisibilityToggle), DeletePasswordDialog, SingleChoiceDialog
 │   ├── screens/
-│   │   ├── MainAppScreen.kt       routes, MainPager (MainTab pages + hide-on-scroll BottomNav), backup dialogs + SAF launchers, event toasts
+│   │   ├── MainAppScreen.kt       routes, state-hoisting MainPagerScreen + stateless MainPagerContent, hide-on-scroll BottomNav, auth-bound backup dialogs + SAF launchers, event toasts
+│   │   ├── EntryNavigation.kt     protected detail/editor route registration and pre-ViewModel authorization gate
 │   │   ├── FlowDefaults.kt        `WhileUiSubscribed`, `recoverable {}` (I/O, SecurityException, crypto, SQL)
 │   │   ├── VaultEvent.kt          one-shot UI events (toasts) shared by Home and Backup
 │   │   ├── PageInsets.kt          `pagerPageInsets()`: pager pages take top/side insets, bottom comes from the floating nav
 │   │   ├── home/                  HomeScreen (stateless), HomeViewModel (list, search, delete), components/{VaultList, PasswordListItem}
 │   │   ├── data/DataScreen.kt     export/import buttons only
 │   │   ├── data/BackupPasswordDialog.kt  export/import password dialogs + progress
-│   │   ├── data/BackupViewModel.kt  export/import: backup password, encrypted-import prompt, busy state, events
+│   │   ├── data/BackupViewModel.kt  auth-bound export token/password, strict JSON/Google CSV import, encrypted-import prompt, synchronous busy state, events
 │   │   ├── lock/LockScreen.kt     locked state / "set up a screen lock" guidance
 │   │   ├── detail/                PasswordDetailScreen (+ copyToClipboard), PasswordDetailViewModel
 │   │   ├── editor/                PasswordEditorScreen (EditorFormState, top bar, form), PasswordEditorViewModel

@@ -1,12 +1,16 @@
 package com.nielcode.kupass.data.repository
 
+import com.nielcode.kupass.data.backup.GooglePasswordCsv
 import com.nielcode.kupass.data.local.db.PasswordEntity
 import com.nielcode.kupass.security.CryptoException
 import com.nielcode.kupass.security.CryptoManager
 import com.nielcode.kupass.testing.FakePasswordDao
 import javax.crypto.KeyGenerator
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -148,6 +152,57 @@ class PasswordRepositoryTest {
             assertEquals(3, dao.stored.size)
             assertTrue(dao.stored.all { it.siteName.startsWith(CryptoManager.PREFIX_V2) })
         }
+
+    @Test
+    fun `CSV import keeps distinct identities exact whitespace and every field encrypted`() =
+        runTest {
+            val csv =
+                "name,url,username,password,note\n" +
+                    "App,android://hash@com.example.app/,alice, \t ,recovery\n" +
+                    "App,android://hash@com.example.app/,bob, \t ,other\n" +
+                    "App,android://hash@com.example.app/,alice, padded ,note\n" +
+                    "App,https://example.com,alice, \t ,website\n"
+            val decoded = GooglePasswordCsv.decode(csv)
+            val result = repository.importPasswords(decoded.entries + decoded.entries.first())
+
+            assertEquals(ImportResult(imported = 4, skipped = 1), result)
+            assertTrue(
+                dao.stored.all { row ->
+                    listOf(row.siteName, row.username, row.url, row.password, row.notes).all {
+                        it.startsWith(CryptoManager.PREFIX_V2)
+                    }
+                }
+            )
+            assertEquals(
+                decoded.entries.toSet(),
+                repository.getAllPasswords().first().map { it.copy(id = 0) }.toSet(),
+            )
+            assertEquals(
+                ImportResult(imported = 0, skipped = 4),
+                repository.importPasswords(decoded.entries),
+            )
+        }
+
+    @Test
+    fun `cancellation during batch encryption prevents any insert`() = runTest {
+        val key = KeyGenerator.getInstance("AES").apply { init(256) }.generateKey()
+        lateinit var importJob: Job
+        var lookups = 0
+        CryptoManager.setKeyProviderForTesting {
+            if (++lookups == 4) importJob.cancel()
+            key
+        }
+        importJob =
+            launch(start = CoroutineStart.LAZY) {
+                repository.importPasswords(listOf(entry("One"), entry("Two")))
+            }
+        importJob.start()
+        importJob.join()
+
+        assertEquals(4, lookups)
+        assertTrue(importJob.isCancelled)
+        assertTrue(dao.stored.isEmpty())
+    }
 
     @Test
     fun `import inserts nothing when encryption fails part way`() = runTest {

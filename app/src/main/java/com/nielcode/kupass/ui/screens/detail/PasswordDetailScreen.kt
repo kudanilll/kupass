@@ -33,6 +33,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -71,6 +72,7 @@ fun PasswordDetailScreen(
     viewModel: PasswordDetailViewModel = viewModel(factory = PasswordDetailViewModel.Factory),
 ) {
     val context = LocalContext.current
+    DisposableEffect(viewModel) { onDispose { viewModel.clearSensitiveState() } }
     val password by viewModel.password.collectAsStateWithLifecycle()
     val deleteState by viewModel.deleteState.collectAsStateWithLifecycle()
     val currentOnNavigateBack by rememberUpdatedState(onNavigateBack)

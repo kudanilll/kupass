@@ -16,8 +16,8 @@
 
     <!-- Data Screen -->
     <string name="data_export_import_title">Ekspor &amp; Impor</string>
-    <string name="data_export_subtitle">Cadangan terenkripsi dengan kata sandi</string>
-    <string name="data_import_subtitle">Pulihkan dari cadangan Kupass</string>
+    <string name="data_export_subtitle">Cadangan .kupass yang dilindungi kata sandi</string>
+    <string name="data_import_subtitle">Cadangan Kupass atau CSV Google Password Manager</string>
     <string name="data_export_title">Ekspor Data</string>
     <string name="data_import_title">Impor Data</string>
 
@@ -74,7 +74,7 @@
     <string name="backup_working">Mohon tunggu…</string>
     <string name="toast_backup_foreign_device">Cadangan lama ini dibuat di perangkat lain dan tidak dapat dipulihkan di sini. Ekspor cadangan baru dari perangkat asalnya.</string>
     <string name="toast_backup_unsupported">File cadangan tidak didukung</string>
-    <string name="toast_import_too_large">File cadangan terlalu besar</string>
+    <string name="toast_import_too_large">File melebihi 32 MiB atau 10.000 entri</string>
     <string name="toast_vault_read_failed">Beberapa entri vault tidak dapat didekripsi</string>
     <string name="toast_no_data">Tidak ada kata sandi untuk disimpan</string>
     <string name="toast_success">Kata sandi berhasil dibuat</string>
@@ -126,15 +126,17 @@
     <!-- Misc -->
     <string name="toast_url_failed">Tidak ada aplikasi yang dapat membuka tautan ini</string>
     <string name="settings_category_security">Keamanan</string>
-    <string name="settings_auto_lock_title">Kunci otomatis</string>
+    <string name="settings_auto_lock_title">Kunci akun setelah di latar belakang</string>
     <string name="auto_lock_immediately">Segera</string>
-    <string name="lock_title">Kupass terkunci</string>
-    <string name="lock_message">Buka dengan sidik jari, wajah, atau kunci layar untuk membuka vault kamu.</string>
+    <string name="lock_title">Akun terkunci</string>
+    <string name="lock_message">Konfirmasi identitas untuk melihat atau mengubah akun ini. Jelajahi dan tambah akun tetap tersedia.</string>
     <string name="lock_button_unlock">Buka kunci</string>
-    <string name="lock_prompt_title">Buka Kupass</string>
-    <string name="lock_prompt_subtitle">Konfirmasi bahwa ini kamu untuk membuka vault</string>
+    <string name="lock_prompt_title">Konfirmasi identitas kamu</string>
+    <string name="lock_prompt_subtitle">Autentikasi untuk membuka akun ini</string>
+    <string name="lock_export_prompt_subtitle">Autentikasi untuk mengekspor cadangan terenkripsi</string>
+    <string name="editor_load_failed">Akun ini gagal dimuat. Kembali dan coba lagi. Akun baru tidak akan dibuat.</string>
     <string name="lock_no_credential_title">Atur kunci layar</string>
-    <string name="lock_no_credential_message">Kupass membutuhkan PIN, pola, atau kata sandi di perangkat ini untuk melindungi vault kamu.</string>
+    <string name="lock_no_credential_message">Atur PIN, pola, atau kata sandi perangkat untuk membuka akun lama atau mengekspor cadangan. Kamu tetap bisa menjelajah, mengimpor, dan menambah akun.</string>
     <string name="lock_open_settings">Buka pengaturan keamanan</string>
     <plurals name="auto_lock_seconds">
         <item quantity="other">%1$d detik</item>

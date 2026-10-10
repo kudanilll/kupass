@@ -30,7 +30,7 @@
 | **AppCompat** (`AppCompatActivity`, `AppCompatDelegate`)                                        | 1.8.0 (declared)             | Per-app locale, night mode                          | `MainActivity.kt`, `App.kt`           |
 | **Material Components** (`com.google.android.material.color.DynamicColors`)                     | 1.14.0 (declared)            | Dynamic color check/apply                           | `App.kt`, `SettingsScreen.kt`         |
 | Android Keystore / `javax.crypto` (platform)                                                    | platform                     | AES-GCM encryption of every vault field (`kp2:` format)        | `security/CryptoManager.kt`              |
-| `androidx.biometric` | 1.1.0 | `BiometricPrompt` for the UI-level app lock | `MainActivity.kt` |
+| `androidx.biometric` | 1.1.0 | Fresh native account/export authentication, compatible credential fallback, rotation reattachment | `MainActivity.kt`, `EntryAuthenticationViewModel.kt` |
 | `lifecycle-runtime-compose` | 2.11.0 | `collectAsStateWithLifecycle` | `ui/screens/**` |
 
 Bundled assets that affect APK size: `res/font/googlesansflex.ttf` (236 KB, instanced from the ~3.9 MB variable font to opsz 18 / wght 400–700 with fonttools `varLib.instancer`) and `res/font/heming.ttf` (~30 KB), referenced in `ui/theme/Type.kt`.

@@ -40,7 +40,7 @@ sealed class BackupException(message: String, cause: Throwable? = null) :
 
     class Malformed(cause: Throwable? = null) : BackupException("Malformed backup file", cause)
 
-    class TooLarge : BackupException("Backup has too many entries")
+    class TooLarge : BackupException("Backup exceeds size or entry limit")
 }
 
 /**
@@ -97,6 +97,7 @@ object BackupCodec {
     ): String {
         require(password.size >= MIN_PASSWORD_LENGTH) { "Backup password too short" }
         require(iterations in MIN_ITERATIONS..MAX_ITERATIONS) { "Invalid iteration count" }
+        if (entries.size > MAX_ENTRIES) throw BackupException.TooLarge()
 
         val salt = ByteArray(SALT_SIZE).also(random::nextBytes)
         val iv = ByteArray(IV_SIZE).also(random::nextBytes)
@@ -110,6 +111,7 @@ object BackupCodec {
                 .encodeToString(Payload(entries.map { it.toBackupEntry() }))
                 .toByteArray(Charsets.UTF_8)
         try {
+            BackupInput.requireSize(payload.size)
             val cipher = Cipher.getInstance(CIPHER_ALGORITHM)
             cipher.init(
                 Cipher.ENCRYPT_MODE,
@@ -118,7 +120,9 @@ object BackupCodec {
             )
             cipher.updateAAD(header.aad())
             val data = cipher.doFinal(payload)
-            return json.encodeToString(Envelope(header, b64(data)))
+            val encoded = json.encodeToString(Envelope(header, b64(data)))
+            BackupInput.requireSize(encoded.toByteArray(Charsets.UTF_8).size)
+            return encoded
         } catch (e: GeneralSecurityException) {
             throw CryptoException("Backup encryption failed", e)
         } finally {
@@ -149,7 +153,7 @@ object BackupCodec {
 
         val plain = decryptPayload(unb64(envelope.data), password, header, salt, iv)
         try {
-            val payload = parse { json.decodeFromString<Payload>(plain.toString(Charsets.UTF_8)) }
+            val payload = parse { json.decodeFromString<Payload>(BackupInput.utf8(plain)) }
             if (payload.entries.size > MAX_ENTRIES) throw BackupException.TooLarge()
             return payload.entries.map { it.toEntity(it.password) }
         } finally {
