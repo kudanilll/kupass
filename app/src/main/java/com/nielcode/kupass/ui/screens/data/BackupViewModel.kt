@@ -9,13 +9,17 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.nielcode.kupass.data.backup.BackupCodec
 import com.nielcode.kupass.data.backup.BackupException
+import com.nielcode.kupass.data.backup.BackupInput
+import com.nielcode.kupass.data.backup.GooglePasswordCsv
 import com.nielcode.kupass.data.repository.PasswordRepository
 import com.nielcode.kupass.di.appContainer
 import com.nielcode.kupass.ui.screens.VaultEvent
 import com.nielcode.kupass.ui.screens.recoverable
 import java.io.IOException
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -44,6 +48,7 @@ class BackupViewModel(
 
     /** Backup password held only between the password dialog and the file picker result. */
     private var pendingExportPassword: CharArray? = null
+    private var importJob: Job? = null
 
     private val _importPrompt = MutableStateFlow<ImportPrompt?>(null)
 
@@ -52,11 +57,19 @@ class BackupViewModel(
 
     private val _backupBusy = MutableStateFlow(false)
 
-    /** True while a backup is being encrypted or decrypted (PBKDF2 takes a moment). */
+    /** True during reads, parsing, crypto, and writes; blocks duplicate operations. */
     val backupBusy: StateFlow<Boolean> = _backupBusy.asStateFlow()
 
     /** Step 1 of export: remember the chosen password until the user picks a file. */
     fun prepareExport(password: CharArray) {
+        if (
+            _backupBusy.value ||
+                _importPrompt.value != null ||
+                password.size < BackupCodec.MIN_PASSWORD_LENGTH
+        ) {
+            password.fill('\u0000')
+            return
+        }
         pendingExportPassword?.fill('\u0000')
         pendingExportPassword = password
     }
@@ -69,12 +82,15 @@ class BackupViewModel(
 
     /** Step 2 of export: write an encrypted v2 backup to [uri]. */
     fun exportPasswords(uri: Uri) {
+        if (_backupBusy.value || _importPrompt.value != null) return
         val password = pendingExportPassword ?: return
         pendingExportPassword = null
-        viewModelScope.launch {
-            _backupBusy.value = true
+        _backupBusy.value = true
+        viewModelScope.launch(start = CoroutineStart.UNDISPATCHED) {
             try {
                 _events.send(recoverable { writeBackup(uri, password) } ?: VaultEvent.ExportFailed)
+            } catch (_: BackupException) {
+                _events.send(VaultEvent.ExportFailed)
             } finally {
                 password.fill('\u0000')
                 _backupBusy.value = false
@@ -94,41 +110,74 @@ class BackupViewModel(
         return VaultEvent.ExportSucceeded
     }
 
-    /** Reads the backup at [uri]. Encrypted backups open the password prompt first. */
+    /** Reads JSON backups or Google CSV by content, regardless of the provider's name or MIME. */
     fun importPasswords(uri: Uri) {
-        viewModelScope.launch {
-            val content =
-                try {
-                    recoverable { withContext(ioDispatcher) { readBounded(uri) } }
-                } catch (_: BackupException.TooLarge) {
-                    _events.send(VaultEvent.ImportTooLarge)
-                    return@launch
+        if (_backupBusy.value || _importPrompt.value != null || pendingExportPassword != null)
+            return
+        _backupBusy.value = true
+        importJob =
+            viewModelScope
+                .launch(start = CoroutineStart.UNDISPATCHED) {
+                    try {
+                        val content = recoverable { withContext(ioDispatcher) { readBounded(uri) } }
+                        when {
+                            content == null -> _events.send(VaultEvent.ImportFailed)
+                            withContext(cpuDispatcher) {
+                                BackupCodec.isPasswordProtected(content)
+                            } -> _importPrompt.value = ImportPrompt(content)
+                            else -> decodeAndInsert(content, password = null)
+                        }
+                    } catch (e: BackupException) {
+                        _events.send(e.toEvent())
+                    } finally {
+                        _backupBusy.value = false
+                        importJob = null
+                    }
                 }
-            when {
-                content == null -> _events.send(VaultEvent.ImportFailed)
-                BackupCodec.isPasswordProtected(content) ->
-                    _importPrompt.value = ImportPrompt(content)
-                else -> decodeAndInsert(content, password = null)
-            }
-        }
+                .takeIf { it.isActive }
     }
 
     /** Password entered for the pending encrypted backup. */
     fun submitImportPassword(password: CharArray) {
-        val prompt = _importPrompt.value ?: return
-        viewModelScope.launch { decodeAndInsert(prompt.content, password) }
+        val prompt = _importPrompt.value
+        if (prompt == null || _backupBusy.value) {
+            password.fill('\u0000')
+            return
+        }
+        _backupBusy.value = true
+        importJob =
+            viewModelScope
+                .launch(start = CoroutineStart.UNDISPATCHED) {
+                    try {
+                        decodeAndInsert(prompt.content, password)
+                    } finally {
+                        password.fill('\u0000')
+                        _backupBusy.value = false
+                        importJob = null
+                    }
+                }
+                .takeIf { it.isActive }
     }
 
     fun cancelImport() {
         _importPrompt.value = null
+        importJob?.cancel()
     }
 
     private suspend fun decodeAndInsert(content: String, password: CharArray?) {
-        _backupBusy.value = true
         try {
             val result = recoverable {
-                val imported = withContext(cpuDispatcher) { BackupCodec.decode(content, password) }
-                repository.importPasswords(imported)
+                val decoded =
+                    withContext(cpuDispatcher) {
+                        if (content.firstOrNull { !it.isWhitespace() } in listOf('[', '{')) {
+                            GooglePasswordCsv.Result(
+                                BackupCodec.decode(content, password),
+                                skipped = 0,
+                            )
+                        } else GooglePasswordCsv.decode(content)
+                    }
+                val inserted = repository.importPasswords(decoded.entries)
+                inserted.copy(skipped = inserted.skipped + decoded.skipped)
             }
             _importPrompt.value = null
             _events.send(
@@ -142,9 +191,6 @@ class BackupViewModel(
         } catch (e: BackupException) {
             _importPrompt.value = null
             _events.send(e.toEvent())
-        } finally {
-            password?.fill('\u0000')
-            _backupBusy.value = false
         }
     }
 
@@ -156,33 +202,21 @@ class BackupViewModel(
             else -> VaultEvent.ImportFailed
         }
 
-    /** Reads the file as UTF-8, refusing anything larger than [MAX_BACKUP_BYTES]. */
+    /** The stream closes on success, invalid UTF-8, a size limit, or a read failure. */
     private fun readBounded(uri: Uri): String {
         val stream = contentResolver.openInputStream(uri) ?: throw IOException("No input stream")
-        stream.use { input ->
-            // Manual loop: InputStream.readNBytes is API 33+, minSdk is 27.
-            val out = java.io.ByteArrayOutputStream()
-            val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
-            while (true) {
-                val read = input.read(buffer)
-                if (read < 0) break
-                out.write(buffer, 0, read)
-                if (out.size() > MAX_BACKUP_BYTES) throw BackupException.TooLarge()
-            }
-            return out.toString(Charsets.UTF_8.name())
-        }
+        return stream.use(BackupInput::read)
     }
 
     override fun onCleared() {
         cancelExport()
+        cancelImport()
     }
 
     /** An encrypted backup waiting for its password. [content] is still ciphertext. */
     data class ImportPrompt(val content: String, val wrongPassword: Boolean = false)
 
     companion object {
-        private const val MAX_BACKUP_BYTES = 32 * 1024 * 1024
-
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
                 val container = appContainer()

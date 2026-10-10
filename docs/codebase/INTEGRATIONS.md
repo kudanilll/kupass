@@ -8,7 +8,7 @@
 | ------------------------------------------- | --------------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------- |
 | Android Keystore (`AndroidKeyStore`)        | Platform crypto                         | Holds the non-exportable AES-256 key `kupass_vault_key`                                  | App UID. No user authentication is required for the key | **High**: losing it makes the data undecryptable | `CryptoManager.kt`                                                                    |
 | `androidx.biometric` 1.1.0 (`BiometricPrompt`) | Platform auth | UI-level app lock | Biometric or device credential | High | `MainActivity.kt` |
-| Storage Access Framework                    | Platform file I/O                       | User-chosen export/import JSON file                                                      | User picks the file                                     | High (backups)                                   | `MainAppScreen.kt`, `HomeViewModel.kt`                                                |
+| Storage Access Framework                    | Platform file I/O                       | User-chosen encrypted `.kupass` export; content-validated v1/v2 JSON or Google CSV import | User picks the file                                     | High (backups)                                   | `MainAppScreen.kt`, `BackupViewModel.kt`                                                |
 | Clipboard (`ClipboardManager`) | Platform | Copy fields. Password flagged `EXTRA_IS_SENSITIVE` (API 33+) and cleared after 45 s on all APIs | none | Medium (secret exposure) | `security/SecureClipboard.kt` |
 | Browser via `ACTION_VIEW`                   | Implicit intent                         | Open developer/GitHub URLs                                                               | none                                                    | Low                                              | `Util.kt`, `SettingsScreen.kt`                                                        |
 | `OssLicensesMenuActivity`                   | Play services lib                       | Open-source license screen                                                               | none                                                    | Low                                              | `SettingsScreen.kt`                                                                   |
@@ -22,7 +22,7 @@ No analytics, crash reporting, or push service is present. The only network use 
 | ------------------------------------------------ | ----------------------------------------- | -------------------------------------- | --------------------------------------------------------------------------------- | ---------------------------------------- |
 | Room/SQLite `kupass_database`, table `passwords` | Vault                                     | `PasswordDao` via `PasswordRepository` | Only `password` is encrypted. No migrations (`version 1`, `exportSchema = false`) | `KupassDatabase.kt`, `PasswordEntity.kt` |
 | SharedPreferences `kupass_preferences`           | `language`, `theme`, `dynamic_color` ints | `PreferenceManager`                    | Low (no secrets)                                                                  | `PreferenceManager.kt`                   |
-| Backup file (user storage, `kupass-backup.json`) | Portable backup v2 | `data/backup/BackupCodec` | Strength depends on the user's backup password (min 8 chars, PBKDF2 600k) | `BackupCodec.kt` |
+| Backup file (user storage, `kupass-backup.kupass`) | Portable backup v2, unchanged encrypted JSON envelope | `data/backup/BackupCodec` | Strength depends on the user's backup password (min 8 chars, PBKDF2 600k); old `.json` backups remain readable | `BackupCodec.kt` |
 
 ## 3) Secrets and Credentials Handling
 
@@ -35,7 +35,8 @@ No analytics, crash reporting, or push service is present. The only network use 
 - Retry/timeout: Favget requests time out after 8 s, at most 4 run at once, and concurrent requests for one domain share a fetch. Misses are remembered for 6 h and failures (network, 401/403/429, 5xx) for 5 min, in memory.
 - Crypto failure policy (EN-06): fail-closed. `CryptoManager.encrypt`/`decrypt` throw `CryptoException`. ViewModels catch it: the list shows the `toast_vault_read_failed` toast and never ciphertext.
 - SAF failures are caught generically and surfaced as the `export_failed`/`import_failed` toasts.
-- Import cap: rejects more than 2000 entries, but only after the full file is read and parsed.
+- Input is strict UTF-8 with an optional BOM, capped at 32 MiB while reading. JSON/CSV parsing is off main; CSV counts every data record toward 10,000, even skipped records. File extension and provider MIME never select the decoder. Export uses `application/octet-stream` to preserve the `.kupass` suffix.
+- Google CSV import follows [Chromium's exporter](https://chromium.googlesource.com/chromium/src/+/main/components/password_manager/core/browser/export/password_csv_writer.cc): `name,url,username,password,note` (older exports omit `note`). Android app facets are retained exactly and never sent to Favget, including through site-name fallback. CSV is read directly from the selected stream, with no plaintext temporary file or CSV export.
 
 ## 5) Observability
 

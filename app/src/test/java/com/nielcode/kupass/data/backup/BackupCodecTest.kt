@@ -57,6 +57,51 @@ class BackupCodecTest {
     // --- v2 (portable) ---
 
     @Test
+    fun `preexisting v2 fixture still decrypts with unchanged envelope and AAD`() {
+        // Fixed, independently generated AES-GCM fixture: this cannot pass by changing both codecs.
+        val backup =
+            """{"header":{"format":"kupass-backup","version":2,"kdf":{"algorithm":"PBKDF2WithHmacSHA256","iterations":10000,"salt":"AAECAwQFBgcICQoLDA0ODw=="},"cipher":{"algorithm":"AES/GCM/NoPadding","iv":"EBESExQVFhcYGRob"}},"data":"v2csSOMF6AialRAPjo/XoQA3gIGke6qoyVZrjmhlRMx91rC17PvXi9mXn8mY/G8E28dodUg3IcEIRZOci4CL/i3891UHzaD/zPboPtTdyv1ENtMSVRLYYMXSWHAnyfQUWxrdhIjHwQvhxuZW7X8/JYTj5xmuObIk7rgiS+ei77LP/efPK1tK66KSpFg/rO9sQlmtiHchzLGD8daEo2aFscXCXzgqG9T9Kvev/y7Atg=="}"""
+
+        assertEquals(
+            listOf(
+                PasswordEntity(
+                    siteName = "Old v2",
+                    username = "alice",
+                    password = " \t ",
+                    url = "android://hash@com.example.app/",
+                    notes = "portable",
+                    createdAt = 1,
+                    updatedAt = 2,
+                )
+            ),
+            BackupCodec.decode(backup, PASSWORD.toCharArray()),
+        )
+        assertEquals(600_000, BackupCodec.DEFAULT_ITERATIONS)
+        assertEquals(2, BackupCodec.VERSION)
+    }
+
+    @Test
+    fun `export entry limit matches the import limit`() {
+        val atLimit = List(BackupCodec.MAX_ENTRIES) { entries.first() }
+        val encoded = BackupCodec.encode(atLimit, PASSWORD.toCharArray(), ITERATIONS)
+        assertEquals(
+            BackupCodec.MAX_ENTRIES,
+            BackupCodec.decode(encoded, PASSWORD.toCharArray()).size,
+        )
+        assertThrows(BackupException.TooLarge::class.java) {
+            BackupCodec.encode(atLimit + entries.first(), PASSWORD.toCharArray(), ITERATIONS)
+        }
+    }
+
+    @Test
+    fun `export refuses files beyond the import byte limit`() {
+        val oversized = entries.first().copy(notes = "x".repeat(BackupInput.MAX_BYTES))
+        assertThrows(BackupException.TooLarge::class.java) {
+            BackupCodec.encode(listOf(oversized), PASSWORD.toCharArray(), ITERATIONS)
+        }
+    }
+
+    @Test
     fun `v2 round trip restores every field with a fresh id`() {
         val backup = BackupCodec.encode(entries, PASSWORD.toCharArray(), ITERATIONS)
 

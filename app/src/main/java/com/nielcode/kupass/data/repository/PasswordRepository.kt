@@ -5,6 +5,8 @@ import com.nielcode.kupass.data.local.db.PasswordEntity
 import com.nielcode.kupass.security.CryptoException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
@@ -56,10 +58,11 @@ class PasswordRepository(
         return withContext(cryptoDispatcher) {
             val seen = existing.mapTo(HashSet()) { it.identity() }
             val toInsert = entries.filter {
-                it.siteName.isNotBlank() && it.password.isNotBlank() && seen.add(it.identity())
+                it.siteName.isNotBlank() && it.password.isNotEmpty() && seen.add(it.identity())
             }
             // Encrypt everything before touching the database so a crypto failure inserts nothing.
             val encrypted = toInsert.map { it.copy(id = 0).encrypted() }
+            currentCoroutineContext().ensureActive()
             if (encrypted.isNotEmpty()) passwordDao.insertAll(encrypted)
             ImportResult(imported = encrypted.size, skipped = entries.size - encrypted.size)
         }

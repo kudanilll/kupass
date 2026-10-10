@@ -76,8 +76,8 @@ import kotlinx.serialization.Serializable
 @Serializable data class PasswordDetail(val passwordId: Long)
 
 private const val SCREEN_TRANSITION_MILLIS = 400
-private const val BACKUP_MIME_TYPE = "application/json"
-private const val BACKUP_FILE_NAME = "kupass-backup.json"
+private const val BACKUP_MIME_TYPE = "application/octet-stream"
+private const val BACKUP_FILE_NAME = "kupass-backup.kupass"
 
 /** Root navigation: the tabbed home pager plus full-screen detail and editor routes. */
 @Composable
@@ -188,8 +188,12 @@ fun MainPagerScreen(
                 )
             MainTab.Data ->
                 DataScreen(
-                    onExportClick = { showExportDialog = true },
-                    onImportClick = filePickers::pickImportFile,
+                    onExportClick = {
+                        if (!backupBusy && importPrompt == null) showExportDialog = true
+                    },
+                    onImportClick = {
+                        if (!backupBusy && importPrompt == null) filePickers.pickImportFile()
+                    },
                     contentPadding = contentPadding,
                 )
             MainTab.Settings -> SettingsScreen(contentPadding = contentPadding)
@@ -217,7 +221,8 @@ private class BackupFilePickers(
 
     fun pickImportFile() {
         appLock.allowNextBackground()
-        importLauncher.launch(arrayOf(BACKUP_MIME_TYPE))
+        // Providers may mislabel .kupass, JSON, or CSV. The content is validated after selection.
+        importLauncher.launch(arrayOf("*/*"))
     }
 }
 

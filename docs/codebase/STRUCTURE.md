@@ -46,6 +46,8 @@ com/nielcode/kupass/
 │   │   ├── PasswordDao.kt         Flow getAll/getById, getAllOnce, insert(REPLACE)/update/updateAll/delete (no SQL search: data is ciphertext)
 │   │   └── PasswordEntity.kt      table "passwords"
 │   ├── backup/BackupCodec.kt      portable backup v2 (PBKDF2 + AES-GCM) + strict legacy v1 import
+│   │   ├── GooglePasswordCsv.kt   strict Google/Chromium CSV import, optional note, exact credential fields
+│   │   └── BackupInput.kt         bounded strict UTF-8 input (32 MiB, optional BOM)
 │   ├── local/prefs/PreferenceManager.kt SharedPreferences "kupass_preferences"
 │   ├── siteicon/                  site icons: SiteDomain (domain extraction), FavgetIconSource (HTTP), SiteIconRepository (memory cache, dedupe, decode)
 │   └── repository/PasswordRepository.kt encrypt/decrypt all text fields, in-memory sort+search, legacy format upgrade

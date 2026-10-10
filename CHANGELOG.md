@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Local import from Google Password Manager CSV exports, including notes and Android app entries. Quoted multiline fields and exact password whitespace are preserved; invalid records and duplicates are reported as skipped.
 - App lock: the vault opens only after fingerprint/face or the device PIN/pattern/password, and locks again after leaving the app (Settings → Security → Auto-lock: immediately, 30 seconds, 1 minute, or 5 minutes). Devices without a screen lock are asked to set one up.
 - Optional site icons in the vault list (Settings → Security → Site icons). Off by default. When turned on, only each entry's domain is sent to the Favget icon service, and icons are kept in memory only.
 - Empty states for an empty vault (with an "Add password" button) and for searches without results.
@@ -22,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Encrypted backups now use the name `kupass-backup.kupass`, with the same portable v2 encrypted JSON format. Older `.json` backups remain importable, and import detects the format from validated content rather than filenames or provider MIME types.
 - Site icons are always enabled when an entry has a public domain and the build has a Favget API key; the Settings toggle was removed. When the URL is empty, a single-word site name such as `GitHub` tries `github.com`.
 - Dynamic colors now default to enabled on supported devices, and the open-source licenses screen follows Kupass's selected color scheme.
 - Tightened the spacing between the bottom navigation and add button, added a subtle navigation shadow, and removed the duplicate add button from the empty-vault state.
@@ -38,6 +40,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Imports reject malformed UTF-8, CSV headers, quotes, and row widths before any insertion, and limit input to 32 MiB and 10,000 data entries including skipped rows. Duplicate submits are ignored and cancelled import passwords are cleared.
+- Android app facet URLs never trigger site-icon lookups for package names or guessed website domains.
 - Importing is now all-or-nothing, skips entries that already exist (or appear twice in the file), and reports how many were imported and skipped.
 - Importing an old backup made on another device no longer imports encrypted text as passwords. The import is refused with an explanation.
 - Encryption failures no longer fall back to storing plaintext, and unreadable entries are no longer shown as ciphertext.
