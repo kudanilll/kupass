@@ -35,8 +35,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Text fields in the editor and backup dialogs match the password detail cards, and the editor stays usable with the keyboard open.
 - Settings and Data pages fill the screen and scroll clear of the floating navigation.
 - Search filters the already-decrypted vault in memory instead of decrypting every entry on each keystroke.
+- The vault groups accounts by website host or Android app package, with collapsible headers even for single accounts. Entries without a usable URL use their site name without guessing a domain.
+- Search uses one input without an expanding popup, shows only matching accounts in open groups, and restores manual group expansion when cleared.
 - The app font is 94% smaller (3.9 MB → 236 KB) with identical rendering.
-- Swipe-to-delete uses the current Material 3 `SwipeToDismissBox` API. The confirmation dialog behaves the same as before.
+- Swipe an account physically left-to-right to request its existing delete confirmation; leftward swipes starting on accounts switch from Home to Data, and vertical swipes still scroll. Group headers cannot delete accounts; accessibility delete uses the same confirmation.
 
 ### Fixed
 
