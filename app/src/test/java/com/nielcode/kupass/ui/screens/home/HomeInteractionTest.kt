@@ -16,7 +16,6 @@ import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.semantics.SemanticsActions
-import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertIsNotFocused
@@ -69,6 +68,7 @@ class HomeInteractionTest {
     private lateinit var pager: PagerState
     private var touchSlop = 0f
     private val navigated = mutableListOf<Long>()
+    private val openedGroups = mutableListOf<Long>()
     private val deleted = mutableListOf<PasswordEntity>()
     private val sample =
         listOf(
@@ -78,15 +78,14 @@ class HomeInteractionTest {
         )
 
     @Test
-    fun `every header including singleton only toggles and child forwards exact ID`() {
-        showHome()
+    fun `group uses a normal row with a total count badge and opens an account page`() {
+        showHome(grouped = true)
         compose.onNodeWithText("alice").assertDoesNotExist()
+        compose.onNodeWithContentDescription("2 accounts").assertIsDisplayed()
         compose.onNodeWithText("example.com").performClick()
-        compose.onNodeWithText("alice").assertIsDisplayed()
-        compose.onNodeWithText("bob").assertIsDisplayed()
-        compose.onNodeWithText("other.test").performClick()
-        compose.onNodeWithText("singleton").assertIsDisplayed()
+        assertEquals(listOf(101L), openedGroups)
         assertTrue(navigated.isEmpty())
+        compose.onNodeWithText("singleton").assertIsDisplayed()
         assertTrue(deleted.isEmpty())
         assertFalse(
             compose
@@ -95,9 +94,8 @@ class HomeInteractionTest {
                 .config
                 .contains(SemanticsActions.CustomActions)
         )
-        compose.onNodeWithText("bob").performClick()
-        assertEquals(listOf(202L), navigated)
-        compose.onNodeWithText("example.com").performClick()
+        compose.onNodeWithText("singleton").performClick()
+        assertEquals(listOf(303L), navigated)
         compose.onNodeWithText("alice").assertDoesNotExist()
         assertNoDeleteAndPage(0)
     }
@@ -105,7 +103,6 @@ class HomeInteractionTest {
     @Test
     fun `rightward account swipe asks once resets and confirms only that account with no pager movement`() {
         showHome()
-        compose.onNodeWithText("example.com").performClick()
         val before = compose.onNodeWithText("bob").fetchSemanticsNode().boundsInRoot.left
         compose.onNodeWithText("bob").performTouchInput { swipeRight() }
         compose.onNodeWithText("Delete password").assertIsDisplayed()
@@ -127,7 +124,6 @@ class HomeInteractionTest {
     @Test
     fun `rightward first move at exact touch slop owns deletion instead of the real pager`() {
         showHome()
-        compose.onNodeWithText("example.com").performClick()
         val row = compose.onNodeWithText("bob")
         val before = row.fetchSemanticsNode().boundsInRoot.left
         row.performTouchInput {
@@ -151,7 +147,6 @@ class HomeInteractionTest {
     @Test
     fun `leftward swipe starting on account reaches actual Data pager page without delete`() {
         showHome()
-        compose.onNodeWithText("example.com").performClick()
         compose.onNodeWithText("alice").performTouchInput { swipeLeft() }
         compose.onNodeWithText("Data page").assertIsDisplayed()
         assertNoDeleteAndPage(1)
@@ -159,8 +154,8 @@ class HomeInteractionTest {
     }
 
     @Test
-    fun `rightward header swipe never requests account or bulk deletion`() {
-        showHome()
+    fun `rightward group swipe never requests account or bulk deletion`() {
+        showHome(grouped = true)
         compose.onNodeWithText("example.com").performTouchInput { swipeRight() }
         assertNoDeleteAndPage(0)
         assertTrue(navigated.isEmpty())
@@ -170,7 +165,6 @@ class HomeInteractionTest {
     fun `vertical swipe on account scrolls list and does not navigate or delete`() {
         val many = (1L..30L).map { account(it, "account-$it") }
         showHome(accounts = many)
-        compose.onNodeWithText("example.com").performClick()
         val before = compose.onNodeWithText("account-1").fetchSemanticsNode().boundsInRoot.top
         compose.onNodeWithText("account-1").performTouchInput { swipeUp() }
         val after = compose.onNodeWithText("account-1").fetchSemanticsNode().boundsInRoot.top
@@ -182,7 +176,6 @@ class HomeInteractionTest {
     @Test
     fun `short owned drag and cancelled full drag reset without confirmation`() {
         showHome()
-        compose.onNodeWithText("example.com").performClick()
         val row = compose.onNodeWithText("alice")
         val before = row.fetchSemanticsNode().boundsInRoot.left
         row.performTouchInput {
@@ -208,7 +201,6 @@ class HomeInteractionTest {
     @Test
     fun `owned rightward gesture keeps ownership through leftward reversal`() {
         showHome()
-        compose.onNodeWithText("example.com").performClick()
         compose.onNodeWithText("alice").performTouchInput {
             down(Offset(width * 0.4f, centerY))
             moveTo(Offset(width * 0.8f, centerY), delayMillis = 100)
@@ -222,7 +214,6 @@ class HomeInteractionTest {
     @Test
     fun `consumed movement is abandoned without reacquiring later rightward movement`() {
         showHome(consumeFirstMove = true)
-        compose.onNodeWithText("example.com").performClick()
         compose.onNodeWithText("alice").performTouchInput {
             down(Offset(width * 0.1f, centerY))
             moveTo(Offset(width * 0.2f, centerY), delayMillis = 100)
@@ -235,7 +226,6 @@ class HomeInteractionTest {
     @Test
     fun `multitouch abandonment cannot reacquire after the extra pointer lifts`() {
         showHome()
-        compose.onNodeWithText("example.com").performClick()
         compose.onNodeWithText("alice").performTouchInput {
             down(0, Offset(width * 0.1f, centerY))
             down(1, Offset(width * 0.2f, centerY))
@@ -250,7 +240,6 @@ class HomeInteractionTest {
     @Test
     fun `accessibility delete opens identical account confirmation without immediate deletion`() {
         showHome()
-        compose.onNodeWithText("example.com").performClick()
         val actions =
             compose
                 .onNodeWithText("bob")
@@ -268,32 +257,24 @@ class HomeInteractionTest {
     }
 
     @Test
-    fun `live notes search forces only matching accounts open and clearing restores expansion`() {
-        showHome()
-        compose.onNodeWithText("other.test").performClick()
+    fun `live notes search shows the matching site with its full account count`() {
+        showHome(grouped = true)
         val search = compose.onNode(hasSetTextAction())
         search.performTextInput("recovery")
-        compose.onNodeWithText("bob").assertIsDisplayed()
+        compose.onNodeWithText("example.com").assertIsDisplayed()
         compose.onNodeWithText("alice").assertDoesNotExist()
         compose.onNodeWithText("other.test").assertDoesNotExist()
-        compose.onNodeWithText("1 account").assertIsDisplayed()
-        // Forced-open search headers cannot change the saved manual expansion.
-        assertTrue(
-            compose
-                .onNodeWithText("example.com")
-                .fetchSemanticsNode()
-                .config
-                .contains(SemanticsProperties.Disabled)
-        )
+        compose.onNodeWithContentDescription("2 accounts").assertIsDisplayed()
+        compose.onNodeWithText("example.com").performClick()
+        assertEquals(listOf(101L), openedGroups)
         compose.onNodeWithContentDescription("Clear search").performClick()
         search.assertIsFocused()
         compose.onNodeWithText("alice").assertDoesNotExist()
         compose.onNodeWithText("singleton").assertIsDisplayed()
-        compose.onNodeWithText("example.com").performClick()
         search.performTextInput("bob")
         compose.onNodeWithContentDescription("Clear search").performClick()
-        compose.onNodeWithText("alice").assertIsDisplayed()
-        compose.onNodeWithText("bob").assertIsDisplayed()
+        compose.onNodeWithText("example.com").assertIsDisplayed()
+        compose.onNodeWithContentDescription("2 accounts").assertIsDisplayed()
         assertNoDeleteAndPage(0)
         assertTrue(navigated.isEmpty())
     }
@@ -310,7 +291,7 @@ class HomeInteractionTest {
         search.assertIsNotFocused()
         compose.onNodeWithText("No results").assertIsDisplayed()
         compose.onNodeWithContentDescription("Clear search").performClick()
-        compose.onNodeWithText("example.com").assertIsDisplayed()
+        compose.onNodeWithText("alice").assertIsDisplayed()
     }
 
     @Test
@@ -322,6 +303,7 @@ class HomeInteractionTest {
     private fun showHome(
         accounts: List<PasswordEntity> = sample,
         consumeFirstMove: Boolean = false,
+        grouped: Boolean = false,
     ) {
         compose.setContent {
             KupassTheme(dynamicColor = false) {
@@ -338,6 +320,8 @@ class HomeInteractionTest {
                                 onSearchQueryChange = { query = it },
                                 onDeletePassword = { deleted += it },
                                 onNavigateToDetail = { navigated += it },
+                                onNavigateToGroup =
+                                    if (grouped) { id -> openedGroups += id } else null,
                             )
                         } else {
                             Text("Data page")

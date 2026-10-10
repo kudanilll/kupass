@@ -22,7 +22,7 @@ Kupass is a **simple, trustworthy, offline password manager** for Android. Users
 
 ## 4. Current Features (v3.1.0)
 
-- Vault list with search (site name, username, URL, notes), empty state, and swipe-to-delete with a confirmation dialog.
+- Vault list with live animated search (site name, username, URL, notes). Multi-account sites/apps reuse the normal item with a left-side count badge and open a public account-list page. Singletons open directly through authentication; individual swipe deletion keeps confirmation.
 - Create/edit an entry: site name, username, password (show/hide), URL, and notes.
 - Detail view with copy-to-clipboard per field. The password copy is flagged sensitive on API 33+ and auto-cleared after 45 s on older APIs.
 - Password-protected portable `.kupass` export after fresh native authentication; legacy v1/v2 JSON and Google Password Manager CSV import through the Storage Access Framework.
@@ -102,3 +102,4 @@ A change is done when it builds, passes unit tests and lint, has tests for new l
 | 2026-09-18 | The app version stays `3.1.0`. Agents never bump `versionName`/`versionCode`. | Danil |
 | 2026-09-21 | Site icons are always enabled and no longer have a Settings toggle. This supersedes the 2026-09-19 opt-in decision. | Danil |
 | 2026-10-09 | Replace global launch lock with fresh per-account-open and per-export native authentication. Detail/editor grants bind navigation entry and account ID, survive rotation only, and never restore after process death. Detail-to-edit-to-same-detail uses its authenticated chain; returning to Home ends it. Export consent is request-bound, single-use, and bounded to five minutes including the picker trip. No CSV export; CSV import belongs to the sibling backup change. | Danil |
+| 2026-10-11 | Replace accordion group headers with existing vault items, a left-side total badge, and a separate account-list page. Opening the group stays public; opening an account requires fresh authentication. Keep Data navigation visible during native overscroll, center navigation shadows, add Settings' bottom fade and improve search/loading transitions. | Danil |

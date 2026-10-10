@@ -1,10 +1,14 @@
 package com.nielcode.kupass.ui.screens.data
 
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.rememberScrollableState
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberOverscrollEffect
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.scrollableArea
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FileDownload
@@ -28,13 +32,27 @@ fun DataScreen(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(),
 ) {
+    val scrollState = rememberScrollState()
+    val stretchState = rememberScrollableState { 0f }
+    val overscroll = rememberOverscrollEffect()
+    val contentScrolls = scrollState.maxValue > 0
     Scaffold(modifier = modifier.fillMaxSize(), contentWindowInsets = pagerPageInsets()) {
         innerPadding ->
         Column(
             modifier =
                 Modifier.fillMaxSize()
                     .padding(innerPadding)
-                    .verticalScroll(rememberScrollState())
+                    .scrollableArea(
+                        state = stretchState,
+                        orientation = Orientation.Vertical,
+                        enabled = !contentScrolls,
+                        overscrollEffect = if (contentScrolls) null else overscroll,
+                    )
+                    .verticalScroll(
+                        state = scrollState,
+                        enabled = contentScrolls,
+                        overscrollEffect = if (contentScrolls) overscroll else null,
+                    )
                     .padding(top = 16.dp, bottom = 16.dp + contentPadding.calculateBottomPadding())
         ) {
             SectionHeader(title = stringResource(R.string.data_export_import_title))

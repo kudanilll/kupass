@@ -19,6 +19,7 @@ Kupass is an open-source (GPL-3.0) offline password manager for Android by **nie
 ```plaintext
 MainActivity -> MainAppScreen (NavHost)
   ├─ HomeBase: HorizontalPager [Home | Data | Settings] + BottomNav
+  ├─ PasswordGroup(groupId): public site/app account list
   ├─ PasswordDetail(passwordId)
   └─ PasswordEditor(passwordId = -1 for create)
 
@@ -31,7 +32,7 @@ Screen (Compose) -> ViewModel(Factory) -> PasswordRepository -> PasswordDao (Roo
 Backup: BackupCodec (PBKDF2-HMAC-SHA256 + AES-256-GCM, password-protected, portable)
 ```
 
-No DI framework: `App.container` (`di/AppContainer`) provides the repository and prefs; each ViewModel exposes a `Factory`. Authorization and its private `AppLock` absence timer live together in each activity-retained `EntryAuthenticationViewModel`, never saved state, prefs, or a process singleton. Separate activity instances cannot reset one another's absence timer or exemptions. Launch, list/search, tabs, import/delete confirmation, and new-entry creation are public. Each Home-to-account open and each export requires fresh authentication. Background timeout revokes sensitive-entry grants; the existing bounded exemptions and timeout defaults remain.
+No DI framework: `App.container` (`di/AppContainer`) provides the repository and prefs; each ViewModel exposes a `Factory`. Authorization and its private `AppLock` absence timer live together in each activity-retained `EntryAuthenticationViewModel`, never saved state, prefs, or a process singleton. Separate activity instances cannot reset one another's absence timer or exemptions. Launch, list/search, group pages, tabs, import/delete confirmation, and new-entry creation are public. Each individual account open (from Home or a group page) and each export requires fresh authentication. Background timeout revokes sensitive-entry grants; the existing bounded exemptions and timeout defaults remain.
 
 ## Where To Read More
 

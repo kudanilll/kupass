@@ -81,7 +81,10 @@ com/nielcode/kupass/
 | ---------------- | --------------------------------------------- | --------------------------------------------------------------------- |
 | `HomeBase`       | none                                          | `MainPagerScreen`: `HorizontalPager` pages 0 Home, 1 Data, 2 Settings |
 | `PasswordDetail` | `passwordId: Long`                            | `PasswordDetailScreen`                                                |
+| `PasswordGroup` | `groupId: Long` (representative row ID) | Public `PasswordGroupScreen`; only IDs are saved, and child account navigation uses the existing authentication gate |
 | `PasswordEditor` | `passwordId: Long = -1L` (create when `<= 0`) | `PasswordEditorScreen`                                                |
+
+`home/PasswordGroupScreen.kt` reuses the existing vault list and Home ViewModel cache. Multi-account Home rows use `PasswordListItem.accountCount`; the CSV reader normalizes header variants while preserving credential fields and supports UTF-8/BOM-marked UTF-16.
 
 ### Data model (`passwords` table)
 

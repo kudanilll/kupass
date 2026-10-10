@@ -4,9 +4,10 @@ import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.nio.ByteBuffer
 import java.nio.charset.CharacterCodingException
+import java.nio.charset.Charset
 import java.nio.charset.CodingErrorAction
 
-/** Bounded, strict UTF-8 reads shared by backup and CSV input. The caller owns the stream. */
+/** Bounded Unicode input: UTF-8 or BOM-marked UTF-16; malformed credentials are never replaced. */
 internal object BackupInput {
     const val MAX_BYTES = 32 * 1024 * 1024
 
@@ -31,9 +32,12 @@ internal object BackupInput {
         if (bytes > MAX_BYTES) throw BackupException.TooLarge()
     }
 
-    fun utf8(bytes: ByteArray, size: Int = bytes.size): String =
+    fun utf8(bytes: ByteArray, size: Int = bytes.size): String = decode(bytes, size, Charsets.UTF_8)
+
+    private fun decode(bytes: ByteArray, size: Int, charset: Charset): String =
         try {
-            Charsets.UTF_8.newDecoder()
+            charset
+                .newDecoder()
                 .onMalformedInput(CodingErrorAction.REPORT)
                 .onUnmappableCharacter(CodingErrorAction.REPORT)
                 .decode(ByteBuffer.wrap(bytes, 0, size))
@@ -43,7 +47,17 @@ internal object BackupInput {
         }
 
     private class WipeableBuffer : ByteArrayOutputStream() {
-        fun decode(): String = utf8(buf, count).removePrefix("\uFEFF")
+        fun decode(): String {
+            val charset =
+                when {
+                    count >= 2 && buf[0] == 0xFF.toByte() && buf[1] == 0xFE.toByte() ->
+                        Charsets.UTF_16LE
+                    count >= 2 && buf[0] == 0xFE.toByte() && buf[1] == 0xFF.toByte() ->
+                        Charsets.UTF_16BE
+                    else -> Charsets.UTF_8
+                }
+            return decode(buf, count, charset).removePrefix("\uFEFF")
+        }
 
         fun clear() {
             buf.fill(0)

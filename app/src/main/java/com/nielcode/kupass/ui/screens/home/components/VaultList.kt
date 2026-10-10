@@ -1,27 +1,27 @@
 package com.nielcode.kupass.ui.screens.home.components
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.ExpandLess
-import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Key
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.SearchOff
@@ -32,9 +32,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -50,21 +50,18 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.CustomAccessibilityAction
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.nielcode.kupass.R
 import com.nielcode.kupass.data.local.db.PasswordEntity
 import com.nielcode.kupass.data.repository.filterByQuery
 import com.nielcode.kupass.data.siteicon.SiteIcons
 import com.nielcode.kupass.data.siteicon.siteDomainOf
+import com.nielcode.kupass.ui.components.BottomFade
 import com.nielcode.kupass.ui.components.EmptyState
 import com.nielcode.kupass.ui.screens.home.VaultGroup
 import com.nielcode.kupass.ui.screens.home.groupVault
@@ -72,7 +69,7 @@ import com.nielcode.kupass.ui.screens.home.groupVault
 private const val EMPTY_STATE_HEIGHT_FRACTION = 0.7f
 
 /**
- * Scrollable vault: headline, a single sticky search input, groups and per-account deletion.
+ * A shared list for site rows on Home and individual accounts on a site's page.
  *
  * @param siteIcons icon loader, or null when site icons are turned off.
  */
@@ -88,17 +85,32 @@ fun VaultList(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     siteIcons: SiteIcons? = null,
+    onGroupClick: ((Long) -> Unit)? = null,
+    showHeadline: Boolean = true,
 ) {
-    val groups = remember(passwords, query) { groupVault(passwords.filterByQuery(query)) }
-    var expandedKeys by remember { mutableStateOf(emptyList<String>()) }
-    val searching = query.isNotBlank()
+    val groups = remember(passwords) { groupVault(passwords) }
+    val matching = remember(passwords, query) { passwords.filterByQuery(query) }
+    val matchingIds = remember(matching) { matching.mapTo(HashSet()) { it.id } }
+    val visibleGroups =
+        remember(groups, matchingIds) {
+            groups.filter { group -> group.accounts.any { it.id in matchingIds } }
+        }
+    val listState = rememberLazyListState()
+    LaunchedEffect(searchActive) {
+        if (searchActive) listState.animateScrollToItem(0)
+    }
     Box(modifier = modifier.fillMaxSize()) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
+            state = listState,
             contentPadding = PaddingValues(bottom = contentPadding.calculateBottomPadding()),
         ) {
             item(key = "headline", contentType = "headline") {
-                if (!searchActive) {
+                AnimatedVisibility(
+                    visible = showHeadline && !searchActive,
+                    enter = expandVertically(tween(220)) + fadeIn(tween(220)),
+                    exit = shrinkVertically(tween(220)) + fadeOut(tween(220)),
+                ) {
                     Text(
                         text = stringResource(R.string.headline),
                         style = MaterialTheme.typography.displaySmall,
@@ -115,62 +127,71 @@ fun VaultList(
                     onActiveChange = onSearchActiveChange,
                 )
             }
-            if (groups.isEmpty()) {
+            if (matching.isEmpty()) {
                 item(key = "empty", contentType = "empty") {
                     VaultEmptyState(
                         query = query,
+                        accountList = !showHeadline,
                         modifier = Modifier.fillParentMaxHeight(EMPTY_STATE_HEIGHT_FRACTION),
                     )
                 }
+            } else if (onGroupClick != null) {
+                groupRows(visibleGroups, onGroupClick, onItemClick, onDeleteItem, siteIcons)
             } else {
-                groups.forEach { group ->
-                    val key = group.key.lazyKey
-                    vaultGroup(
-                        group = group,
-                        expanded = searching || key in expandedKeys,
-                        onToggle =
-                            if (searching) null
-                            else {
-                                {
-                                    expandedKeys =
-                                        if (key in expandedKeys) expandedKeys - key
-                                        else expandedKeys + key
-                                }
-                            },
-                        onItemClick = onItemClick,
-                        onDeleteItem = onDeleteItem,
-                        siteIcons = siteIcons,
-                    )
-                }
+                accountRows(matching, onItemClick, onDeleteItem, siteIcons, !showHeadline)
             }
         }
-        BottomFade(modifier = Modifier.align(Alignment.BottomCenter))
+        if (showHeadline) BottomFade(modifier = Modifier.align(Alignment.BottomCenter))
     }
 }
 
-// A lazy-list builder carries composable state/callbacks but cannot itself be @Composable.
-@Suppress("LongParameterList")
-private fun LazyListScope.vaultGroup(
-    group: VaultGroup,
-    expanded: Boolean,
-    onToggle: (() -> Unit)?,
+private fun LazyListScope.groupRows(
+    groups: List<VaultGroup>,
+    onGroupClick: (Long) -> Unit,
     onItemClick: (PasswordEntity) -> Unit,
-    onDeleteItem: (PasswordEntity) -> Unit,
+    onDelete: (PasswordEntity) -> Unit,
     siteIcons: SiteIcons?,
 ) {
-    item(key = group.key.lazyKey, contentType = "group") {
-        VaultGroupHeader(group = group, expanded = expanded, onToggle = onToggle)
-    }
-    if (expanded) {
-        items(items = group.accounts, key = { "account:${it.id}" }, contentType = { "entry" }) {
-            password ->
+    items(groups, key = { it.key.lazyKey }, contentType = { "entry" }) { group ->
+        val account = group.accounts.first()
+        if (group.accounts.size > 1) {
+            PasswordListItem(
+                title = account.siteName,
+                subtitle = group.key.value,
+                fallbackChar = account.siteName.firstOrNull()?.uppercase() ?: "?",
+                onClick = { onGroupClick(group.accounts.minOf { it.id }) },
+                icon = rememberSiteIcon(account, siteIcons),
+                accountCount = group.accounts.size,
+                modifier = Modifier.animateItem(),
+            )
+        } else {
             SwipeToDeleteRow(
-                password = password,
+                password = account,
                 siteIcons = siteIcons,
-                onClick = { onItemClick(password) },
-                onDelete = { onDeleteItem(password) },
+                onClick = { onItemClick(account) },
+                onDelete = { onDelete(account) },
+                modifier = Modifier.animateItem(),
             )
         }
+    }
+}
+
+private fun LazyListScope.accountRows(
+    accounts: List<PasswordEntity>,
+    onItemClick: (PasswordEntity) -> Unit,
+    onDelete: (PasswordEntity) -> Unit,
+    siteIcons: SiteIcons?,
+    accountList: Boolean,
+) {
+    items(accounts, key = { "account:${it.id}" }, contentType = { "entry" }) { account ->
+        SwipeToDeleteRow(
+            password = account,
+            siteIcons = siteIcons,
+            onClick = { onItemClick(account) },
+            onDelete = { onDelete(account) },
+            modifier = Modifier.animateItem(),
+            accountList = accountList,
+        )
     }
 }
 
@@ -265,70 +286,25 @@ private fun VaultSearchAction(
     }
 }
 
-/** Even a singleton has a header; headers never navigate or delete accounts. */
-@Composable
-private fun VaultGroupHeader(
-    group: VaultGroup,
-    expanded: Boolean,
-    onToggle: (() -> Unit)?,
-    modifier: Modifier = Modifier,
-) {
-    val action =
-        stringResource(if (expanded) R.string.vault_group_collapse else R.string.vault_group_expand)
-    val state =
-        stringResource(
-            if (expanded) R.string.vault_group_expanded else R.string.vault_group_collapsed
-        )
-    Row(
-        modifier =
-            modifier
-                .fillMaxWidth()
-                .heightIn(min = 64.dp)
-                .background(MaterialTheme.colorScheme.surfaceContainerLow)
-                .semantics { stateDescription = state }
-                .clickable(
-                    enabled = onToggle != null,
-                    role = Role.Button,
-                    onClickLabel = action,
-                    onClick = { onToggle?.invoke() },
-                )
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = group.key.value.ifBlank { stringResource(R.string.vault_group_unnamed) },
-                style = MaterialTheme.typography.titleMedium,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-            Text(
-                text =
-                    pluralStringResource(
-                        R.plurals.vault_group_accounts,
-                        group.accounts.size,
-                        group.accounts.size,
-                    ),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-        Icon(
-            if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-            contentDescription = null,
-        )
-    }
-}
-
 /** Empty vault or a search without results. */
 @Composable
-private fun VaultEmptyState(query: String, modifier: Modifier = Modifier) {
+private fun VaultEmptyState(
+    query: String,
+    modifier: Modifier = Modifier,
+    accountList: Boolean = false,
+) {
     Box(modifier = modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
         if (query.isBlank()) {
             EmptyState(
                 icon = Icons.Default.Key,
-                title = stringResource(R.string.empty_vault_title),
-                body = stringResource(R.string.empty_vault_body),
+                title =
+                    stringResource(
+                        if (accountList) R.string.empty_group_title else R.string.empty_vault_title
+                    ),
+                body =
+                    stringResource(
+                        if (accountList) R.string.empty_group_body else R.string.empty_vault_body
+                    ),
             )
         } else {
             EmptyState(
@@ -348,6 +324,7 @@ private fun SwipeToDeleteRow(
     onClick: () -> Unit,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier,
+    accountList: Boolean = false,
 ) {
     var offset by remember(password.id) { mutableFloatStateOf(0f) }
     val delete by rememberUpdatedState(onDelete)
@@ -379,8 +356,11 @@ private fun SwipeToDeleteRow(
             }
         }
         PasswordListItem(
-            title = password.siteName,
-            subtitle = password.username.ifBlank { password.url },
+            title =
+                if (accountList) password.username.ifBlank { password.siteName }
+                else password.siteName,
+            subtitle =
+                if (accountList) password.url else password.username.ifBlank { password.url },
             fallbackChar = password.siteName.firstOrNull()?.uppercase() ?: "?",
             onClick = onClick,
             icon = rememberSiteIcon(password, siteIcons),
@@ -413,23 +393,4 @@ private fun rememberSiteIcon(password: PasswordEntity, siteIcons: SiteIcons?): I
             }
         }
     return icon
-}
-
-/** Fades list content out behind the floating bottom navigation. */
-@Composable
-private fun BottomFade(modifier: Modifier = Modifier) {
-    val surface = MaterialTheme.colorScheme.surface
-    Box(
-        modifier =
-            modifier
-                .fillMaxWidth()
-                .height(80.dp)
-                .background(
-                    Brush.verticalGradient(
-                        0f to Color.Transparent,
-                        0.6f to surface.copy(alpha = 0.7f),
-                        1f to surface,
-                    )
-                )
-    )
 }

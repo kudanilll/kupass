@@ -2,6 +2,7 @@ package com.nielcode.kupass.ui.screens.settings
 
 import android.content.Context
 import android.content.Intent
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -28,6 +29,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
@@ -43,6 +45,7 @@ import com.nielcode.kupass.MainActivity
 import com.nielcode.kupass.R
 import com.nielcode.kupass.data.local.prefs.PreferenceManager
 import com.nielcode.kupass.security.AppLock
+import com.nielcode.kupass.ui.components.BottomFade
 import com.nielcode.kupass.ui.components.SectionHeader
 import com.nielcode.kupass.ui.components.SectionItem
 import com.nielcode.kupass.ui.components.SingleChoiceDialog
@@ -78,36 +81,43 @@ fun SettingsScreen(
 
     Scaffold(modifier = modifier.fillMaxSize(), contentWindowInsets = pagerPageInsets()) {
         innerPadding ->
-        Column(
-            modifier =
-                Modifier.fillMaxSize()
-                    .padding(innerPadding)
-                    .verticalScroll(rememberScrollState())
-                    // Inside the scroll: the last item can scroll above the floating navigation.
-                    .padding(top = 16.dp, bottom = 16.dp + contentPadding.calculateBottomPadding())
-        ) {
-            GeneralSection(
-                languageIndex = settings.language,
-                onLanguageClick = { openDialog = SettingsDialog.Language },
-            )
-            SecuritySection(
-                autoLockSeconds = settings.autoLockSeconds,
-                onAutoLockClick = { openDialog = SettingsDialog.AutoLock },
-            )
-            AppearanceSection(
-                themeIndex = settings.theme,
-                dynamicColor = settings.dynamicColor,
-                onThemeClick = { openDialog = SettingsDialog.Theme },
-                onDynamicColorClick = { openDialog = SettingsDialog.DynamicColor },
-            )
-            AboutSection(
-                dynamicColorEnabled = settings.dynamicColor == AppConfig.DynamicColors.Code.ENABLE,
-                onOpen = { launch ->
-                    // Use the launching activity's bounded allowance for external screens.
-                    onAllowBackground()
-                    launch(context)
-                },
-            )
+        Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+            Column(
+                modifier =
+                    Modifier.fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        // Inside the scroll: the last item can scroll above the floating
+                        // navigation.
+                        .padding(
+                            top = 16.dp,
+                            bottom = 16.dp + contentPadding.calculateBottomPadding(),
+                        )
+            ) {
+                GeneralSection(
+                    languageIndex = settings.language,
+                    onLanguageClick = { openDialog = SettingsDialog.Language },
+                )
+                SecuritySection(
+                    autoLockSeconds = settings.autoLockSeconds,
+                    onAutoLockClick = { openDialog = SettingsDialog.AutoLock },
+                )
+                AppearanceSection(
+                    themeIndex = settings.theme,
+                    dynamicColor = settings.dynamicColor,
+                    onThemeClick = { openDialog = SettingsDialog.Theme },
+                    onDynamicColorClick = { openDialog = SettingsDialog.DynamicColor },
+                )
+                AboutSection(
+                    dynamicColorEnabled =
+                        settings.dynamicColor == AppConfig.DynamicColors.Code.ENABLE,
+                    onOpen = { launch ->
+                        // Use the launching activity's bounded allowance for external screens.
+                        onAllowBackground()
+                        launch(context)
+                    },
+                )
+            }
+            BottomFade(modifier = Modifier.align(Alignment.BottomCenter))
         }
     }
 

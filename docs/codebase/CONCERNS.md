@@ -40,6 +40,8 @@ The combined auth/backup branch subsequently passed serial full verification, in
 
 ## 4) Performance and Size Concerns
 
+The UI/import revision replaces accordion headers with regular badged rows and a public ID-routed group page. Group state saves only an anchor row ID; names, URLs, credentials and authorization grants are not saved. CSV validation now tolerates common header/encoding/line-ending variants while still rejecting malformed credentials before writes. These changes do not alter the Room schema, backup encryption format, or entry/export authentication boundary.
+
 | Concern                        | Evidence                                   | Current symptom                     | Scaling risk                                  | Suggested improvement                              |
 | ------------------------------ | ------------------------------------------ | ----------------------------------- | --------------------------------------------- | -------------------------------------------------- |
 | Decryption per vault change    | `HomeViewModel`, `PasswordRepository`      | Fine for normal vaults              | Linear in vault size on every vault change    | Debounce search if large vaults need it (EN-5.2)   |

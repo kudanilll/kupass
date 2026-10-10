@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.test.isDialog
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onRoot
@@ -22,6 +23,8 @@ import com.nielcode.kupass.data.siteicon.SiteIcons
 import com.nielcode.kupass.security.CryptoManager
 import com.nielcode.kupass.ui.components.BottomNav
 import com.nielcode.kupass.ui.components.MainTab
+import com.nielcode.kupass.ui.screens.data.BackupOperation
+import com.nielcode.kupass.ui.screens.data.BackupProgressDialog
 import com.nielcode.kupass.ui.screens.data.DataScreen
 import com.nielcode.kupass.ui.screens.detail.PasswordDetailScreen
 import com.nielcode.kupass.ui.screens.editor.PasswordEditorScreen
@@ -80,6 +83,18 @@ class UiSnapshotTest {
         )
 
     @Test fun homeWithEntries() = snapshot("home") { HomeSnapshot(sample) }
+
+    @Test
+    fun homeGrouped() =
+        snapshot("home_grouped") {
+            HomeSnapshot(sample + sample.first().copy(id = 4, username = "second-account"))
+        }
+
+    @Test
+    fun backupProgress() =
+        snapshot("backup_progress", dialog = true) {
+            BackupProgressDialog(operation = BackupOperation.Import)
+        }
 
     @Test
     fun homeWithSiteIcons() =
@@ -152,11 +167,13 @@ class UiSnapshotTest {
             onSearchQueryChange = {},
             onDeletePassword = {},
             onNavigateToDetail = {},
+            onNavigateToGroup = {},
         )
 
     private fun snapshot(
         name: String,
         waitForText: String? = null,
+        dialog: Boolean = false,
         content: @Composable () -> Unit,
     ) {
         compose.setContent { KupassTheme(dynamicColor = false) { content() } }
@@ -168,8 +185,7 @@ class UiSnapshotTest {
         }
         val dir = File("build/ui-snapshots").apply { mkdirs() }
         File(dir, "$name.png").outputStream().use {
-            compose
-                .onRoot()
+            (if (dialog) compose.onNode(isDialog()) else compose.onRoot())
                 .captureToImage()
                 .asAndroidBitmap()
                 .compress(Bitmap.CompressFormat.PNG, 100, it)

@@ -40,6 +40,8 @@ sealed class BackupException(message: String, cause: Throwable? = null) :
 
     class Malformed(cause: Throwable? = null) : BackupException("Malformed backup file", cause)
 
+    class InvalidCsv : BackupException("Invalid Google password CSV")
+
     class TooLarge : BackupException("Backup exceeds size or entry limit")
 }
 

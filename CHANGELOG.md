@@ -39,14 +39,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The password detail screen puts Edit and Delete in one overflow menu.
 - Text fields in the editor and backup dialogs match the password detail cards, and the editor stays usable with the keyboard open.
 - Settings and Data pages fill the screen and scroll clear of the floating navigation.
+- Settings shares Home's bottom content gradient. The navigation shadow is centered, and Data keeps navigation visible while providing native overscroll stretch on short content.
+- Backup loading dialogs show the current import/export operation with centered progress and explanatory text.
 - Search filters the already-decrypted vault in memory instead of decrypting every entry on each keystroke.
-- The vault groups accounts by website host or Android app package, with collapsible headers even for single accounts. Entries without a usable URL use their site name without guessing a domain.
-- Search uses one input without an expanding popup, shows only matching accounts in open groups, and restores manual group expansion when cleared.
+- Sites/apps with multiple accounts use the same vault list item with a count badge at the left of its icon. Tapping opens a separate account list; individual accounts still require authentication. Single-account sites remain normal account items.
+- Search uses one input without an expanding popup. The heading collapses smoothly as search moves upward, results animate in place, and group badges retain their total account count when filtering.
 - The app font is 94% smaller (3.9 MB → 236 KB) with identical rendering.
-- Swipe an account physically left-to-right to request its existing delete confirmation; leftward swipes starting on accounts switch from Home to Data, and vertical swipes still scroll. Group headers cannot delete accounts; accessibility delete uses the same confirmation.
+- Swipe an individual account physically left-to-right to request its existing delete confirmation; leftward swipes on Home reach Data, and vertical swipes still scroll. Site/app items never perform bulk deletion; accessibility delete uses the same confirmation.
 
 ### Fixed
 
+- Google CSV import accepts normalized headers, `note`/`notes`, blank record separators, comma/semicolon delimiters, and BOM-marked UTF-16 as well as strict UTF-8. Credential fields are preserved exactly; malformed data still inserts nothing.
+- CSV errors identify the supported columns instead of incorrectly referring to a JSON file.
 - Editing imported entries preserves username and note formatting and accepts nonempty whitespace-only passwords. Empty passwords and blank site names still disable Save.
 - Import waits for a cancelled native export prompt's terminal callback before accessing the selected file or vault.
 - Imports reject malformed UTF-8, CSV headers, quotes, and row widths before any insertion, and limit input to 32 MiB and 10,000 data entries including skipped rows. Duplicate submits are ignored and cancelled import passwords are cleared.

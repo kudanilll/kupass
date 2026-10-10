@@ -6,22 +6,29 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Badge
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.AbsoluteAlignment
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.nielcode.kupass.R
 
 /** A vault row: the site icon (or the site's initial), title, and subtitle. */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -33,6 +40,7 @@ fun PasswordListItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     icon: ImageBitmap? = null,
+    accountCount: Int? = null,
 ) {
     Card(
         onClick = onClick,
@@ -45,44 +53,71 @@ fun PasswordListItem(
             modifier = Modifier.fillMaxWidth().padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Box(
-                modifier =
-                    Modifier.size(48.dp)
-                        .clip(CircleShape)
-                        .background(
-                            if (icon == null) MaterialTheme.colorScheme.primaryContainer
-                            else MaterialTheme.colorScheme.surfaceContainerHigh
-                        ),
-                contentAlignment = Alignment.Center,
-            ) {
-                if (icon != null) {
-                    // Decorative: the title next to it names the site.
-                    Image(bitmap = icon, contentDescription = null, modifier = Modifier.size(28.dp))
-                } else {
-                    Text(
-                        text = fallbackChar.uppercase(),
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    )
+            Box(modifier = Modifier.size(48.dp)) {
+                Box(
+                    modifier =
+                        Modifier.matchParentSize()
+                            .clip(CircleShape)
+                            .background(
+                                if (icon == null) MaterialTheme.colorScheme.primaryContainer
+                                else MaterialTheme.colorScheme.surfaceContainerHigh
+                            ),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    if (icon != null) {
+                        // Decorative: the title next to it names the site.
+                        Image(
+                            bitmap = icon,
+                            contentDescription = null,
+                            modifier = Modifier.size(28.dp),
+                        )
+                    } else {
+                        Text(
+                            text = fallbackChar.uppercase(),
+                            style = MaterialTheme.typography.titleLarge,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        )
+                    }
+                }
+                if (accountCount != null) {
+                    val countDescription =
+                        pluralStringResource(
+                            R.plurals.vault_group_accounts,
+                            accountCount,
+                            accountCount,
+                        )
+                    Badge(
+                        modifier =
+                            Modifier.align(AbsoluteAlignment.TopLeft)
+                                .offset(x = (-4).dp, y = (-4).dp)
+                                .semantics { contentDescription = countDescription }
+                    ) {
+                        Text(accountCount.toString())
+                    }
                 }
             }
 
-            Column(modifier = Modifier.weight(1f).padding(horizontal = 16.dp)) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                Text(
-                    text = subtitle,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
+            ItemText(title, subtitle, modifier = Modifier.weight(1f).padding(horizontal = 16.dp))
         }
+    }
+}
+
+@Composable
+private fun ItemText(title: String, subtitle: String, modifier: Modifier = Modifier) {
+    Column(modifier = modifier) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+        Text(
+            text = subtitle,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
     }
 }

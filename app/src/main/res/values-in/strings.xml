@@ -72,6 +72,9 @@
     <string name="backup_import_dialog_message">Cadangan ini terenkripsi. Masukkan kata sandi yang kamu buat saat mengekspornya.</string>
     <string name="backup_wrong_password">Kata sandi salah atau file rusak</string>
     <string name="backup_working">Mohon tunggu…</string>
+    <string name="backup_import_working">Mengimpor kata sandi</string>
+    <string name="backup_export_working">Mengekspor cadangan</string>
+    <string name="backup_working_message">Mohon tunggu saat kata sandi kamu diproses.</string>
     <string name="toast_backup_foreign_device">Cadangan lama ini dibuat di perangkat lain dan tidak dapat dipulihkan di sini. Ekspor cadangan baru dari perangkat asalnya.</string>
     <string name="toast_backup_unsupported">File cadangan tidak didukung</string>
     <string name="toast_import_too_large">File melebihi 32 MiB atau 10.000 entri</string>
@@ -83,7 +86,8 @@
     <string name="toast_success_export">Sukses ekspor</string>
     <string name="toast_success_import">Berhasil impor dari file</string>
     <string name="toast_failed_export">Gagal ekspor</string>
-    <string name="toast_failed_import">Terjadi kesalahan saat membaca file JSON</string>
+    <string name="toast_failed_import">File gagal dibaca. Pilih cadangan Kupass atau CSV Google Password Manager.</string>
+    <string name="toast_failed_csv_import">CSV gagal diimpor. Kolom name, url, username, dan password wajib ada; note bersifat opsional.</string>
 
     <!-- Error -->
     <string name="error_required">Kolom ini wajib diisi</string>
@@ -154,10 +158,9 @@
     </plurals>
     <string name="search_close">Tutup pencarian</string>
     <string name="search_clear">Hapus pencarian</string>
-    <string name="vault_group_expand">Buka grup</string>
-    <string name="vault_group_collapse">Tutup grup</string>
-    <string name="vault_group_expanded">Terbuka</string>
-    <string name="vault_group_collapsed">Tertutup</string>
+    <string name="navigate_back">Kembali</string>
+    <string name="empty_group_title">Tidak ada akun</string>
+    <string name="empty_group_body">Kembali ke Beranda untuk memilih situs atau aplikasi lain.</string>
     <string name="vault_group_unnamed">Situs tanpa nama</string>
     <plurals name="vault_group_accounts">
         <item quantity="other">%1$d akun</item>

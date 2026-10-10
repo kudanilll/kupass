@@ -12,8 +12,10 @@ import androidx.compose.animation.scaleOut
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.selection.selectable
@@ -33,11 +35,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.dropShadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.shadow.Shadow
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import com.nielcode.kupass.R
 import com.nielcode.kupass.ui.theme.KupassTheme
@@ -49,7 +55,13 @@ internal fun <T> navSpring() =
 /** Height the floating navigation occupies (FAB plus vertical padding); pages pad by this. */
 val BottomNavHeight = 80.dp
 
-private val NavShadow = 4.dp
+private val NavShadow =
+    Shadow(
+        radius = 8.dp,
+        spread = 1.dp,
+        color = Color.Black.copy(alpha = 0.18f),
+        offset = DpOffset.Zero,
+    )
 private val PillToAddSpacing = 12.dp
 
 /** Floating pill navigation with an "add" button that only shows on the Home tab. */
@@ -82,7 +94,14 @@ fun BottomNav(
                 shape = RoundedCornerShape(18.dp),
                 containerColor = MaterialTheme.colorScheme.primaryContainer,
                 contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                elevation = FloatingActionButtonDefaults.elevation(defaultElevation = NavShadow),
+                modifier = Modifier.dropShadow(RoundedCornerShape(18.dp), NavShadow),
+                elevation =
+                    FloatingActionButtonDefaults.elevation(
+                        defaultElevation = 0.dp,
+                        pressedElevation = 0.dp,
+                        focusedElevation = 0.dp,
+                        hoveredElevation = 0.dp,
+                    ),
             ) {
                 Icon(Icons.Default.Add, contentDescription = stringResource(R.string.fab_open))
             }
@@ -97,10 +116,10 @@ private fun TabPill(
     modifier: Modifier = Modifier,
 ) {
     Surface(
-        modifier = modifier,
+        modifier = modifier.dropShadow(CircleShape, NavShadow),
         shape = CircleShape,
         color = MaterialTheme.colorScheme.surfaceContainer,
-        shadowElevation = NavShadow,
+        shadowElevation = 0.dp,
     ) {
         Row(
             modifier = Modifier.padding(6.dp).selectableGroup(),
@@ -117,6 +136,25 @@ private fun TabPill(
             }
         }
     }
+}
+
+/** Shared scrim for content scrolling behind the floating navigation. */
+@Composable
+fun BottomFade(modifier: Modifier = Modifier) {
+    val surface = MaterialTheme.colorScheme.surface
+    Box(
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .height(BottomNavHeight)
+                .background(
+                    Brush.verticalGradient(
+                        0f to Color.Transparent,
+                        0.6f to surface.copy(alpha = 0.7f),
+                        1f to surface,
+                    )
+                )
+    )
 }
 
 @Composable

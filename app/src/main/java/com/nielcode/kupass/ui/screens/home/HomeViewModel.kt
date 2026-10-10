@@ -35,6 +35,7 @@ class HomeViewModel(
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
     val passwords: StateFlow<List<PasswordEntity>>
+    val allPasswords: StateFlow<List<PasswordEntity>>
 
     private val _events = Channel<VaultEvent>(Channel.BUFFERED)
 
@@ -43,7 +44,7 @@ class HomeViewModel(
 
     init {
         // Decrypt the vault once per database change and keep it while the UI is subscribed...
-        val vault =
+        allPasswords =
             repository
                 .getAllPasswords()
                 // Never crash or show ciphertext when the vault can't be decrypted.
@@ -54,7 +55,7 @@ class HomeViewModel(
                 .stateIn(viewModelScope, WhileUiSubscribed, emptyList())
         // ...so each search keystroke only filters the in-memory list instead of decrypting again.
         passwords =
-            combine(vault, _searchQuery) { entries, query -> entries.filterByQuery(query) }
+            combine(allPasswords, _searchQuery) { entries, query -> entries.filterByQuery(query) }
                 .flowOn(filterDispatcher)
                 .stateIn(viewModelScope, WhileUiSubscribed, emptyList())
     }

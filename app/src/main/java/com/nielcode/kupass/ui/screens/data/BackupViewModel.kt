@@ -32,6 +32,11 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+enum class BackupOperation {
+    Import,
+    Export,
+}
+
 /**
  * ViewModel for backup export and import: holds the backup password only as long as needed, prompts
  * for the password of encrypted backups, and reports results as [VaultEvent]s.
@@ -63,6 +68,8 @@ class BackupViewModel(
 
     /** True during reads, parsing, crypto, and writes; blocks duplicate operations. */
     val backupBusy: StateFlow<Boolean> = _backupBusy.asStateFlow()
+    private val _operation = MutableStateFlow<BackupOperation?>(null)
+    val operation: StateFlow<BackupOperation?> = _operation.asStateFlow()
 
     private val operationPending: Boolean
         get() = _backupBusy.value || _importPrompt.value != null
@@ -115,6 +122,7 @@ class BackupViewModel(
         pendingExportPassword = null
         pendingExportToken = null
         if (authentication?.consumeExportForWrite(token) == true) {
+            _operation.value = BackupOperation.Export
             _backupBusy.value = true
             viewModelScope.launch(start = CoroutineStart.UNDISPATCHED) {
                 try {
@@ -126,6 +134,7 @@ class BackupViewModel(
                 } finally {
                     password.fill('\u0000')
                     _backupBusy.value = false
+                    _operation.value = null
                 }
             }
         } else {
@@ -155,6 +164,7 @@ class BackupViewModel(
         val exportPending =
             pendingExportPassword != null || authState?.export != null || nativeExportPending
         if (operationPending || exportPending) return
+        _operation.value = BackupOperation.Import
         _backupBusy.value = true
         importJob =
             viewModelScope
@@ -179,6 +189,7 @@ class BackupViewModel(
                         _events.send(e.toEvent())
                     } finally {
                         _backupBusy.value = false
+                        _operation.value = null
                         importJob = null
                     }
                 }
@@ -192,6 +203,7 @@ class BackupViewModel(
             password.fill('\u0000')
             return
         }
+        _operation.value = BackupOperation.Import
         _backupBusy.value = true
         importJob =
             viewModelScope
@@ -201,6 +213,7 @@ class BackupViewModel(
                     } finally {
                         password.fill('\u0000')
                         _backupBusy.value = false
+                        _operation.value = null
                         importJob = null
                     }
                 }
@@ -247,6 +260,7 @@ class BackupViewModel(
             is BackupException.ForeignDevice -> VaultEvent.BackupFromOtherDevice
             is BackupException.Unsupported -> VaultEvent.BackupUnsupported
             is BackupException.TooLarge -> VaultEvent.ImportTooLarge
+            is BackupException.InvalidCsv -> VaultEvent.CsvImportFailed
             else -> VaultEvent.ImportFailed
         }
 
