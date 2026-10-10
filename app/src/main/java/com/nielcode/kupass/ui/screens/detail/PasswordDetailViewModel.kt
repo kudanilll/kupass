@@ -8,13 +8,12 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.nielcode.kupass.data.local.db.PasswordEntity
 import com.nielcode.kupass.data.repository.PasswordRepository
 import com.nielcode.kupass.di.appContainer
-import com.nielcode.kupass.ui.screens.WhileUiSubscribed
 import com.nielcode.kupass.ui.screens.recoverable
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 /** Represents the state of a delete operation. */
@@ -32,6 +31,7 @@ sealed interface DeleteState {
 class PasswordDetailViewModel(private val repository: PasswordRepository) : ViewModel() {
 
     private var _passwordId: Long = -1L
+    private var loadJob: Job? = null
 
     private val _deleteState = MutableStateFlow<DeleteState>(DeleteState.Idle)
     val deleteState: StateFlow<DeleteState> = _deleteState.asStateFlow()
@@ -41,18 +41,22 @@ class PasswordDetailViewModel(private val repository: PasswordRepository) : View
     val password: StateFlow<PasswordEntity?> = _password.asStateFlow()
 
     fun loadPassword(id: Long) {
+        if (_passwordId == id && loadJob != null) return
+        loadJob?.cancel()
         _passwordId = id
-        viewModelScope.launch {
+        loadJob = viewModelScope.launch {
             repository
                 .getPasswordById(id)
                 .catch { emit(null) } // undecryptable entry: show nothing rather than ciphertext
-                .stateIn(
-                    scope = viewModelScope,
-                    started = WhileUiSubscribed,
-                    initialValue = null,
-                )
                 .collect { _password.value = it }
         }
+    }
+
+    /** A hidden or relocked destination must not keep a live decrypting subscription. */
+    fun clearSensitiveState() {
+        loadJob?.cancel()
+        loadJob = null
+        _password.value = null
     }
 
     fun deletePassword() {

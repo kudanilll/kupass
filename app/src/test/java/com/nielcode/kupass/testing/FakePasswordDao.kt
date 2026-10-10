@@ -5,23 +5,35 @@ import com.nielcode.kupass.data.local.db.PasswordEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.onStart
 
 /** In-memory [PasswordDao] that mirrors the Room queries closely enough for unit tests. */
 class FakePasswordDao : PasswordDao {
     private val rows = MutableStateFlow<List<PasswordEntity>>(emptyList())
     private var nextId = 1L
+    var listReads = 0
+        private set
+
+    var activeDetailReads = 0
+        private set
 
     /** Raw stored rows (encrypted fields as written by the repository). */
     val stored: List<PasswordEntity>
         get() = rows.value
 
-    override fun getAll(): Flow<List<PasswordEntity>> = rows
+    override fun getAll(): Flow<List<PasswordEntity>> {
+        listReads++
+        return rows
+    }
 
     override suspend fun getAllOnce(): List<PasswordEntity> = rows.value
 
-    override fun getById(id: Long): Flow<PasswordEntity?> = rows.map { list ->
-        list.firstOrNull { it.id == id }
-    }
+    override fun getById(id: Long): Flow<PasswordEntity?> =
+        rows
+            .map { list -> list.firstOrNull { it.id == id } }
+            .onStart { activeDetailReads++ }
+            .onCompletion { activeDetailReads-- }
 
     override suspend fun insert(password: PasswordEntity): Long {
         val id = if (password.id == 0L) nextId++ else password.id
