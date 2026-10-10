@@ -13,6 +13,8 @@ import com.nielcode.kupass.data.backup.BackupInput
 import com.nielcode.kupass.data.backup.GooglePasswordCsv
 import com.nielcode.kupass.data.repository.PasswordRepository
 import com.nielcode.kupass.di.appContainer
+import com.nielcode.kupass.security.EntryAuthenticationViewModel
+import com.nielcode.kupass.security.ExportConsent
 import com.nielcode.kupass.ui.screens.VaultEvent
 import com.nielcode.kupass.ui.screens.recoverable
 import java.io.IOException
@@ -39,6 +41,7 @@ class BackupViewModel(
     private val contentResolver: ContentResolver,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
     private val cpuDispatcher: CoroutineDispatcher = Dispatchers.Default,
+    private val authentication: EntryAuthenticationViewModel? = null,
 ) : ViewModel() {
 
     private val _events = Channel<VaultEvent>(Channel.BUFFERED)
@@ -49,6 +52,7 @@ class BackupViewModel(
     /** Backup password held only between the password dialog and the file picker result. */
     private var pendingExportPassword: CharArray? = null
     private var importJob: Job? = null
+    private var pendingExportToken: Long? = null
 
     private val _importPrompt = MutableStateFlow<ImportPrompt?>(null)
 
@@ -60,41 +64,72 @@ class BackupViewModel(
     /** True during reads, parsing, crypto, and writes; blocks duplicate operations. */
     val backupBusy: StateFlow<Boolean> = _backupBusy.asStateFlow()
 
+    private val operationPending: Boolean
+        get() = _backupBusy.value || _importPrompt.value != null
+
+    init {
+        authentication?.let { owner ->
+            viewModelScope.launch {
+                owner.state.collect { clearRevokedExport() }
+            }
+        }
+    }
+
     /** Step 1 of export: remember the chosen password until the user picks a file. */
     fun prepareExport(password: CharArray) {
+        val consent = authentication?.state?.value?.export
         if (
-            _backupBusy.value ||
-                _importPrompt.value != null ||
+            consent?.phase != ExportConsent.Phase.Picker ||
+                operationPending ||
                 password.size < BackupCodec.MIN_PASSWORD_LENGTH
         ) {
             password.fill('\u0000')
+            cancelExport()
             return
         }
         pendingExportPassword?.fill('\u0000')
         pendingExportPassword = password
+        pendingExportToken = consent.token
     }
 
     /** The user dismissed the file picker. */
     fun cancelExport() {
         pendingExportPassword?.fill('\u0000')
         pendingExportPassword = null
+        pendingExportToken = null
+    }
+
+    private fun clearRevokedExport() {
+        val token = pendingExportToken ?: return
+        if (authentication?.state?.value?.export?.token != token) cancelExport()
     }
 
     /** Step 2 of export: write an encrypted v2 backup to [uri]. */
     fun exportPasswords(uri: Uri) {
-        if (_backupBusy.value || _importPrompt.value != null) return
+        if (operationPending) {
+            cancelExport()
+            return
+        }
         val password = pendingExportPassword ?: return
+        val token = pendingExportToken
         pendingExportPassword = null
-        _backupBusy.value = true
-        viewModelScope.launch(start = CoroutineStart.UNDISPATCHED) {
-            try {
-                _events.send(recoverable { writeBackup(uri, password) } ?: VaultEvent.ExportFailed)
-            } catch (_: BackupException) {
-                _events.send(VaultEvent.ExportFailed)
-            } finally {
-                password.fill('\u0000')
-                _backupBusy.value = false
+        pendingExportToken = null
+        if (authentication?.consumeExportForWrite(token) == true) {
+            _backupBusy.value = true
+            viewModelScope.launch(start = CoroutineStart.UNDISPATCHED) {
+                try {
+                    _events.send(
+                        recoverable { writeBackup(uri, password) } ?: VaultEvent.ExportFailed
+                    )
+                } catch (_: BackupException) {
+                    _events.send(VaultEvent.ExportFailed)
+                } finally {
+                    password.fill('\u0000')
+                    _backupBusy.value = false
+                }
             }
+        } else {
+            password.fill('\u0000')
         }
     }
 
@@ -112,14 +147,27 @@ class BackupViewModel(
 
     /** Reads JSON backups or Google CSV by content, regardless of the provider's name or MIME. */
     fun importPasswords(uri: Uri) {
-        if (_backupBusy.value || _importPrompt.value != null || pendingExportPassword != null)
-            return
+        clearRevokedExport()
+        val authState = authentication?.state?.value
+        val nativeExportPending =
+            authState?.pending?.action == EntryAuthenticationViewModel.Action.Export ||
+                authState?.nativeRequest?.action == EntryAuthenticationViewModel.Action.Export
+        val exportPending =
+            pendingExportPassword != null || authState?.export != null || nativeExportPending
+        if (operationPending || exportPending) return
         _backupBusy.value = true
         importJob =
             viewModelScope
                 .launch(start = CoroutineStart.UNDISPATCHED) {
                     try {
-                        val content = recoverable { withContext(ioDispatcher) { readBounded(uri) } }
+                        val content = recoverable {
+                            withContext(ioDispatcher) {
+                                val stream =
+                                    contentResolver.openInputStream(uri)
+                                        ?: throw IOException("No input stream")
+                                stream.use(BackupInput::read)
+                            }
+                        }
                         when {
                             content == null -> _events.send(VaultEvent.ImportFailed)
                             withContext(cpuDispatcher) {
@@ -202,12 +250,6 @@ class BackupViewModel(
             else -> VaultEvent.ImportFailed
         }
 
-    /** The stream closes on success, invalid UTF-8, a size limit, or a read failure. */
-    private fun readBounded(uri: Uri): String {
-        val stream = contentResolver.openInputStream(uri) ?: throw IOException("No input stream")
-        return stream.use(BackupInput::read)
-    }
-
     override fun onCleared() {
         cancelExport()
         cancelImport()
@@ -223,5 +265,18 @@ class BackupViewModel(
                 BackupViewModel(container.passwordRepository, container.contentResolver)
             }
         }
+
+        /** Native consent is activity-retained, never process-wide or saved. */
+        fun factory(authentication: EntryAuthenticationViewModel): ViewModelProvider.Factory =
+            viewModelFactory {
+                initializer {
+                    val container = appContainer()
+                    BackupViewModel(
+                        container.passwordRepository,
+                        container.contentResolver,
+                        authentication = authentication,
+                    )
+                }
+            }
     }
 }

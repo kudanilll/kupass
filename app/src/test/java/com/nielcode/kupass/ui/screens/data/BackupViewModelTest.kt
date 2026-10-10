@@ -10,6 +10,8 @@ import com.nielcode.kupass.data.local.db.PasswordEntity
 import com.nielcode.kupass.data.repository.PasswordRepository
 import com.nielcode.kupass.security.CryptoException
 import com.nielcode.kupass.security.CryptoManager
+import com.nielcode.kupass.security.EntryAuthenticationViewModel
+import com.nielcode.kupass.security.EntryAuthenticationViewModel.Action
 import com.nielcode.kupass.testing.FakePasswordDao
 import com.nielcode.kupass.testing.MainDispatcherRule
 import com.nielcode.kupass.ui.screens.VaultEvent
@@ -127,12 +129,14 @@ class BackupViewModelTest {
 
     @Test
     fun `picker cancellation and rejected password submissions clear their arrays`() {
-        val vm = viewModel()
+        val vm = viewModel(authentication = authorizedExport())
         val first = PASSWORD.toCharArray()
         val second = PASSWORD.toCharArray()
         vm.prepareExport(first)
+        assertFalse(first.all { it == '\u0000' })
         vm.prepareExport(second)
         assertTrue(first.all { it == '\u0000' })
+        assertFalse(second.all { it == '\u0000' })
         vm.cancelExport()
         assertTrue(second.all { it == '\u0000' })
         val unused = PASSWORD.toCharArray()
@@ -217,7 +221,7 @@ class BackupViewModelTest {
 
     @Test
     fun `clearing the ViewModel cancels pending work and wipes export passwords`() = runTest {
-        val vm = viewModel()
+        val vm = viewModel(authentication = authorizedExport())
         val password = PASSWORD.toCharArray()
         vm.prepareExport(password)
         val store = ViewModelStore()
@@ -236,10 +240,13 @@ class BackupViewModelTest {
         repository.insertPassword(entry())
         val output = TrackingOutput()
         shadowOf(resolver).registerOutputStream(OUTPUT, output)
-        val vm = viewModel()
+        val auth = authorizedExport()
+        val vm = viewModel(authentication = auth)
         val password = PASSWORD.toCharArray()
         vm.prepareExport(password)
+        assertTrue(auth.completeExportPicker(true))
         vm.exportPasswords(OUTPUT)
+        assertTrue(vm.backupBusy.value)
         vm.exportPasswords(OUTPUT)
         advanceUntilIdle()
 
@@ -263,9 +270,11 @@ class BackupViewModelTest {
                         throw IOException("Write failed")
                 }
             shadowOf(resolver).registerOutputStream(OUTPUT, output)
-            val vm = viewModel()
+            val auth = authorizedExport()
+            val vm = viewModel(authentication = auth)
             val password = PASSWORD.toCharArray()
             vm.prepareExport(password)
+            assertTrue(auth.completeExportPicker(true))
             vm.exportPasswords(OUTPUT)
             advanceUntilIdle()
 
@@ -324,13 +333,143 @@ class BackupViewModelTest {
         assertTrue(dao.stored.isEmpty())
     }
 
-    private fun viewModel(repo: PasswordRepository = repository) =
+    @Test
+    fun `imports wait through export authentication consent and picker then resume after cancellation`() =
+        runTest {
+            val input = registerInput(CSV)
+            val auth = EntryAuthenticationViewModel({ 30_000L }, { 1_000L })
+            auth.setDestination("home", null)
+            auth.onForeground(true)
+            val vm = viewModel(authentication = auth)
+            auth.request(Action.Export, "home")
+            vm.importPasswords(INPUT)
+            val request = requireNotNull(auth.beginNativePrompt())
+            vm.importPasswords(INPUT)
+            auth.nativeResult(request.token, true)
+            vm.importPasswords(INPUT)
+            assertTrue(auth.startExportPicker(request.token))
+            val password = PASSWORD.toCharArray()
+            vm.prepareExport(password)
+            vm.importPasswords(INPUT)
+            assertTrue(auth.completeExportPicker(true))
+            vm.importPasswords(INPUT)
+            advanceUntilIdle()
+
+            assertFalse(input.closed)
+            assertFalse(vm.backupBusy.value)
+            assertTrue(dao.stored.isEmpty())
+            assertEquals(0, dao.listReads)
+            assertFalse(password.all { it == '\u0000' })
+
+            auth.cancelPending()
+            vm.importPasswords(INPUT)
+            assertTrue(password.all { it == '\u0000' })
+            advanceUntilIdle()
+            assertEquals(VaultEvent.ImportSucceeded(1, 0), vm.events.first())
+            assertTrue(input.closed)
+        }
+
+    @Test
+    fun `expired picker completion clears password without vault or provider access`() = runTest {
+        var now = 1_000L
+        val auth = authorizedExport { now }
+        val vm = viewModel(authentication = auth)
+        val password = PASSWORD.toCharArray()
+        val output = TrackingOutput()
+        shadowOf(resolver).registerOutputStream(OUTPUT, output)
+        vm.prepareExport(password)
+        now += 300_000L
+        assertFalse(auth.completeExportPicker(true))
+        vm.exportPasswords(OUTPUT)
+        advanceUntilIdle()
+
+        assertTrue(password.all { it == '\u0000' })
+        assertEquals(0, dao.listReads)
+        assertFalse(output.closed)
+        assertEquals(0, output.size())
+        assertFalse(vm.backupBusy.value)
+    }
+
+    @Test
+    fun `revocation after picker completion denies export before queued collector runs`() =
+        runTest {
+            val auth = authorizedExport()
+            val vm = viewModel(authentication = auth)
+            val password = PASSWORD.toCharArray()
+            val output = TrackingOutput()
+            shadowOf(resolver).registerOutputStream(OUTPUT, output)
+            vm.prepareExport(password)
+            assertTrue(auth.completeExportPicker(true))
+            auth.revoke()
+            vm.exportPasswords(OUTPUT)
+
+            assertTrue(password.all { it == '\u0000' })
+            assertEquals(0, dao.listReads)
+            assertFalse(output.closed)
+            assertEquals(0, output.size())
+            assertFalse(vm.backupBusy.value)
+            advanceUntilIdle()
+        }
+
+    @Test
+    fun `cancelled native export blocks import until its terminal callback drains`() = runTest {
+        var providerOpens = 0
+        val input = TrackingInput(CSV.toByteArray())
+        shadowOf(resolver).registerInputStreamSupplier(INPUT) {
+            providerOpens++
+            input
+        }
+        val auth = EntryAuthenticationViewModel({ 30_000L }, { 1_000L })
+        auth.setDestination("home", null)
+        auth.onForeground(true)
+        val vm = viewModel(authentication = auth)
+        auth.request(Action.Export, "home")
+        val request = requireNotNull(auth.beginNativePrompt())
+        auth.cancelPending()
+        assertNull(auth.state.value.pending)
+        assertNull(auth.state.value.export)
+        assertEquals(request, auth.state.value.nativeRequest)
+
+        vm.importPasswords(INPUT)
+        advanceUntilIdle()
+        assertEquals(0, providerOpens)
+        assertEquals(0, dao.listReads)
+        assertTrue(dao.stored.isEmpty())
+        assertFalse(vm.backupBusy.value)
+        assertFalse(input.closed)
+
+        auth.nativeResult(request.token, false)
+        assertNull(auth.state.value.nativeRequest)
+        vm.importPasswords(INPUT)
+        advanceUntilIdle()
+        assertEquals(VaultEvent.ImportSucceeded(1, 0), vm.events.first())
+        assertEquals(1, providerOpens)
+        assertEquals(1, dao.listReads)
+        assertTrue(input.closed)
+    }
+
+    private fun authorizedExport(clock: () -> Long = { 1_000L }): EntryAuthenticationViewModel {
+        val auth = EntryAuthenticationViewModel({ 30_000L }, clock)
+        auth.setDestination("home", null)
+        auth.onForeground(true)
+        auth.request(Action.Export, "home")
+        val request = requireNotNull(auth.beginNativePrompt())
+        auth.nativeResult(request.token, true)
+        assertTrue(auth.startExportPicker(request.token))
+        return auth
+    }
+
+    private fun viewModel(
+        repo: PasswordRepository = repository,
+        authentication: EntryAuthenticationViewModel? = null,
+    ) =
         BackupViewModel(
             repo,
             resolver,
             ioDispatcher = StandardTestDispatcher(mainDispatcher.dispatcher.scheduler, name = "io"),
             cpuDispatcher =
                 StandardTestDispatcher(mainDispatcher.dispatcher.scheduler, name = "cpu"),
+            authentication = authentication,
         )
 
     private fun registerInput(content: String): TrackingInput =

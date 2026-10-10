@@ -19,7 +19,7 @@
 - 0 open `Critical`/`High` items in `CONCERNS.md` §1.
 - CI green on every PR: build, unit tests, lint (0 errors), format check.
 - A backup exported on phone A restores correctly on phone B with the backup password (automated test + manual check).
-- The vault opens only after biometric/device-credential authentication.
+- Each new account open and each export requires fresh biometric/device-credential authentication; public browsing and creation require none (SEC-2 revised 2026-10-09).
 - Release APK size is recorded per release. The target is < 8 MB (proposed). The font is down from ~3.9 MB to 236 KB (S-5.1).
 - Every Room schema change ships with a migration test.
 
@@ -108,7 +108,7 @@ Enablers only. They make every later change safer and cheaper.
 
 ### Epic E3: App Lock (M1, size M)
 
-Confirmed decision: biometric with device-credential fallback, no master password.
+Confirmed decision, revised 2026-10-09: public launch/list/search/tabs/create, fresh native authentication before every new account open and before every export password dialog. Actual detail and positive-ID editor routes are gated before any sensitive ViewModel is created. Entry-bound grants are memory-only; rotation preserves an in-flight prompt, process restoration does not restore grants. Detail/edit/back shares its grant chain. This supersedes the historical launch-lock scope below; background timeout choices/defaults and bounded external-trip exemptions remain.
 
 | ID    | Type  | Title                                                                                                                                                                     | Pts | Pri | Blocked by | Source             |
 | ----- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- | --- | ---------- | ------------------ |
@@ -116,7 +116,7 @@ Confirmed decision: biometric with device-credential fallback, no master passwor
 | S-3.2 | Story | As a user, the app re-locks after N seconds in the background (setting: immediately / 30 s / 1 min / 5 min)                                                               | 3   | P0  | S-3.1      | SEC-2              |
 | S-3.3 | Story | As a user, a copied password is cleared from the clipboard after a timeout on every API level (27–37), not only < 33                                                      | 2   | P1  | none       | SEC-6, CONCERNS §3 |
 
-**Acceptance:** no vault data is composed before a successful auth. Tested on API 27, 30, 33, and 37 emulators.
+**Current acceptance:** no individual-account detail/editor data is composed or loaded before authorization, restored sensitive routes fail closed, stale callbacks cannot grant access, and unauthorized exports never snapshot/write. Absence timing and bounded exemptions belong to the same activity-retained controller as its grants. Independent reviews accepted the authority, callback-routing and rapid-return corrections. Final serial verification on base `38717b6` passed all 107 tests, detekt (0 findings and compiler-analysis errors), lint (0 errors, 47 warnings) and debug assembly. Rebuilt-APK native QA passed API 33 rapid pause/resume-only and settled returns, detail/editor expiry, pending-prompt rotation and PIN success, fresh account/export challenges, and a real SAF export under Immediate timeout. Native coverage does not include API 27/28/29 fallback, API 37, physical biometrics or real process death; test-double results do not establish those behaviors.
 
 ### Epic E4: Reliability & UX (M2, size M)
 

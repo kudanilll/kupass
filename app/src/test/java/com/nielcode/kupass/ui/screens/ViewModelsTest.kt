@@ -1,10 +1,13 @@
 package com.nielcode.kupass.ui.screens
 
 import android.net.Uri
+import com.nielcode.kupass.data.backup.GooglePasswordCsv
 import com.nielcode.kupass.data.local.db.PasswordEntity
 import com.nielcode.kupass.data.repository.PasswordRepository
 import com.nielcode.kupass.security.CryptoException
 import com.nielcode.kupass.security.CryptoManager
+import com.nielcode.kupass.security.EntryAuthenticationViewModel
+import com.nielcode.kupass.security.EntryAuthenticationViewModel.Action
 import com.nielcode.kupass.testing.FakePasswordDao
 import com.nielcode.kupass.testing.MainDispatcherRule
 import com.nielcode.kupass.ui.screens.data.BackupViewModel
@@ -19,6 +22,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -79,6 +84,41 @@ class ViewModelsTest {
     }
 
     @Test
+    fun `editing another field preserves imported username password notes ID and creation time`() =
+        runTest {
+            val notes = " \nformatted note\n\t "
+            val csv =
+                "name,url,username,password,note\n" +
+                    "Imported,https://example.com, me , \t ,\"$notes\""
+            assertEquals(
+                1,
+                repository.importPasswords(GooglePasswordCsv.decode(csv).entries).imported,
+            )
+            val original = repository.getAllPasswords().first().single()
+            val vm = PasswordEditorViewModel(repository, requestedId = original.id)
+            vm.loadPassword(original.id)
+
+            vm.savePassword(
+                "Renamed",
+                original.username,
+                original.password,
+                original.url,
+                original.notes,
+            )
+
+            assertEquals(SaveState.Success, vm.saveState.value)
+            val saved = repository.getPasswordById(original.id).first()
+            assertEquals(
+                original.copy(siteName = "Renamed", updatedAt = saved?.updatedAt ?: 0),
+                saved,
+            )
+            assertEquals(" me ", saved?.username)
+            assertEquals(" \t ", saved?.password)
+            assertEquals(notes, saved?.notes)
+            assertEquals(1, dao.stored.size)
+        }
+
+    @Test
     fun `home lists decrypted entries and filters by search`() = runTest {
         repository.insertPassword(
             PasswordEntity(siteName = "Google", username = "alice", password = "p1")
@@ -110,13 +150,96 @@ class ViewModelsTest {
     }
 
     @Test
+    fun `relocked detail drops plaintext and cancels its live repository subscription`() = runTest {
+        val id = repository.insertPassword(PasswordEntity(siteName = "Entry", password = "secret"))
+        val vm = PasswordDetailViewModel(repository)
+        vm.loadPassword(id)
+        assertEquals(1, dao.activeDetailReads)
+        vm.clearSensitiveState()
+        assertEquals(0, dao.activeDetailReads)
+        assertNull(vm.password.value)
+        repository.updatePassword(PasswordEntity(id = id, siteName = "Changed", password = "new"))
+        assertNull(vm.password.value)
+    }
+
+    @Test
     fun `export of an empty vault emits NothingToExport`() = runTest {
-        val vm = BackupViewModel(repository, RuntimeEnvironment.getApplication().contentResolver)
+        val auth = authorizedExport()
+        val vm =
+            BackupViewModel(
+                repository,
+                RuntimeEnvironment.getApplication().contentResolver,
+                authentication = auth,
+            )
 
         vm.prepareExport("correct horse".toCharArray())
+        assertTrue(auth.completeExportPicker(true))
         vm.exportPasswords(Uri.parse("content://test/backup.json"))
 
         assertEquals(VaultEvent.NothingToExport, vm.events.first())
+    }
+
+    @Test
+    fun `unauthorized export never snapshots vault or opens a provider and wipes password`() =
+        runTest {
+            val vm =
+                BackupViewModel(repository, RuntimeEnvironment.getApplication().contentResolver)
+            val password = "correct horse".toCharArray()
+            vm.prepareExport(password)
+            vm.exportPasswords(Uri.parse("content://provider-that-must-not-be-called/backup.json"))
+            assertEquals(0, dao.listReads)
+            assertTrue(password.all { it == '\u0000' })
+            assertFalse(vm.backupBusy.value)
+        }
+
+    @Test
+    fun `revoked export consent clears pending password and no vault snapshot occurs`() = runTest {
+        val auth = authorizedExport()
+        val vm =
+            BackupViewModel(
+                repository,
+                RuntimeEnvironment.getApplication().contentResolver,
+                authentication = auth,
+            )
+        val password = "correct horse".toCharArray()
+        vm.prepareExport(password)
+        auth.revoke()
+        assertTrue(password.all { it == '\u0000' })
+        assertFalse(auth.completeExportPicker(true))
+        vm.exportPasswords(Uri.parse("content://provider-that-must-not-be-called/backup.json"))
+        assertEquals(0, dao.listReads)
+    }
+
+    @Test
+    fun `positive editor with missing or unreadable account can never insert`() = runTest {
+        val missing = PasswordEditorViewModel(repository, requestedId = 999L)
+        missing.savePassword("Missing", "", "secret", "", "")
+        assertEquals(SaveState.Error, missing.saveState.value)
+        missing.loadPassword(999L)
+        missing.savePassword("Missing", "", "secret", "", "")
+        assertTrue(missing.loadFailed.value)
+        assertTrue(dao.stored.isEmpty())
+
+        val id = repository.insertPassword(PasswordEntity(siteName = "Old", password = "secret"))
+        val original = dao.stored.single()
+        CryptoManager.setKeyProviderForTesting { throw CryptoException("Unavailable") }
+        val unreadable = PasswordEditorViewModel(repository, requestedId = id)
+        unreadable.loadPassword(id)
+        unreadable.savePassword("Replacement", "", "different", "", "")
+        assertTrue(unreadable.loadFailed.value)
+        assertEquals(SaveState.Error, unreadable.saveState.value)
+        assertEquals(listOf(original), dao.stored)
+    }
+
+    private fun authorizedExport(): EntryAuthenticationViewModel {
+        val auth = EntryAuthenticationViewModel({ 30_000L }, { 1_000L })
+        auth.setDestination("home", null)
+        auth.onForeground(true)
+        auth.request(Action.Export, "home")
+        val request = requireNotNull(auth.beginNativePrompt())
+        auth.nativeResult(request.token, true)
+        assertTrue(auth.startExportPicker(request.token))
+        return auth
     }
 
     @Test

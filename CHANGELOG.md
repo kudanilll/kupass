@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Account access and background exemptions are isolated per activity instance. Starting or authenticating another Kupass activity cannot revive an account whose background timeout has expired.
 - Copied passwords are cleared from the clipboard after 45 seconds on every Android version, including when Kupass is in the background.
 - Vault data is excluded from Android cloud backup and device-to-device transfer on every Android version. Use the password-protected export to move your vault.
 - Site names, usernames, URLs, and notes are now encrypted on the device like passwords. Existing vaults are upgraded automatically on first launch.
@@ -16,14 +17,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Local import from Google Password Manager CSV exports, including notes and Android app entries. Quoted multiline fields and exact password whitespace are preserved; invalid records and duplicates are reported as skipped.
-- App lock: the vault opens only after fingerprint/face or the device PIN/pattern/password, and locks again after leaving the app (Settings → Security → Auto-lock: immediately, 30 seconds, 1 minute, or 5 minutes). Devices without a screen lock are asked to set one up.
-- Optional site icons in the vault list (Settings → Security → Site icons). Off by default. When turned on, only each entry's domain is sent to the Favget icon service, and icons are kept in memory only.
+- Account authentication: each new account open requires fingerprint/face or the device PIN/pattern/password before its details load. Editing from that detail and returning shares the same authorization. Sensitive account screens lock after the selected background timeout; launch, browsing, search, tabs, and new-entry creation stay available without authentication.
+- Site icons in the vault list, with domain-only requests to the Favget icon service and in-memory caching.
 - Empty states for an empty vault (with an "Add password" button) and for searches without results.
 - Portable encrypted backups: export asks for a backup password and encrypts the whole vault (PBKDF2-HMAC-SHA256 + AES-256-GCM), so a backup can be restored on a new phone or after reinstalling.
 
 ### Changed
 
 - Encrypted backups now use the name `kupass-backup.kupass`, with the same portable v2 encrypted JSON format. Older `.json` backups remain importable, and import detects the format from validated content rather than filenames or provider MIME types.
+- Every export requires fresh native authentication before the backup-password dialog. Permission is bound to one export request, expires after five minutes, and is consumed before writing the encrypted backup. Cancelled or stale pickers cannot export.
+- Restored detail/editor destinations require authentication before any sensitive screen or ViewModel loads. Devices without a screen lock show guidance only when opening an existing account or exporting. An existing account that fails to load in the editor can never become an accidental new account.
 - Site icons are always enabled when an entry has a public domain and the build has a Favget API key; the Settings toggle was removed. When the URL is empty, a single-word site name such as `GitHub` tries `github.com`.
 - Dynamic colors now default to enabled on supported devices, and the open-source licenses screen follows Kupass's selected color scheme.
 - Tightened the spacing between the bottom navigation and add button, added a subtle navigation shadow, and removed the duplicate add button from the empty-vault state.
@@ -42,8 +45,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Editing imported entries preserves username and note formatting and accepts nonempty whitespace-only passwords. Empty passwords and blank site names still disable Save.
+- Import waits for a cancelled native export prompt's terminal callback before accessing the selected file or vault.
 - Imports reject malformed UTF-8, CSV headers, quotes, and row widths before any insertion, and limit input to 32 MiB and 10,000 data entries including skipped rows. Duplicate submits are ignored and cancelled import passwords are cleared.
 - Android app facet URLs never trigger site-icon lookups for package names or guessed website domains.
+- Rapid returns from the Android launcher now enforce the account background timeout even when the activity resumes without stopping first.
 - Type-aware detekt analysis now resolves generated Java classes such as `BuildConfig` instead of reporting compiler errors.
 - Importing is now all-or-nothing, skips entries that already exist (or appear twice in the file), and reports how many were imported and skipped.
 - Importing an old backup made on another device no longer imports encrypted text as passwords. The import is refused with an explanation.

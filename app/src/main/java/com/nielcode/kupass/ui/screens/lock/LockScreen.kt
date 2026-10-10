@@ -8,11 +8,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LockOpen
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -25,7 +27,7 @@ import androidx.compose.ui.unit.dp
 import com.nielcode.kupass.R
 
 /**
- * Shown instead of the whole app while the vault is locked. No vault data is composed here.
+ * Shown only instead of a protected destination. No entry data is composed here.
  *
  * @param deviceSecure whether the device has a screen lock. Without one the vault can't be
  *   protected, so the user is guided to set one up.
@@ -35,6 +37,7 @@ fun LockScreen(
     deviceSecure: Boolean,
     onUnlock: () -> Unit,
     onOpenSecuritySettings: () -> Unit,
+    onCancel: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val currentOnUnlock by rememberUpdatedState(onUnlock)
@@ -89,6 +92,33 @@ fun LockScreen(
                     Text(stringResource(R.string.lock_open_settings))
                 }
             }
+            TextButton(onClick = onCancel) { Text(stringResource(R.string.button_cancel)) }
         }
+    }
+}
+
+/**
+ * Public pages remain usable without credentials; guidance is shown only for a sensitive action.
+ */
+@Composable
+fun SensitiveActionGuidance(
+    visible: Boolean,
+    onOpenSecuritySettings: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    if (visible) {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = { Text(stringResource(R.string.lock_no_credential_title)) },
+            text = { Text(stringResource(R.string.lock_no_credential_message)) },
+            confirmButton = {
+                TextButton(onClick = onOpenSecuritySettings) {
+                    Text(stringResource(R.string.lock_open_settings))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = onDismiss) { Text(stringResource(R.string.button_cancel)) }
+            },
+        )
     }
 }

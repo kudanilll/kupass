@@ -127,4 +127,15 @@ class AppLockTest {
 
         assertFalse(lock.locked.value)
     }
+
+    @Test
+    fun `successful foreground authentication cannot exempt a later unrelated departure`() {
+        timeout = 0
+        lock.unlock()
+        lock.allowNextBackground() // Native biometric prompt stayed in this Activity.
+        lock.unlock() // Success consumes any unused native credential allowance.
+        lock.onBackground(isChangingConfigurations = false)
+        lock.onForeground()
+        assertTrue(lock.locked.value)
+    }
 }

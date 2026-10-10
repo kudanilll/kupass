@@ -66,7 +66,11 @@ private enum class SettingsDialog {
 
 /** App settings: language, auto-lock, theme, dynamic color, and about links. */
 @Composable
-fun SettingsScreen(modifier: Modifier = Modifier, contentPadding: PaddingValues = PaddingValues()) {
+fun SettingsScreen(
+    modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues(),
+    onAllowBackground: () -> Unit = {},
+) {
     val context = LocalContext.current
     val container = remember(context) { (context.applicationContext as App).container }
     val settings = remember(container) { SettingsController(context, container.preferenceManager) }
@@ -99,8 +103,8 @@ fun SettingsScreen(modifier: Modifier = Modifier, contentPadding: PaddingValues 
             AboutSection(
                 dynamicColorEnabled = settings.dynamicColor == AppConfig.DynamicColors.Code.ENABLE,
                 onOpen = { launch ->
-                    // Leaving for a browser or the licenses screen must not lock the vault.
-                    container.appLock.allowNextBackground()
+                    // Use the launching activity's bounded allowance for external screens.
+                    onAllowBackground()
                     launch(context)
                 },
             )
