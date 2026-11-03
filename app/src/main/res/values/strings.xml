@@ -87,6 +87,8 @@
     <string name="toast_success_import">Success import</string>
     <string name="toast_failed_export">Failed export</string>
     <string name="toast_failed_import">Could not read this file. Choose a Kupass backup or a Google Password Manager CSV.</string>
+    <string name="toast_import_read_failed">Could not open the selected file. Download it to this device and select it again.</string>
+    <string name="toast_import_store_failed">Could not save the imported accounts. Existing accounts were not changed.</string>
     <string name="toast_failed_csv_import">Could not import this CSV. It needs name, url, username and password columns; note is optional.</string>
 
     <!-- Error -->
@@ -130,13 +132,13 @@
     <!-- Misc -->
     <string name="toast_url_failed">No application found to handle this link</string>
     <string name="settings_category_security">Security</string>
-    <string name="settings_auto_lock_title">Lock account after background</string>
+    <string name="settings_auto_lock_title">Lock session after background</string>
     <string name="auto_lock_immediately">Immediately</string>
-    <string name="lock_title">Account is locked</string>
-    <string name="lock_message">Confirm your identity to view or edit this account. Browsing and creating entries stay available.</string>
+    <string name="lock_title">Session is locked</string>
+    <string name="lock_message">Unlock to view or edit accounts until the session locks after your background timeout. Browsing and creating entries stay available.</string>
     <string name="lock_button_unlock">Unlock</string>
     <string name="lock_prompt_title">Confirm your identity</string>
-    <string name="lock_prompt_subtitle">Authenticate to open this account</string>
+    <string name="lock_prompt_subtitle">Unlock accounts for this session</string>
     <string name="lock_export_prompt_subtitle">Authenticate to export an encrypted backup</string>
     <string name="editor_load_failed">This account could not be loaded. Go back and try again. No new account will be created.</string>
     <string name="lock_no_credential_title">Set up a screen lock</string>

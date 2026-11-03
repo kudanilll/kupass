@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberOverscrollEffect
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -63,6 +64,7 @@ import com.nielcode.kupass.data.siteicon.SiteIcons
 import com.nielcode.kupass.data.siteicon.siteDomainOf
 import com.nielcode.kupass.ui.components.BottomFade
 import com.nielcode.kupass.ui.components.EmptyState
+import com.nielcode.kupass.ui.components.stretchWhenContentFits
 import com.nielcode.kupass.ui.screens.home.VaultGroup
 import com.nielcode.kupass.ui.screens.home.groupVault
 
@@ -87,6 +89,7 @@ fun VaultList(
     siteIcons: SiteIcons? = null,
     onGroupClick: ((Long) -> Unit)? = null,
     showHeadline: Boolean = true,
+    showSearch: Boolean = true,
 ) {
     val groups = remember(passwords) { groupVault(passwords) }
     val matching = remember(passwords, query) { passwords.filterByQuery(query) }
@@ -96,37 +99,31 @@ fun VaultList(
             groups.filter { group -> group.accounts.any { it.id in matchingIds } }
         }
     val listState = rememberLazyListState()
+    val scrolls = listState.canScrollForward || listState.canScrollBackward
+    val overscroll = rememberOverscrollEffect()
     LaunchedEffect(searchActive) {
         if (searchActive) listState.animateScrollToItem(0)
     }
     Box(modifier = modifier.fillMaxSize()) {
         LazyColumn(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize().stretchWhenContentFits(scrolls),
             state = listState,
+            userScrollEnabled = scrolls,
+            overscrollEffect = if (scrolls) overscroll else null,
             contentPadding = PaddingValues(bottom = contentPadding.calculateBottomPadding()),
         ) {
             item(key = "headline", contentType = "headline") {
-                AnimatedVisibility(
-                    visible = showHeadline && !searchActive,
-                    enter = expandVertically(tween(220)) + fadeIn(tween(220)),
-                    exit = shrinkVertically(tween(220)) + fadeOut(tween(220)),
-                ) {
-                    Text(
-                        text = stringResource(R.string.headline),
-                        style = MaterialTheme.typography.displaySmall,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.fillMaxWidth(0.8f).padding(start = 16.dp, top = 32.dp),
+                VaultHeadline(showHeadline && !searchActive)
+            }
+            if (showSearch)
+                stickyHeader(key = "search", contentType = "search") {
+                    VaultSearchBar(
+                        query = query,
+                        onQueryChange = onQueryChange,
+                        active = searchActive,
+                        onActiveChange = onSearchActiveChange,
                     )
                 }
-            }
-            stickyHeader(key = "search", contentType = "search") {
-                VaultSearchBar(
-                    query = query,
-                    onQueryChange = onQueryChange,
-                    active = searchActive,
-                    onActiveChange = onSearchActiveChange,
-                )
-            }
             if (matching.isEmpty()) {
                 item(key = "empty", contentType = "empty") {
                     VaultEmptyState(
@@ -142,6 +139,23 @@ fun VaultList(
             }
         }
         if (showHeadline) BottomFade(modifier = Modifier.align(Alignment.BottomCenter))
+    }
+}
+
+@Composable
+private fun VaultHeadline(visible: Boolean, modifier: Modifier = Modifier) {
+    AnimatedVisibility(
+        visible = visible,
+        modifier = modifier,
+        enter = expandVertically(tween(220)) + fadeIn(tween(220)),
+        exit = shrinkVertically(tween(220)) + fadeOut(tween(220)),
+    ) {
+        Text(
+            text = stringResource(R.string.headline),
+            style = MaterialTheme.typography.displaySmall,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.fillMaxWidth(0.8f).padding(start = 16.dp, top = 32.dp),
+        )
     }
 }
 

@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Code
@@ -49,6 +47,7 @@ import com.nielcode.kupass.ui.components.BottomFade
 import com.nielcode.kupass.ui.components.SectionHeader
 import com.nielcode.kupass.ui.components.SectionItem
 import com.nielcode.kupass.ui.components.SingleChoiceDialog
+import com.nielcode.kupass.ui.components.pageVerticalScroll
 import com.nielcode.kupass.ui.screens.pagerPageInsets
 import com.nielcode.kupass.ui.theme.AppearanceSettings
 import com.nielcode.kupass.ui.theme.Typography
@@ -85,7 +84,7 @@ fun SettingsScreen(
             Column(
                 modifier =
                     Modifier.fillMaxSize()
-                        .verticalScroll(rememberScrollState())
+                        .pageVerticalScroll()
                         // Inside the scroll: the last item can scroll above the floating
                         // navigation.
                         .padding(

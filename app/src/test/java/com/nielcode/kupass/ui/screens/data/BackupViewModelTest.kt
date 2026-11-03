@@ -177,7 +177,7 @@ class BackupViewModelTest {
         val vm = viewModel()
         vm.importPasswords(INPUT)
         advanceUntilIdle()
-        assertEquals(VaultEvent.ImportFailed, vm.events.first())
+        assertEquals(VaultEvent.ImportReadFailed, vm.events.first())
         assertTrue(failing.closed)
         assertFalse(vm.backupBusy.value)
 
@@ -323,7 +323,7 @@ class BackupViewModelTest {
         val vm = viewModel()
         vm.importPasswords(INPUT)
         advanceUntilIdle()
-        assertEquals(VaultEvent.ImportFailed, vm.events.first())
+        assertEquals(VaultEvent.ImportStoreFailed, vm.events.first())
         assertTrue(dao.stored.isEmpty())
 
         CryptoManager.setKeyProviderForTesting { key }
@@ -336,7 +336,7 @@ class BackupViewModelTest {
         registerInput(CSV)
         failingVm.importPasswords(INPUT)
         advanceUntilIdle()
-        assertEquals(VaultEvent.ImportFailed, failingVm.events.first())
+        assertEquals(VaultEvent.ImportStoreFailed, failingVm.events.first())
         assertTrue(dao.stored.isEmpty())
     }
 

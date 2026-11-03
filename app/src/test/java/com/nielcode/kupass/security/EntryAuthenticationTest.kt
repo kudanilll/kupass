@@ -22,16 +22,16 @@ class EntryAuthenticationTest {
     }
 
     @Test
-    fun `every home open including the same id needs a new native request`() {
+    fun `account opens share the authenticated session but retain distinct entry grants`() {
         home()
         openAccount("detail-first")
         assertTrue(auth.canRead("detail-first", ACCOUNT))
         auth.setDestination(HOME, null)
         assertFalse(auth.canRead("detail-first", ACCOUNT))
         auth.request(Action.OpenAccount, HOME, ACCOUNT)
-        val request = requireNotNull(auth.beginNativePrompt())
+        assertNull(auth.beginNativePrompt())
+        val request = requireNotNull(auth.state.value.approvedOpen)
         assertFalse(auth.canRead("detail-second", ACCOUNT))
-        auth.nativeResult(request.token, true)
         auth.openApprovedAccount(request.token) {
             auth.setDestination("detail-second", it)
             "detail-second"
@@ -39,6 +39,58 @@ class EntryAuthenticationTest {
         assertTrue(auth.canRead("detail-second", ACCOUNT))
         assertFalse(auth.canRead("detail-first", ACCOUNT))
         assertFalse(auth.canRead("detail-second", ACCOUNT + 1))
+        auth.setDestination(HOME, null)
+        auth.request(Action.OpenAccount, HOME, ACCOUNT + 1)
+        assertNull(auth.beginNativePrompt())
+        val other = requireNotNull(auth.state.value.approvedOpen)
+        auth.openApprovedAccount(other.token) {
+            auth.setDestination("another-account", it)
+            "another-account"
+        }
+        assertTrue(auth.canRead("another-account", ACCOUNT + 1))
+    }
+
+    @Test
+    fun `session reuses short absences expires at the boundary and cannot restore in another controller`() {
+        home()
+        openAccount("detail")
+        auth.setDestination(HOME, null)
+        auth.onBackground(false)
+        now += timeout - 1
+        auth.onForeground(true)
+        auth.request(Action.OpenAccount, HOME, ACCOUNT)
+        assertNotNull(auth.state.value.approvedOpen)
+        assertNull(auth.beginNativePrompt())
+        auth.cancelPending()
+        auth.onBackground(false)
+        now += timeout
+        auth.onForeground(true)
+        assertFalse(auth.state.value.sessionUnlocked)
+        auth.request(Action.OpenAccount, HOME, ACCOUNT)
+        assertNotNull(auth.beginNativePrompt())
+        val fresh = EntryAuthenticationViewModel({ timeout }, { now })
+        fresh.onForeground(true)
+        fresh.setDestination(HOME, null)
+        fresh.request(Action.OpenAccount, HOME, ACCOUNT)
+        assertNotNull(fresh.beginNativePrompt())
+    }
+
+    @Test
+    fun `export still requires fresh native authentication during an unlocked account session`() {
+        home()
+        openAccount("detail")
+        auth.setDestination(HOME, null)
+        assertTrue(auth.state.value.sessionUnlocked)
+        auth.request(Action.Export, HOME)
+        assertNull(auth.state.value.export)
+        val request = requireNotNull(auth.beginNativePrompt())
+        auth.nativeResult(request.token, false)
+        assertNull(auth.state.value.export)
+        assertTrue(auth.state.value.sessionUnlocked)
+        auth.request(Action.Export, HOME)
+        val next = requireNotNull(auth.beginNativePrompt())
+        auth.nativeResult(next.token, true)
+        assertNotNull(auth.state.value.export)
     }
 
     @Test

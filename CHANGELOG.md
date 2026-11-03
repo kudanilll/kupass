@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Local import from Google Password Manager CSV exports, including notes and Android app entries. Quoted multiline fields and exact password whitespace are preserved; invalid records and duplicates are reported as skipped.
-- Account authentication: each new account open requires fingerprint/face or the device PIN/pattern/password before its details load. Editing from that detail and returning shares the same authorization. Sensitive account screens lock after the selected background timeout; launch, browsing, search, tabs, and new-entry creation stay available without authentication.
+- Account authentication unlocks an activity-local session with fingerprint/face or device credentials. Accounts can be opened and edited without another prompt until the selected background timeout expires. Launch, browsing, search, tabs, and new-entry creation stay public; export still requires fresh authentication.
 - Site icons in the vault list, with domain-only requests to the Favget icon service and in-memory caching.
 - Empty states for an empty vault (with an "Add password" button) and for searches without results.
 - Portable encrypted backups: export asks for a backup password and encrypts the whole vault (PBKDF2-HMAC-SHA256 + AES-256-GCM), so a backup can be restored on a new phone or after reinstalling.
@@ -42,7 +42,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Settings shares Home's bottom content gradient. The navigation shadow is centered, and Data keeps navigation visible while providing native overscroll stretch on short content.
 - Backup loading dialogs show the current import/export operation with centered progress and explanatory text.
 - Search filters the already-decrypted vault in memory instead of decrypting every entry on each keystroke.
-- Sites/apps with multiple accounts use the same vault list item with a count badge at the left of its icon. Tapping opens a separate account list; individual accounts still require authentication. Single-account sites remain normal account items.
+- Sites/apps with multiple accounts use the same vault item with a primary-color total badge on the right. Tapping opens an account list without a search bar; account details use the current authenticated session. Single-account sites remain normal account items.
+- All pages use native overscroll feedback even when their content fits the viewport. Long content keeps normal scrolling; Data keeps its navigation visible.
 - Search uses one input without an expanding popup. The heading collapses smoothly as search moves upward, results animate in place, and group badges retain their total account count when filtering.
 - The app font is 94% smaller (3.9 MB → 236 KB) with identical rendering.
 - Swipe an individual account physically left-to-right to request its existing delete confirmation; leftward swipes on Home reach Data, and vertical swipes still scroll. Site/app items never perform bulk deletion; accessibility delete uses the same confirmation.
@@ -51,6 +52,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Google CSV import accepts normalized headers, `note`/`notes`, blank record separators, comma/semicolon delimiters, and BOM-marked UTF-16 as well as strict UTF-8. Credential fields are preserved exactly; malformed data still inserts nothing.
 - CSV errors identify the supported columns instead of incorrectly referring to a JSON file.
+- Import errors distinguish selected-file access failures from account storage/encryption failures, while keeping error messages free of credential values.
 - Editing imported entries preserves username and note formatting and accepts nonempty whitespace-only passwords. Empty passwords and blank site names still disable Save.
 - Import waits for a cancelled native export prompt's terminal callback before accessing the selected file or vault.
 - Imports reject malformed UTF-8, CSV headers, quotes, and row widths before any insertion, and limit input to 32 MiB and 10,000 data entries including skipped rows. Duplicate submits are ignored and cancelled import passwords are cleared.

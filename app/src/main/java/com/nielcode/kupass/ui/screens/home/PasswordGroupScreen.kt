@@ -43,7 +43,6 @@ fun PasswordGroupScreen(
     viewModel: HomeViewModel = viewModel(factory = HomeViewModel.Factory),
 ) {
     val passwords by viewModel.allPasswords.collectAsStateWithLifecycle()
-    val query by viewModel.searchQuery.collectAsStateWithLifecycle()
     // Only a row ID is saved. Site names, URLs and credentials never enter saved state.
     var anchorId by rememberSaveable(groupId) { mutableLongStateOf(groupId) }
     var groupKey by remember(groupId) { mutableStateOf<VaultGroupKey?>(null) }
@@ -58,7 +57,6 @@ fun PasswordGroupScreen(
             anchorId = accounts.first().id
         }
     }
-    var searchActive by remember { mutableStateOf(false) }
     var pendingDelete by remember { mutableStateOf<PasswordEntity?>(null) }
     pendingDelete?.let { account ->
         DeletePasswordDialog(
@@ -77,16 +75,17 @@ fun PasswordGroupScreen(
     ) { padding ->
         VaultList(
             passwords = accounts,
-            query = query,
-            onQueryChange = viewModel::onSearchQueryChange,
-            searchActive = searchActive,
-            onSearchActiveChange = { searchActive = it },
+            query = "",
+            onQueryChange = {},
+            searchActive = false,
+            onSearchActiveChange = {},
             onItemClick = { onNavigateToDetail(it.id) },
             onDeleteItem = { pendingDelete = it },
             modifier = Modifier.padding(padding),
             contentPadding = PaddingValues(bottom = 16.dp),
             siteIcons = siteIcons,
             showHeadline = false,
+            showSearch = false,
         )
     }
 }

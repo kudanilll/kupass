@@ -87,6 +87,8 @@
     <string name="toast_success_import">Berhasil impor dari file</string>
     <string name="toast_failed_export">Gagal ekspor</string>
     <string name="toast_failed_import">File gagal dibaca. Pilih cadangan Kupass atau CSV Google Password Manager.</string>
+    <string name="toast_import_read_failed">File yang dipilih gagal dibuka. Unduh ke perangkat ini lalu pilih kembali.</string>
+    <string name="toast_import_store_failed">Akun hasil impor gagal disimpan. Akun yang sudah ada tidak diubah.</string>
     <string name="toast_failed_csv_import">CSV gagal diimpor. Kolom name, url, username, dan password wajib ada; note bersifat opsional.</string>
 
     <!-- Error -->
@@ -130,13 +132,13 @@
     <!-- Misc -->
     <string name="toast_url_failed">Tidak ada aplikasi yang dapat membuka tautan ini</string>
     <string name="settings_category_security">Keamanan</string>
-    <string name="settings_auto_lock_title">Kunci akun setelah di latar belakang</string>
+    <string name="settings_auto_lock_title">Kunci sesi setelah di latar belakang</string>
     <string name="auto_lock_immediately">Segera</string>
-    <string name="lock_title">Akun terkunci</string>
-    <string name="lock_message">Konfirmasi identitas untuk melihat atau mengubah akun ini. Jelajahi dan tambah akun tetap tersedia.</string>
+    <string name="lock_title">Sesi terkunci</string>
+    <string name="lock_message">Buka kunci untuk melihat atau mengubah akun sampai sesi terkunci setelah batas waktu di latar belakang. Jelajahi dan tambah akun tetap tersedia.</string>
     <string name="lock_button_unlock">Buka kunci</string>
     <string name="lock_prompt_title">Konfirmasi identitas kamu</string>
-    <string name="lock_prompt_subtitle">Autentikasi untuk membuka akun ini</string>
+    <string name="lock_prompt_subtitle">Buka kunci akun untuk sesi ini</string>
     <string name="lock_export_prompt_subtitle">Autentikasi untuk mengekspor cadangan terenkripsi</string>
     <string name="editor_load_failed">Akun ini gagal dimuat. Kembali dan coba lagi. Akun baru tidak akan dibuat.</string>
     <string name="lock_no_credential_title">Atur kunci layar</string>

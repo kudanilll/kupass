@@ -4,24 +4,24 @@
 
 ## 1) Top-Level Map
 
-| Path                                                        | Purpose                                                                                                                                     | Evidence                                  |
-| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
-| `app/`                                                      | The only Gradle module (Android application)                                                                                                | `settings.gradle.kts` (`include(":app")`) |
-| `app/src/main/java/com/nielcode/kupass/`                    | All production Kotlin source                                                                                                                | `git ls-files`                            |
-| `app/src/main/res/`                                         | Resources: `values/` (EN), `values-in/` (ID), `values-night/`, `font/`, `xml/` (backup rules), mipmaps, drawables                           | directory listing                         |
-| `app/src/test/`                                             | JVM + Robolectric unit tests                                                                                                                | `git ls-files`                            |
-| `app/src/androidTest/` | Instrumented tests: Room migration, Keystore crypto, backup KDF cost, legacy-format upgrade | `app/src/androidTest/` |
-| `app/schemas/` | Room exported schemas (`<version>.json`), committed. Source of truth for migration tests | `app/build.gradle.kts` (`room { schemaDirectory }`) |
-| `gradle/`                                                   | Version catalog, wrapper, daemon JVM toolchain                                                                                              | `libs.versions.toml`                      |
-| `config/detekt/detekt.yml` | detekt overrides on top of the defaults (Compose rules enabled) | `app/build.gradle.kts` |
-| `docs/ai/`                                                  | Agent rules, PRD, best practices                                                                                                            | this repo                                 |
-| `docs/codebase/`                                            | Evidence-based codebase map (these docs)                                                                                                    | this repo                                 |
-| `image/`                                                    | README banner and screenshots                                                                                                               | `README.md`                               |
-| `.github/`                                                  | `dependabot.yml` (Gradle + Actions updates, weekly, target `master`), `workflows/release.yml` (signed APK + GitHub Release on tag `vX.Y.Z`) | this repo                                 |
-| `CHANGELOG.md`                                              | Keep a Changelog. The release workflow publishes the `## [X.Y.Z]` section as release notes                                                  | this repo                                 |
-| `CLAUDE.md`                                                 | Short agent overview. Links here                                                                                                            | repo root                                 |
-| `secrets.properties`, `release-key.jks`, `local.properties` | Local-only signing/SDK config. Gitignored                                                                                                   | `.gitignore`                              |
-| `app/release/`, `build/`, `.gradle/`, `.idea/`, `.kotlin/`  | Build output and IDE state. Gitignored, don't document or edit                                                                              | `.gitignore`                              |
+| Path                                                        | Purpose                                                                                                                                     | Evidence                                                                                    |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | ---------------------- |
+| `app/`                                                      | The only Gradle module (Android application)                                                                                                | `settings.gradle.kts` (`include(":app")`)                                                   |
+| `app/src/main/java/com/nielcode/kupass/`                    | All production Kotlin source                                                                                                                | `git ls-files`                                                                              |
+| `app/src/main/res/`                                         | Resources: `values/` (EN), `values-in/` (ID), `values-night/`, `font/`, `xml/` (backup rules), mipmaps, drawables                           | directory listing                                                                           |
+| `app/src/test/`                                             | JVM + Robolectric unit tests                                                                                                                | `git ls-files`                                                                              |
+|                                                             | `app/src/androidTest/`                                                                                                                      | Instrumented tests: Room migration, Keystore crypto, backup KDF cost, legacy-format upgrade | `app/src/androidTest/` |
+| `app/schemas/`                                              | Room exported schemas (`<version>.json`), committed. Source of truth for migration tests                                                    | `app/build.gradle.kts` (`room { schemaDirectory }`)                                         |
+| `gradle/`                                                   | Version catalog, wrapper, daemon JVM toolchain                                                                                              | `libs.versions.toml`                                                                        |
+| `config/detekt/detekt.yml`                                  | detekt overrides on top of the defaults (Compose rules enabled)                                                                             | `app/build.gradle.kts`                                                                      |
+| `docs/ai/`                                                  | Agent rules, PRD, best practices                                                                                                            | this repo                                                                                   |
+| `docs/codebase/`                                            | Evidence-based codebase map (these docs)                                                                                                    | this repo                                                                                   |
+| `image/`                                                    | README banner and screenshots                                                                                                               | `README.md`                                                                                 |
+| `.github/`                                                  | `dependabot.yml` (Gradle + Actions updates, weekly, target `master`), `workflows/release.yml` (signed APK + GitHub Release on tag `vX.Y.Z`) | this repo                                                                                   |
+| `CHANGELOG.md`                                              | Keep a Changelog. The release workflow publishes the `## [X.Y.Z]` section as release notes                                                  | this repo                                                                                   |
+| `CLAUDE.md`                                                 | Short agent overview. Links here                                                                                                            | repo root                                                                                   |
+| `secrets.properties`, `release-key.jks`, `local.properties` | Local-only signing/SDK config. Gitignored                                                                                                   | `.gitignore`                                                                                |
+| `app/release/`, `build/`, `.gradle/`, `.idea/`, `.kotlin/`  | Build output and IDE state. Gitignored, don't document or edit                                                                              | `.gitignore`                                                                                |
 
 ## 2) Entry Points
 
@@ -77,26 +77,28 @@ com/nielcode/kupass/
 
 ### Navigation routes (`MainAppScreen.kt`)
 
-| Route            | Args                                          | Screen                                                                |
-| ---------------- | --------------------------------------------- | --------------------------------------------------------------------- |
-| `HomeBase`       | none                                          | `MainPagerScreen`: `HorizontalPager` pages 0 Home, 1 Data, 2 Settings |
-| `PasswordDetail` | `passwordId: Long`                            | `PasswordDetailScreen`                                                |
-| `PasswordGroup` | `groupId: Long` (representative row ID) | Public `PasswordGroupScreen`; only IDs are saved, and child account navigation uses the existing authentication gate |
-| `PasswordEditor` | `passwordId: Long = -1L` (create when `<= 0`) | `PasswordEditorScreen`                                                |
+| Route            | Args                                          | Screen                                                                                                               |
+| ---------------- | --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `HomeBase`       | none                                          | `MainPagerScreen`: `HorizontalPager` pages 0 Home, 1 Data, 2 Settings                                                |
+| `PasswordDetail` | `passwordId: Long`                            | `PasswordDetailScreen`                                                                                               |
+| `PasswordGroup`  | `groupId: Long` (representative row ID)       | Public `PasswordGroupScreen`; only IDs are saved, and child account navigation uses the existing authentication gate |
+| `PasswordEditor` | `passwordId: Long = -1L` (create when `<= 0`) | `PasswordEditorScreen`                                                                                               |
 
 `home/PasswordGroupScreen.kt` reuses the existing vault list and Home ViewModel cache. Multi-account Home rows use `PasswordListItem.accountCount`; the CSV reader normalizes header variants while preserving credential fields and supports UTF-8/BOM-marked UTF-16.
 
+`ui/components/PageScroll.kt` shares native stretch behavior for fitting content and standard scrolling for overflow. Group pages omit search; account access uses the activity-retained session, while export stays fresh-authenticated.
+
 ### Data model (`passwords` table)
 
-| Column                     | Kotlin                 | Stored                                  |
-| -------------------------- | ---------------------- | --------------------------------------- |
-| `id`                       | `Long` PK autoGenerate | plain                                   |
-| `site_name`                | `siteName: String`     | v2 ciphertext |
-| `username`                 | `String = ""`          | v2 ciphertext |
+| Column                     | Kotlin                 | Stored                                                          |
+| -------------------------- | ---------------------- | --------------------------------------------------------------- |
+| `id`                       | `Long` PK autoGenerate | plain                                                           |
+| `site_name`                | `siteName: String`     | v2 ciphertext                                                   |
+| `username`                 | `String = ""`          | v2 ciphertext                                                   |
 | `password`                 | `String`               | v2 ciphertext: `kp2:` + Base64(IV[12] ‖ AES-GCM ciphertext+tag) |
-| `url`                      | `String = ""`          | v2 ciphertext |
-| `notes`                    | `String = ""`          | v2 ciphertext |
-| `created_at`, `updated_at` | `Long` epoch ms        | plain                                   |
+| `url`                      | `String = ""`          | v2 ciphertext                                                   |
+| `notes`                    | `String = ""`          | v2 ciphertext                                                   |
+| `created_at`, `updated_at` | `Long` epoch ms        | plain                                                           |
 
 ## 4) Module Boundaries
 

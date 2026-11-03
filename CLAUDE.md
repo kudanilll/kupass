@@ -32,7 +32,7 @@ Screen (Compose) -> ViewModel(Factory) -> PasswordRepository -> PasswordDao (Roo
 Backup: BackupCodec (PBKDF2-HMAC-SHA256 + AES-256-GCM, password-protected, portable)
 ```
 
-No DI framework: `App.container` (`di/AppContainer`) provides the repository and prefs; each ViewModel exposes a `Factory`. Authorization and its private `AppLock` absence timer live together in each activity-retained `EntryAuthenticationViewModel`, never saved state, prefs, or a process singleton. Separate activity instances cannot reset one another's absence timer or exemptions. Launch, list/search, group pages, tabs, import/delete confirmation, and new-entry creation are public. Each individual account open (from Home or a group page) and each export requires fresh authentication. Background timeout revokes sensitive-entry grants; the existing bounded exemptions and timeout defaults remain.
+No DI framework: `App.container` (`di/AppContainer`) provides the repository and prefs; each ViewModel exposes a `Factory`. The authenticated account session and private `AppLock` timer share an activity-retained `EntryAuthenticationViewModel`, never saved state, prefs, or a process singleton. The first account open unlocks a session; later account opens reuse it until the background timeout expires. Destination grants still bind entry/account IDs before sensitive screen creation. Export always requires fresh native authentication and single-use consent. Public pages and creation remain accessible; bounded exemptions and timeout defaults remain unchanged.
 
 ## Where To Read More
 

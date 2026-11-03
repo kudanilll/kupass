@@ -179,7 +179,7 @@ class BackupViewModel(
                             }
                         }
                         when {
-                            content == null -> _events.send(VaultEvent.ImportFailed)
+                            content == null -> _events.send(VaultEvent.ImportReadFailed)
                             withContext(cpuDispatcher) {
                                 BackupCodec.isPasswordProtected(content)
                             } -> _importPrompt.value = ImportPrompt(content)
@@ -227,16 +227,13 @@ class BackupViewModel(
 
     private suspend fun decodeAndInsert(content: String, password: CharArray?) {
         try {
+            val decoded =
+                withContext(cpuDispatcher) {
+                    if (content.firstOrNull { !it.isWhitespace() } in listOf('[', '{')) {
+                        GooglePasswordCsv.Result(BackupCodec.decode(content, password), skipped = 0)
+                    } else GooglePasswordCsv.decode(content)
+                }
             val result = recoverable {
-                val decoded =
-                    withContext(cpuDispatcher) {
-                        if (content.firstOrNull { !it.isWhitespace() } in listOf('[', '{')) {
-                            GooglePasswordCsv.Result(
-                                BackupCodec.decode(content, password),
-                                skipped = 0,
-                            )
-                        } else GooglePasswordCsv.decode(content)
-                    }
                 val inserted = repository.importPasswords(decoded.entries)
                 inserted.copy(skipped = inserted.skipped + decoded.skipped)
             }
@@ -244,7 +241,7 @@ class BackupViewModel(
             _events.send(
                 result?.let {
                     VaultEvent.ImportSucceeded(imported = it.imported, skipped = it.skipped)
-                } ?: VaultEvent.ImportFailed
+                } ?: VaultEvent.ImportStoreFailed
             )
         } catch (_: BackupException.WrongPassword) {
             // Keep the prompt open so the user can retry.

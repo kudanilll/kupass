@@ -6,9 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
@@ -44,6 +42,7 @@ import com.nielcode.kupass.data.local.db.PasswordEntity
 import com.nielcode.kupass.ui.components.PasswordVisibilityToggle
 import com.nielcode.kupass.ui.components.SecretKeyboardOptions
 import com.nielcode.kupass.ui.components.VaultTextField
+import com.nielcode.kupass.ui.components.pageVerticalScroll
 
 private const val URL_PLACEHOLDER = "https://..."
 
@@ -206,7 +205,7 @@ private fun EditorForm(form: EditorFormState, modifier: Modifier = Modifier) {
                 .fillMaxSize()
                 .imePadding() // keep the focused field above the keyboard (before verticalScroll)
                 .padding(horizontal = 20.dp)
-                .verticalScroll(rememberScrollState()),
+                .pageVerticalScroll(),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         VaultTextField(
