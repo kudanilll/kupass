@@ -25,6 +25,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.nielcode.kupass.R
+import com.nielcode.kupass.ui.components.stretchWhenContentFits
 
 /**
  * Shown only instead of a protected destination. No entry data is composed here.
@@ -50,7 +51,11 @@ fun LockScreen(
 
     Scaffold(modifier = modifier) { innerPadding ->
         Column(
-            modifier = Modifier.fillMaxSize().padding(innerPadding).padding(32.dp),
+            modifier =
+                Modifier.fillMaxSize()
+                    .padding(innerPadding)
+                    .stretchWhenContentFits(false)
+                    .padding(32.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {

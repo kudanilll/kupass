@@ -1,6 +1,7 @@
 package com.nielcode.kupass.ui.screens.home
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.junit4.StateRestorationTester
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
@@ -74,6 +75,7 @@ class PasswordGroupScreenTest {
         compose.onNodeWithText("bob").assertIsDisplayed().performClick()
         assertEquals(listOf(ids[1]), opened)
         compose.onNodeWithText("other").assertDoesNotExist()
+        compose.onNode(hasSetTextAction()).assertDoesNotExist()
         compose.onNodeWithText("not shown on the public page").assertDoesNotExist()
         runBlocking { repository.deletePasswordById(ids.first()) }
         compose.waitUntil(5_000) {

@@ -11,9 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ContentCopy
@@ -55,6 +53,7 @@ import com.nielcode.kupass.security.SecureClipboard
 import com.nielcode.kupass.ui.components.DeletePasswordDialog
 import com.nielcode.kupass.ui.components.PasswordVisibilityToggle
 import com.nielcode.kupass.ui.components.VaultFieldShape
+import com.nielcode.kupass.ui.components.pageVerticalScroll
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -196,11 +195,7 @@ private fun DetailOverflowMenu(
 private fun DetailContent(password: PasswordEntity, modifier: Modifier = Modifier) {
     val clipboard = rememberClipboardCopier()
     Column(
-        modifier =
-            modifier
-                .fillMaxSize()
-                .padding(horizontal = 20.dp)
-                .verticalScroll(rememberScrollState()),
+        modifier = modifier.fillMaxSize().padding(horizontal = 20.dp).pageVerticalScroll(),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         DetailField(

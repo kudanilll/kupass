@@ -6,7 +6,7 @@ import java.net.URISyntaxException
 import java.util.Locale
 
 /** Presentation identity only; never used for persistence or import deduplication. */
-internal data class VaultGroupKey(val namespace: Namespace, val value: String) {
+data class VaultGroupKey(val namespace: Namespace, val value: String) {
     enum class Namespace {
         WebHost,
         AndroidPackage,
@@ -17,10 +17,10 @@ internal data class VaultGroupKey(val namespace: Namespace, val value: String) {
         get() = "group:${namespace.name}:$value"
 }
 
-internal data class VaultGroup(val key: VaultGroupKey, val accounts: List<PasswordEntity>)
+data class VaultGroup(val key: VaultGroupKey, val accounts: List<PasswordEntity>)
 
 /** Groups every account without changing entities, IDs, or their stored fields. */
-internal fun groupVault(accounts: List<PasswordEntity>): List<VaultGroup> =
+fun groupVault(accounts: List<PasswordEntity>): List<VaultGroup> =
     accounts
         .groupBy(::vaultGroupKey)
         .map { (key, entries) ->

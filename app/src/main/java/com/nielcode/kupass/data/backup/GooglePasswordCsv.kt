@@ -5,11 +5,8 @@ import java.net.URI
 import java.net.URISyntaxException
 import java.util.Locale
 
-private const val MAX_COLUMNS = 5
-
-/** Google/Chromium password exports, parsed locally without normalizing credential fields. */
+/** Google/Chromium and standard password manager CSV exports, parsed locally. */
 object GooglePasswordCsv {
-    private val requiredHeader = setOf("name", "url", "username", "password")
     private val androidFacet =
         Regex("^android://[A-Za-z0-9_=-]+@[A-Za-z0-9_]+(?:\\.[A-Za-z0-9_]+)+/?$")
 
@@ -26,54 +23,161 @@ object GooglePasswordCsv {
         while (true) {
             val row = reader.nextRow() ?: break
             if (++rows > BackupCodec.MAX_ENTRIES) throw BackupException.TooLarge()
-            if (row.size != header.size) throw BackupException.InvalidCsv()
-            val name = row[columns.getValue("name")]
-            val url = row[columns.getValue("url")]
-            val password = row[columns.getValue("password")]
-            if (name.isBlank() || password.isEmpty() || !validUrl(url)) {
-                skipped++
-            } else {
-                entries +=
-                    PasswordEntity(
-                        siteName = name,
-                        url = url,
-                        username = row[columns.getValue("username")],
-                        password = password,
-                        notes = columns["note"]?.let { row[it] }.orEmpty(),
-                    )
-            }
+            val entity = parseRow(row, header.size, columns)
+            if (entity != null) entries += entity else skipped++
         }
         return Result(entries, skipped)
     }
 
+    private fun parseRow(
+        row: List<String>,
+        headerSize: Int,
+        columns: Map<String, Int>,
+    ): PasswordEntity? {
+        // Pad short rows; for long rows just read by index (extra columns are ignored).
+        val cells = if (row.size < headerSize) row + List(headerSize - row.size) { "" } else row
+        val rawName = columns["name"]?.let { cells.getOrNull(it) }?.trim()
+        val rawUrl = columns["url"]?.let { cells.getOrNull(it) }?.trim().orEmpty()
+        val name = rawName ?: rawUrl
+        val url = if (rawUrl.isBlank()) "" else rawUrl
+        if (name.isBlank() || !validUrl(url)) return null
+        return PasswordEntity(
+            siteName = name,
+            url = url,
+            username = columns["username"]?.let { cells.getOrNull(it) }.orEmpty(),
+            password = columns["password"]?.let { cells.getOrNull(it) }.orEmpty(),
+            notes = columns["note"]?.let { cells.getOrNull(it) }.orEmpty(),
+        )
+    }
+
     private fun readHeader(reader: CsvReader): List<String> {
-        val header =
-            (reader.nextRow() ?: throw BackupException.InvalidCsv()).map {
-                it.trim().lowercase(Locale.ROOT).let { name ->
-                    if (name == "notes") "note" else name
-                }
-            }
-        val names = header.toSet()
-        if (
-            names !in listOf(requiredHeader, requiredHeader + "note") || names.size != header.size
-        ) {
-            throw BackupException.InvalidCsv()
-        }
+        val rawHeader = reader.nextRow() ?: throw BackupException.InvalidCsv()
+        val header = rawHeader.map(::canonicalColumnName)
+        if (!isValidHeader(header)) throw BackupException.InvalidCsv()
         return header
+    }
+
+    private fun isValidHeader(header: List<String>): Boolean {
+        if (header.isEmpty()) return false
+        val known = header.filter { it in setOf("name", "url", "username", "password", "note") }
+        val names = known.toSet()
+        val hasIdentity =
+            "name" in names ||
+                "url" in names ||
+                "password" in names ||
+                "username" in names ||
+                "note" in names
+        return known.size == names.size && hasIdentity
+    }
+
+    private val nameAliases =
+        setOf(
+            "name",
+            "title",
+            "site",
+            "sitename",
+            "app",
+            "application",
+            "nama",
+            "namasitus",
+            "judul",
+            "situs",
+        )
+    private val urlAliases =
+        setOf(
+            "url",
+            "uri",
+            "website",
+            "link",
+            "web",
+            "host",
+            "domain",
+            "tautan",
+            "alamat",
+            "alamatweb",
+            "alamatsitus",
+        )
+    private val userAliases =
+        setOf(
+            "username",
+            "user",
+            "login",
+            "email",
+            "account",
+            "surel",
+            "pengguna",
+            "namapengguna",
+            "id",
+            "userid",
+            "akun",
+        )
+    private val passAliases =
+        setOf("password", "pass", "pwd", "secret", "sandi", "katasandi", "pin", "kuncisandi")
+    private val noteAliases =
+        setOf(
+            "note",
+            "notes",
+            "comment",
+            "comments",
+            "keterangan",
+            "deskripsi",
+            "description",
+            "catatan",
+            "memo",
+        )
+
+    private fun canonicalColumnName(raw: String): String {
+        val clean =
+            raw.trim()
+                .trim('"', '\'', '`')
+                .trim()
+                .lowercase(Locale.ROOT)
+                .replace(" ", "")
+                .replace("_", "")
+                .replace("-", "")
+        return when (clean) {
+            in nameAliases -> "name"
+            in urlAliases -> "url"
+            in userAliases -> "username"
+            in passAliases -> "password"
+            in noteAliases -> "note"
+            else -> clean
+        }
     }
 
     private fun csvReader(content: String): CsvReader {
         val text = content.removePrefix("\uFEFF").trimStart('\r', '\n')
-        val firstLine = text.substringBefore('\n').substringBefore('\r')
-        val delimiter = if (';' in firstLine && ',' !in firstLine) ';' else ','
+        val delimiter = detectDelimiter(text)
         return CsvReader(text, delimiter)
     }
 
+    private fun detectDelimiter(text: String): Char {
+        val firstLine = text.substringBefore('\n').substringBefore('\r')
+        var inQuotes = false
+        var commas = 0
+        var semicolons = 0
+        var tabs = 0
+        for (ch in firstLine) {
+            if (ch == '"') inQuotes = !inQuotes
+            else if (!inQuotes) {
+                when (ch) {
+                    ',' -> commas++
+                    ';' -> semicolons++
+                    '\t' -> tabs++
+                }
+            }
+        }
+        val counts = listOf(',' to commas, ';' to semicolons, '\t' to tabs)
+        return counts.maxByOrNull { it.second }?.takeIf { it.second > 0 }?.first ?: ','
+    }
+
     private fun validUrl(url: String): Boolean =
-        if (url.startsWith("android://")) androidFacet.matches(url)
+        if (url.isBlank()) true
+        else if (url.startsWith("android://", ignoreCase = true)) androidFacet.matches(url)
         else
             try {
-                val uri = URI(url)
+                val withScheme = if ("://" in url) url else "https://$url"
+                val uri = URI(withScheme)
                 (uri.scheme.equals("http", ignoreCase = true) ||
                     uri.scheme.equals("https", ignoreCase = true)) && !uri.host.isNullOrBlank()
             } catch (_: URISyntaxException) {
@@ -101,8 +205,6 @@ private class CsvReader(private val content: String, private val delimiter: Char
         var ended: Boolean
         do {
             row += field()
-            // A valid Google row has at most five columns. Bound malformed delimiter floods too.
-            if (row.size > MAX_COLUMNS) throw BackupException.InvalidCsv()
             ended = position == content.length
             if (!ended) {
                 val separator = content[position++]

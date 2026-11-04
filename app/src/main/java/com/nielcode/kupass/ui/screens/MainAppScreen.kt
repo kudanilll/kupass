@@ -68,6 +68,7 @@ import com.nielcode.kupass.ui.screens.data.ImportPasswordDialog
 import com.nielcode.kupass.ui.screens.home.HomeScreen
 import com.nielcode.kupass.ui.screens.home.HomeViewModel
 import com.nielcode.kupass.ui.screens.home.PasswordGroupScreen
+import com.nielcode.kupass.ui.screens.home.VaultGroup
 import com.nielcode.kupass.ui.screens.lock.SensitiveActionGuidance
 import com.nielcode.kupass.ui.screens.settings.SettingsScreen
 import kotlinx.coroutines.flow.Flow
@@ -95,6 +96,7 @@ fun MainAppScreen(
     authState: EntryAuthenticationViewModel.State,
     onOpenSecuritySettings: () -> Unit,
     modifier: Modifier = Modifier,
+    homeViewModel: HomeViewModel = viewModel(factory = HomeViewModel.Factory),
 ) {
     val navController = rememberNavController()
     DisposableEffect(navController, authentication) {
@@ -132,6 +134,7 @@ fun MainAppScreen(
                     authentication.request(Action.OpenAccount, entry.id, id)
                 },
                 onNavigateToGroup = { id -> navController.navigate(PasswordGroup(id)) },
+                homeViewModel = homeViewModel,
             )
         }
         composable<PasswordGroup> { entry ->
@@ -142,6 +145,7 @@ fun MainAppScreen(
                     authentication.request(Action.OpenAccount, entry.id, id)
                 },
                 siteIcons = rememberSiteIcons(),
+                viewModel = homeViewModel,
             )
         }
         accountRoutes(navController, authentication, onOpenSecuritySettings)
@@ -162,10 +166,13 @@ fun MainPagerScreen(
 ) {
     val authState by authentication.state.collectAsStateWithLifecycle()
     val passwords by homeViewModel.allPasswords.collectAsStateWithLifecycle()
+    val visibleGroups by homeViewModel.visibleGroups.collectAsStateWithLifecycle()
+    val filteredPasswords by homeViewModel.passwords.collectAsStateWithLifecycle()
     val searchQuery by homeViewModel.searchQuery.collectAsStateWithLifecycle()
     val importPrompt by backupViewModel.importPrompt.collectAsStateWithLifecycle()
     val backupBusy by backupViewModel.backupBusy.collectAsStateWithLifecycle()
     val backupOperation by backupViewModel.operation.collectAsStateWithLifecycle()
+    val backupProgress by backupViewModel.progress.collectAsStateWithLifecycle()
     val siteIcons = rememberSiteIcons()
 
     val filePickers =
@@ -182,6 +189,7 @@ fun MainPagerScreen(
         importWrongPassword = importPrompt?.wrongPassword,
         busy = backupBusy,
         operation = backupOperation,
+        progress = backupProgress,
         onExportConfirm = { password ->
             confirmExport(password, consent, authentication, backupViewModel, filePickers)
         },
@@ -197,6 +205,8 @@ fun MainPagerScreen(
         authState.pending != null || authState.nativeRequest != null || authState.export != null
     MainPagerContent(
         passwords = passwords,
+        visibleGroups = visibleGroups,
+        filteredPasswords = filteredPasswords,
         searchQuery = searchQuery,
         siteIcons = siteIcons,
         onSearchQueryChange = homeViewModel::onSearchQueryChange,
@@ -219,6 +229,8 @@ fun MainPagerScreen(
 @Composable
 private fun MainPagerContent(
     passwords: List<PasswordEntity>,
+    visibleGroups: List<VaultGroup>,
+    filteredPasswords: List<PasswordEntity>,
     searchQuery: String,
     siteIcons: SiteIcons,
     onSearchQueryChange: (String) -> Unit,
@@ -248,6 +260,8 @@ private fun MainPagerContent(
                     contentPadding = contentPadding,
                     siteIcons = siteIcons,
                     onNavigateToGroup = onNavigateToGroup,
+                    visibleGroups = visibleGroups,
+                    filteredPasswords = filteredPasswords,
                 )
             MainTab.Data ->
                 DataScreen(
@@ -380,7 +394,11 @@ internal fun MainPager(
     val pageContentPadding = PaddingValues(bottom = BottomNavHeight + navigationBar)
 
     Box(modifier = modifier.fillMaxSize().nestedScroll(hideOnScroll)) {
-        HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) { index ->
+        HorizontalPager(
+            state = pagerState,
+            beyondViewportPageCount = 1,
+            modifier = Modifier.fillMaxSize(),
+        ) { index ->
             Box(modifier = Modifier.fillMaxSize()) {
                 page(MainTab.entries[index], pageContentPadding)
             }
@@ -440,6 +458,7 @@ private fun BackupDialogs(
     importWrongPassword: Boolean?,
     busy: Boolean,
     operation: BackupOperation?,
+    progress: BackupViewModel.BackupProgress?,
     onExportConfirm: (CharArray) -> Unit,
     onExportDismiss: () -> Unit,
     onImportPassword: (CharArray) -> Unit,
@@ -455,7 +474,7 @@ private fun BackupDialogs(
             onDismiss = onImportDismiss,
         )
     }
-    if (busy) BackupProgressDialog(operation = operation)
+    if (busy) BackupProgressDialog(operation = operation, progress = progress)
 }
 
 /** Shows each export/import result once, only while the screen is at least started. */

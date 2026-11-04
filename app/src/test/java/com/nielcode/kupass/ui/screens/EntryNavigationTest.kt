@@ -89,8 +89,8 @@ class EntryNavigationTest {
 
     private fun openAccount(nav: NavHostController, home: String): String {
         auth.request(Action.OpenAccount, home, ACCOUNT)
-        val request = requireNotNull(auth.beginNativePrompt())
-        auth.nativeResult(request.token, true)
+        auth.beginNativePrompt()?.let { auth.nativeResult(it.token, true) }
+        val request = requireNotNull(auth.state.value.approvedOpen)
         auth.openApprovedAccount(request.token) {
             nav.navigate(PasswordDetail(it))
             nav.currentBackStackEntry?.id

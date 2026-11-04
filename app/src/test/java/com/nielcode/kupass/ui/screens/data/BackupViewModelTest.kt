@@ -58,7 +58,9 @@ class BackupViewModelTest {
     fun `CSV under a JSON name imports directly and closes the stream with combined skipped counts`() =
         runTest {
             val input =
-                registerInput(CSV + "\nSite,https://example.com,u, padded ,note\nMissing,,u,,")
+                registerInput(
+                    CSV + "\nSite,https://example.com,u, padded ,note\n,https://example.com,u,,"
+                )
             val vm = viewModel()
 
             vm.importPasswords(INPUT)
@@ -177,7 +179,7 @@ class BackupViewModelTest {
         val vm = viewModel()
         vm.importPasswords(INPUT)
         advanceUntilIdle()
-        assertEquals(VaultEvent.ImportFailed, vm.events.first())
+        assertEquals(VaultEvent.ImportReadFailed, vm.events.first())
         assertTrue(failing.closed)
         assertFalse(vm.backupBusy.value)
 
@@ -323,7 +325,7 @@ class BackupViewModelTest {
         val vm = viewModel()
         vm.importPasswords(INPUT)
         advanceUntilIdle()
-        assertEquals(VaultEvent.ImportFailed, vm.events.first())
+        assertEquals(VaultEvent.ImportStoreFailed, vm.events.first())
         assertTrue(dao.stored.isEmpty())
 
         CryptoManager.setKeyProviderForTesting { key }
@@ -336,7 +338,7 @@ class BackupViewModelTest {
         registerInput(CSV)
         failingVm.importPasswords(INPUT)
         advanceUntilIdle()
-        assertEquals(VaultEvent.ImportFailed, failingVm.events.first())
+        assertEquals(VaultEvent.ImportStoreFailed, failingVm.events.first())
         assertTrue(dao.stored.isEmpty())
     }
 

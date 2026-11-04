@@ -34,6 +34,7 @@ class EntryAuthenticationViewModel(
 
     data class State(
         val deviceSecure: Boolean = false,
+        val sessionUnlocked: Boolean = false,
         val pending: Request? = null,
         val nativeRequest: Request? = null,
         val approvedOpen: Request? = null,
@@ -65,20 +66,34 @@ class EntryAuthenticationViewModel(
     }
 
     fun request(action: Action, entryId: String, accountId: Long = -1L) {
+        val reuseSession = activeSession()
         val current = _state.value
         val pendingAction =
             current.nativeRequest != null || current.pending != null || current.approvedOpen != null
         val pendingExport = current.export != null || pickerToken != null
         if (entryId != destination || pendingAction || pendingExport) return
-        val validTarget =
-            when (action) {
-                Action.OpenAccount -> accountId > 0 && destinationAccount == null
-                Action.UnlockDestination -> accountId > 0 && destinationAccount == accountId
-                Action.Export -> destinationAccount == null
+        if (validTarget(action, accountId)) {
+            val request = Request(++nextToken, action, entryId, accountId)
+            if (action != Action.Export && reuseSession) {
+                approve(request)
+            } else {
+                _state.value = current.copy(pending = request)
             }
-        if (validTarget) {
-            _state.value = current.copy(pending = Request(++nextToken, action, entryId, accountId))
         }
+    }
+
+    private fun validTarget(action: Action, accountId: Long): Boolean =
+        when (action) {
+            Action.OpenAccount -> accountId > 0 && destinationAccount == null
+            Action.UnlockDestination -> accountId > 0 && destinationAccount == accountId
+            Action.Export -> destinationAccount == null
+        }
+
+    private fun activeSession(): Boolean {
+        appLock.checkTimeout()
+        val locked = appLock.locked.value
+        if (locked && _state.value.sessionUnlocked) revoke()
+        return _state.value.sessionUnlocked && _state.value.deviceSecure && !locked
     }
 
     /** Only one native session may exist, even while a cancelled session is draining callbacks. */
@@ -109,25 +124,31 @@ class EntryAuthenticationViewModel(
                 deviceSecure = current.deviceSecure && credentialAvailable,
             )
         appLock.checkTimeout()
-        if (!_state.value.deviceSecure) revoke()
+        if (!_state.value.deviceSecure || appLock.locked.value) revoke()
         val validRequest = request?.takeIf {
             _state.value.deviceSecure && destination == it.entryId
         }
         if (!succeeded || validRequest == null || appLock.locked.value) return
         appLock.unlock()
+        approve(validRequest)
+    }
+
+    private fun approve(request: Request) {
         _state.value =
-            when (validRequest.action) {
-                Action.OpenAccount -> _state.value.copy(approvedOpen = validRequest)
+            when (request.action) {
+                Action.OpenAccount ->
+                    _state.value.copy(sessionUnlocked = true, approvedOpen = request)
                 Action.UnlockDestination ->
                     _state.value.copy(
-                        grants = mapOf(validRequest.entryId to validRequest.accountId)
+                        sessionUnlocked = true,
+                        grants = mapOf(request.entryId to request.accountId),
                     )
                 Action.Export ->
                     _state.value.copy(
                         export =
                             ExportConsent(
-                                validRequest.token,
-                                validRequest.entryId,
+                                request.token,
+                                request.entryId,
                                 clock() + AppLock.EXEMPT_TRIP_GRACE_MILLIS,
                             )
                     )
@@ -159,6 +180,7 @@ class EntryAuthenticationViewModel(
     fun canRead(entryId: String, accountId: Long): Boolean =
         accountId > 0 &&
             _state.value.deviceSecure &&
+            _state.value.sessionUnlocked &&
             !appLock.locked.value &&
             _state.value.grants[entryId] == accountId
 
@@ -184,7 +206,7 @@ class EntryAuthenticationViewModel(
 
     fun revoke() {
         cancelPending()
-        _state.value = _state.value.copy(grants = emptyMap())
+        _state.value = _state.value.copy(sessionUnlocked = false, grants = emptyMap())
     }
 
     fun startExportPicker(token: Long): Boolean {

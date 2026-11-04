@@ -1,15 +1,30 @@
 package com.nielcode.kupass.ui.screens.data
 
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Key
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -21,6 +36,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
@@ -133,7 +151,11 @@ fun ImportPasswordDialog(
 /** Blocking progress while PBKDF2 and AES run. Can't be dismissed, to avoid double submits. */
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
-fun BackupProgressDialog(modifier: Modifier = Modifier, operation: BackupOperation? = null) {
+fun BackupProgressDialog(
+    modifier: Modifier = Modifier,
+    operation: BackupOperation? = null,
+    progress: BackupViewModel.BackupProgress? = null,
+) {
     BasicAlertDialog(
         onDismissRequest = {},
         modifier = modifier,
@@ -153,7 +175,7 @@ fun BackupProgressDialog(modifier: Modifier = Modifier, operation: BackupOperati
                         liveRegion = LiveRegionMode.Polite
                     },
             ) {
-                CircularProgressIndicator(modifier = Modifier.size(40.dp), strokeWidth = 3.dp)
+                ModernLoadingSpinner()
                 Text(
                     text =
                         stringResource(
@@ -166,14 +188,90 @@ fun BackupProgressDialog(modifier: Modifier = Modifier, operation: BackupOperati
                     style = MaterialTheme.typography.titleMedium,
                     textAlign = TextAlign.Center,
                 )
-                Text(
-                    text = stringResource(R.string.backup_working_message),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center,
-                )
+                if (progress != null && progress.total > 0) {
+                    BackupProgressContent(progress)
+                }
             }
         }
+    }
+}
+
+@Composable
+private fun BackupProgressContent(
+    progress: BackupViewModel.BackupProgress,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = modifier.fillMaxWidth().padding(top = 4.dp),
+    ) {
+        LinearProgressIndicator(
+            progress = {
+                (progress.current.toFloat() / progress.total.toFloat()).coerceIn(0f, 1f)
+            },
+            modifier = Modifier.fillMaxWidth().height(6.dp).clip(CircleShape),
+            color = MaterialTheme.colorScheme.primary,
+            trackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+            drawStopIndicator = {},
+        )
+        Text(
+            text =
+                stringResource(
+                    R.string.backup_progress_format,
+                    progress.current,
+                    progress.total,
+                ),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+        )
+    }
+}
+
+@Composable
+private fun ModernLoadingSpinner(modifier: Modifier = Modifier) {
+    val infiniteTransition = rememberInfiniteTransition(label = "spinner")
+    val rotation by
+        infiniteTransition.animateFloat(
+            initialValue = 0f,
+            targetValue = 360f,
+            animationSpec =
+                infiniteRepeatable(
+                    animation = tween(1200, easing = LinearEasing),
+                    repeatMode = RepeatMode.Restart,
+                ),
+            label = "rotation",
+        )
+    val scale by
+        infiniteTransition.animateFloat(
+            initialValue = 0.9f,
+            targetValue = 1.1f,
+            animationSpec =
+                infiniteRepeatable(
+                    animation = tween(900, easing = FastOutSlowInEasing),
+                    repeatMode = RepeatMode.Reverse,
+                ),
+            label = "scale",
+        )
+    Box(modifier = modifier.size(56.dp), contentAlignment = Alignment.Center) {
+        CircularProgressIndicator(
+            modifier = Modifier.fillMaxSize().graphicsLayer { rotationZ = rotation },
+            strokeWidth = 3.5.dp,
+            trackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+            color = MaterialTheme.colorScheme.primary,
+            strokeCap = StrokeCap.Round,
+        )
+        Icon(
+            Icons.Default.Key,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier =
+                Modifier.size(24.dp).graphicsLayer {
+                    scaleX = scale
+                    scaleY = scale
+                },
+        )
     }
 }
 

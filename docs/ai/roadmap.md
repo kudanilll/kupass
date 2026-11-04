@@ -19,7 +19,7 @@
 - 0 open `Critical`/`High` items in `CONCERNS.md` §1.
 - CI green on every PR: build, unit tests, lint (0 errors), format check.
 - A backup exported on phone A restores correctly on phone B with the backup password (automated test + manual check).
-- Each new account open and each export requires fresh biometric/device-credential authentication; public browsing and creation require none (SEC-2 revised 2026-10-09).
+- Account opens reuse the authenticated activity session until its configured background timeout; each export still requires fresh native authentication. Public browsing/creation stay available (SEC-2 revised 2026-10-11).
 - Release APK size is recorded per release. The target is < 8 MB (proposed). The font is down from ~3.9 MB to 236 KB (S-5.1).
 - Every Room schema change ships with a migration test.
 
@@ -108,7 +108,7 @@ Enablers only. They make every later change safer and cheaper.
 
 ### Epic E3: App Lock (M1, size M)
 
-Confirmed decision, revised 2026-10-09: public launch/list/search/tabs/create, fresh native authentication before every new account open and before every export password dialog. Actual detail and positive-ID editor routes are gated before any sensitive ViewModel is created. Entry-bound grants are memory-only; rotation preserves an in-flight prompt, process restoration does not restore grants. Detail/edit/back shares its grant chain. This supersedes the historical launch-lock scope below; background timeout choices/defaults and bounded external-trip exemptions remain.
+Confirmed decision, revised 2026-10-11: public launch/list/search/tabs/create; first account access unlocks a session which later account opens reuse until the background timeout. Export remains fresh-authenticated before its password dialog. Actual detail/positive-ID editor creation is still gated by current entry/account grants. Session/grants are memory-only; rotation retains them, process death does not. The timeout choices/defaults and bounded external-trip exemptions remain.
 
 | ID    | Type  | Title                                                                                                                                                                     | Pts | Pri | Blocked by | Source             |
 | ----- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- | --- | ---------- | ------------------ |
@@ -129,12 +129,12 @@ Confirmed decision, revised 2026-10-09: public launch/list/search/tabs/create, f
 
 ### Epic E5: Lightweight & Fast (M2, size S)
 
-| ID     | Type    | Title                                                                                                                        | Pts | Pri | Blocked by   | Source            |
-| ------ | ------- | ---------------------------------------------------------------------------------------------------------------------------- | --- | --- | ------------ | ----------------- |
-| EN-5.0 | Enabler | Record the APK size baseline in CI (release build size in the job summary)                                                   | 1   | P1  | EN-01        | Lightweight goal  |
-| S-5.1  | Story   | ✅ Done 2026-09-19. Subset/optimize `googlesansflex.ttf` (Latin + Indonesian glyphs, only the needed axis ranges). Keep the font                 | 3   | P1  | EN-5.0       | QA-3              |
-| EN-5.2 | Enabler | List without decrypting passwords (projection), debounce search, crypto on `Dispatchers.Default`                             | 3   | P1  | EN-06, EN-07 | CONCERNS §4       |
-| EN-5.3 | Enabler | Replace `material-icons-extended` with the few vector icons used. Merge `mipmap-anydpi-v26`. Move bitmaps out of `drawable/` | 2   | P2  | none         | CONCERNS §4, lint |
+| ID     | Type    | Title                                                                                                                            | Pts | Pri | Blocked by   | Source            |
+| ------ | ------- | -------------------------------------------------------------------------------------------------------------------------------- | --- | --- | ------------ | ----------------- |
+| EN-5.0 | Enabler | Record the APK size baseline in CI (release build size in the job summary)                                                       | 1   | P1  | EN-01        | Lightweight goal  |
+| S-5.1  | Story   | ✅ Done 2026-09-19. Subset/optimize `googlesansflex.ttf` (Latin + Indonesian glyphs, only the needed axis ranges). Keep the font | 3   | P1  | EN-5.0       | QA-3              |
+| EN-5.2 | Enabler | List without decrypting passwords (projection), debounce search, crypto on `Dispatchers.Default`                                 | 3   | P1  | EN-06, EN-07 | CONCERNS §4       |
+| EN-5.3 | Enabler | Replace `material-icons-extended` with the few vector icons used. Merge `mipmap-anydpi-v26`. Move bitmaps out of `drawable/`     | 2   | P2  | none         | CONCERNS §4, lint |
 
 ### Epic E6: Feedback & Bug Report (M2, size S)
 
@@ -149,7 +149,7 @@ Confirmed decision, revised 2026-10-09: public launch/list/search/tabs/create, f
 | ------ | ------- | --------------------------------------------------------------------------------------------------------------------- | --- | --- | ---------- | ------------- |
 | S-7.1  | Story   | Password generator (length, character sets, strength meter) in the editor                                             | 5   | P2  | none       | SEC-7         |
 | F-7.2  | Feature | **Android Autofill service** (proposed, needs approval): split with the `breakdown-feature-prd` skill before starting | 13+ | P1? | E2, E3     | FEAT-1        |
-| S-7.3  | Story   | ✅ Done 2026-09-19; revised 2026-09-21. Always-on favicons via Favget (public domain only, memory cached)                                 | 5   | P2  | EN-01      | FEAT-2        |
+| S-7.3  | Story   | ✅ Done 2026-09-19; revised 2026-09-21. Always-on favicons via Favget (public domain only, memory cached)             | 5   | P2  | EN-01      | FEAT-2        |
 | S-7.4  | Story   | Categories/tags and favorites (proposed)                                                                              | 5   | P3  | EN-03      | FEAT-3        |
 | S-7.5  | Story   | Adaptive list-detail layout for tablets/foldables (proposed)                                                          | 5   | P3  | none       | FEAT-4        |
 | EN-7.6 | Enabler | Migrate Navigation 2.x (maintenance mode) → Navigation 3                                                              | 5   | P3  | EN-04      | CONCERNS debt |

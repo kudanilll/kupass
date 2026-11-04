@@ -16,6 +16,10 @@ sealed interface VaultEvent {
 
     data object ImportFailed : VaultEvent
 
+    data object ImportReadFailed : VaultEvent
+
+    data object ImportStoreFailed : VaultEvent
+
     data object CsvImportFailed : VaultEvent
 
     data object ImportTooLarge : VaultEvent
@@ -54,6 +58,8 @@ fun VaultEvent.message(context: Context): String =
                     )
             }
         VaultEvent.ImportFailed -> context.getString(R.string.toast_failed_import)
+        VaultEvent.ImportReadFailed -> context.getString(R.string.toast_import_read_failed)
+        VaultEvent.ImportStoreFailed -> context.getString(R.string.toast_import_store_failed)
         VaultEvent.CsvImportFailed -> context.getString(R.string.toast_failed_csv_import)
         VaultEvent.ImportTooLarge -> context.getString(R.string.toast_import_too_large)
         VaultEvent.BackupFromOtherDevice -> context.getString(R.string.toast_backup_foreign_device)
