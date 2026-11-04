@@ -50,7 +50,7 @@ If a skill or MCP server fits the task, use it and name it in the end-of-turn re
 - Main/default branch: `master` (renamed from `compose` on 2026-09-18). **Never code directly on `master`.**
 - Every change, however small, starts on a new branch from an up-to-date `master`: `git switch master && git pull && git switch -c <type>/<topic>`.
 - Branch names use the commit-type prefixes: `feat/`, `fix/`, `refactor/`, `chore/`, `docs/`, `test/`, `ci/`, `build/` (e.g. `feat/app-lock`, `fix/backup-portability`).
-- Changes reach `master` through a pull request.
+- Changes reach `master` only through a pull request. A repository ruleset on `master` requires one approving review, a passing `Format, analyze, build, test, lint` CI job, and resolved review threads. New pushes dismiss earlier approvals, and force pushes and branch deletion are blocked. GitHub doesn't let authors approve their own PR, so Danil merges his own PRs through the admin bypass after reviewing them. Contributor and Dependabot PRs need his approval.
 - Commit or push only when asked.
 - Commit with `git commit -s` (sign-off; commits are GPG-signed, so Danil enters the passphrase). Never add `Co-Authored-By` or other AI attribution to commits or PR descriptions.
 - Conventional-style messages, as already used in history: `feat(crypto): ...`, `fix: ...`, `refactor: ...`, `style: ...`, `docs: ...`, `test: ...`.
