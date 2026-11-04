@@ -74,6 +74,7 @@
     <string name="backup_working">Please wait…</string>
     <string name="backup_import_working">Importing passwords</string>
     <string name="backup_export_working">Exporting your backup</string>
+    <string name="backup_progress_format">%1$d/%2$d passwords</string>
     <string name="backup_working_message">Please wait while your passwords are processed.</string>
     <string name="toast_backup_foreign_device">This older backup was made on another device and cannot be restored here. Export a new backup from the original device.</string>
     <string name="toast_backup_unsupported">Unsupported backup file</string>

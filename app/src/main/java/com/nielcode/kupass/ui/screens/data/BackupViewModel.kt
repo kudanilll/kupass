@@ -71,6 +71,9 @@ class BackupViewModel(
     private val _operation = MutableStateFlow<BackupOperation?>(null)
     val operation: StateFlow<BackupOperation?> = _operation.asStateFlow()
 
+    private val _progress = MutableStateFlow<BackupProgress?>(null)
+    val progress: StateFlow<BackupProgress?> = _progress.asStateFlow()
+
     private val operationPending: Boolean
         get() = _backupBusy.value || _importPrompt.value != null
 
@@ -188,6 +191,7 @@ class BackupViewModel(
                     } catch (e: BackupException) {
                         _events.send(e.toEvent())
                     } finally {
+                        _progress.value = null
                         _backupBusy.value = false
                         _operation.value = null
                         importJob = null
@@ -212,6 +216,7 @@ class BackupViewModel(
                         decodeAndInsert(prompt.content, password)
                     } finally {
                         password.fill('\u0000')
+                        _progress.value = null
                         _backupBusy.value = false
                         _operation.value = null
                         importJob = null
@@ -234,7 +239,10 @@ class BackupViewModel(
                     } else GooglePasswordCsv.decode(content)
                 }
             val result = recoverable {
-                val inserted = repository.importPasswords(decoded.entries)
+                val inserted =
+                    repository.importPasswords(decoded.entries) { current, total ->
+                        _progress.value = BackupProgress(current, total)
+                    }
                 inserted.copy(skipped = inserted.skipped + decoded.skipped)
             }
             _importPrompt.value = null
@@ -268,6 +276,9 @@ class BackupViewModel(
 
     /** An encrypted backup waiting for its password. [content] is still ciphertext. */
     data class ImportPrompt(val content: String, val wrongPassword: Boolean = false)
+
+    /** Progress of an ongoing import operation. */
+    data class BackupProgress(val current: Int, val total: Int)
 
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {

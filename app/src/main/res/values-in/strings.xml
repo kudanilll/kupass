@@ -73,7 +73,8 @@
     <string name="backup_wrong_password">Kata sandi salah atau file rusak</string>
     <string name="backup_working">Mohon tunggu…</string>
     <string name="backup_import_working">Mengimpor kata sandi</string>
-    <string name="backup_export_working">Mengekspor cadangan</string>
+    <string name="backup_export_working">Mengekspor cadangan kamu</string>
+    <string name="backup_progress_format">%1$d/%2$d kata sandi</string>
     <string name="backup_working_message">Mohon tunggu saat kata sandi kamu diproses.</string>
     <string name="toast_backup_foreign_device">Cadangan lama ini dibuat di perangkat lain dan tidak dapat dipulihkan di sini. Ekspor cadangan baru dari perangkat asalnya.</string>
     <string name="toast_backup_unsupported">File cadangan tidak didukung</string>

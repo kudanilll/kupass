@@ -10,12 +10,12 @@ import com.nielcode.kupass.data.repository.PasswordRepository
 import com.nielcode.kupass.data.repository.filterByQuery
 import com.nielcode.kupass.di.appContainer
 import com.nielcode.kupass.ui.screens.VaultEvent
-import com.nielcode.kupass.ui.screens.WhileUiSubscribed
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
@@ -52,7 +52,7 @@ class HomeViewModel(
     val events: Flow<VaultEvent> = _events.receiveAsFlow()
 
     init {
-        // Decrypt the vault once per database change and keep it while the UI is subscribed.
+        // Decrypt the vault once per database change and keep it alive in memory.
         allPasswords =
             repository
                 .getAllPasswords()
@@ -60,14 +60,14 @@ class HomeViewModel(
                     _events.trySend(VaultEvent.VaultReadFailed)
                     emit(emptyList())
                 }
-                .stateIn(viewModelScope, WhileUiSubscribed, emptyList())
+                .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
         // Group on background thread so the main thread never runs URI parsing.
         groups =
             allPasswords
                 .map { groupVault(it) }
                 .flowOn(filterDispatcher)
-                .stateIn(viewModelScope, WhileUiSubscribed, emptyList())
+                .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
         // Filter on background thread.
         passwords =
@@ -75,7 +75,7 @@ class HomeViewModel(
                     entries.filterByQuery(query)
                 }
                 .flowOn(filterDispatcher)
-                .stateIn(viewModelScope, WhileUiSubscribed, emptyList())
+                .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
         // Visible groups = groups whose accounts overlap with the filtered set.
         visibleGroups =
@@ -84,7 +84,7 @@ class HomeViewModel(
                     allGroups.filter { group -> group.accounts.any { it.id in ids } }
                 }
                 .flowOn(filterDispatcher)
-                .stateIn(viewModelScope, WhileUiSubscribed, emptyList())
+                .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
     }
 
     fun onSearchQueryChange(query: String) {

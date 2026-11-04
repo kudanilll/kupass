@@ -1,10 +1,14 @@
 package com.nielcode.kupass.ui.screens.home
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
@@ -18,6 +22,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -53,7 +58,7 @@ fun PasswordGroupScreen(
             groups.firstOrNull { it.key == resolvedKey }?.accounts.orEmpty()
         }
     SideEffect(resolvedKey, accounts) {
-        if (groupKey == null) groupKey = resolvedKey
+        if (groupKey == null && resolvedKey != null) groupKey = resolvedKey
         if (accounts.isNotEmpty() && accounts.none { it.id == anchorId }) {
             anchorId = accounts.first().id
         }
@@ -74,20 +79,29 @@ fun PasswordGroupScreen(
         modifier = modifier,
         topBar = { GroupTopBar(resolvedKey?.value, onNavigateBack) },
     ) { padding ->
-        VaultList(
-            passwords = accounts,
-            query = "",
-            onQueryChange = {},
-            searchActive = false,
-            onSearchActiveChange = {},
-            onItemClick = { onNavigateToDetail(it.id) },
-            onDeleteItem = { pendingDelete = it },
-            modifier = Modifier.padding(padding),
-            contentPadding = PaddingValues(bottom = 16.dp),
-            siteIcons = siteIcons,
-            showHeadline = false,
-            showSearch = false,
-        )
+        if (groups.isEmpty()) {
+            Box(
+                modifier = Modifier.fillMaxSize().padding(padding),
+                contentAlignment = Alignment.Center,
+            ) {
+                CircularProgressIndicator(modifier = Modifier.size(36.dp), strokeWidth = 3.dp)
+            }
+        } else {
+            VaultList(
+                passwords = accounts,
+                query = "",
+                onQueryChange = {},
+                searchActive = false,
+                onSearchActiveChange = {},
+                onItemClick = { onNavigateToDetail(it.id) },
+                onDeleteItem = { pendingDelete = it },
+                modifier = Modifier.padding(padding),
+                contentPadding = PaddingValues(bottom = 16.dp),
+                siteIcons = siteIcons,
+                showHeadline = false,
+                showSearch = false,
+            )
+        }
     }
 }
 
