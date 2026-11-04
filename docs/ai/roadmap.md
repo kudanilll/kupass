@@ -141,7 +141,7 @@ Confirmed decision, revised 2026-10-11: public launch/list/search/tabs/create; f
 | ID     | Type    | Title                                                                                                                                                                                   | Pts | Pri | Blocked by | Source |
 | ------ | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- | --- | ---------- | ------ |
 | S-6.1  | Story   | Settings → "Send feedback" / "Report a bug": opens a prefilled GitHub issue or email with app version + Android version the user can see and edit. **No automatic data, no vault data** | 3   | P1  | none       | FEAT-5 |
-| EN-6.2 | Enabler | GitHub issue templates (bug report / feature request) that match the in-app fields                                                                                                      | 1   | P2  | none       | FEAT-5 |
+| EN-6.2 | Enabler | ✅ Done 2026-11-04. GitHub issue templates (bug report / feature request) that match the in-app fields                                                                                  | 1   | P2  | none       | FEAT-5 |
 
 ### Epic E7: Power Features (M3, size XL, to be split per feature)
 

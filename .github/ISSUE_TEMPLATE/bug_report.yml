@@ -1,0 +1,78 @@
+name: Bug report
+description: Something in Kupass doesn't work as expected.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please don't paste real passwords, usernames, notes, backup files, or CSV exports here. Made-up test data is enough.
+
+        Found a security problem? Report it privately instead: https://github.com/kudanilll/kupass/security/advisories/new
+  - type: input
+    id: app-version
+    attributes:
+      label: Kupass version
+      description: Shown in Settings > About > Kupass.
+      placeholder: 3.1.0 - release
+    validations:
+      required: true
+  - type: dropdown
+    id: install-source
+    attributes:
+      label: Where did you get the app?
+      options:
+        - GitHub release APK
+        - Built from source
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: android-version
+    attributes:
+      label: Android version
+      placeholder: Android 14
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Device
+      placeholder: Pixel 8
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Kupass blocks screenshots, so please describe what you saw.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open ...
+        2. Tap ...
+        3. See ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect to happen?
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Optional. Remove any personal data before posting.
+      render: text
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched the existing issues for this bug.
+          required: true
+        - label: This report contains no real passwords or other personal data.
+          required: true
