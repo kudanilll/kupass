@@ -50,7 +50,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Google CSV import accepts normalized headers, `note`/`notes`, blank record separators, comma/semicolon delimiters, and BOM-marked UTF-16 as well as strict UTF-8. Credential fields are preserved exactly; malformed data still inserts nothing.
+- Google CSV import accepts normalized headers and aliases, optional username/password/url/note columns or empty values, extra unrecognized columns, blank record separators, comma/semicolon delimiters, omitted trailing columns, and BOM-marked UTF-16 as well as strict UTF-8. Credential fields are preserved exactly; malformed data still inserts nothing.
 - CSV errors identify the supported columns instead of incorrectly referring to a JSON file.
 - Import errors distinguish selected-file access failures from account storage/encryption failures, while keeping error messages free of credential values.
 - Editing imported entries preserves username and note formatting and accepts nonempty whitespace-only passwords. Empty passwords and blank site names still disable Save.

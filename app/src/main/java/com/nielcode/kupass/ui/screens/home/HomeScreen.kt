@@ -28,6 +28,8 @@ fun HomeScreen(
     contentPadding: PaddingValues = PaddingValues(),
     siteIcons: SiteIcons? = null,
     onNavigateToGroup: ((Long) -> Unit)? = null,
+    visibleGroups: List<VaultGroup> = emptyList(),
+    filteredPasswords: List<PasswordEntity> = passwords,
 ) {
     var isSearchActive by remember { mutableStateOf(false) }
     var passwordToDelete by remember { mutableStateOf<PasswordEntity?>(null) }
@@ -57,6 +59,8 @@ fun HomeScreen(
             contentPadding = contentPadding,
             siteIcons = siteIcons,
             onGroupClick = onNavigateToGroup,
+            visibleGroups = visibleGroups,
+            filteredPasswords = filteredPasswords,
         )
     }
 }

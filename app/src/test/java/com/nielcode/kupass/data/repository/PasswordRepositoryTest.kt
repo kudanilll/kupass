@@ -144,12 +144,12 @@ class PasswordRepositoryTest {
                         entry("Bank", password = "b"),
                         entry("Bank", password = "b"), // duplicate within the file
                         entry("", password = "x"), // invalid: no site
-                        entry("NoPassword", password = ""), // invalid: no password
+                        entry("NoPassword", password = ""), // valid: empty password allowed
                     )
                 )
 
-            assertEquals(ImportResult(imported = 2, skipped = 4), result)
-            assertEquals(3, dao.stored.size)
+            assertEquals(ImportResult(imported = 3, skipped = 3), result)
+            assertEquals(4, dao.stored.size)
             assertTrue(dao.stored.all { it.siteName.startsWith(CryptoManager.PREFIX_V2) })
         }
 

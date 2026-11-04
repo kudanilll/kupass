@@ -68,6 +68,7 @@ import com.nielcode.kupass.ui.screens.data.ImportPasswordDialog
 import com.nielcode.kupass.ui.screens.home.HomeScreen
 import com.nielcode.kupass.ui.screens.home.HomeViewModel
 import com.nielcode.kupass.ui.screens.home.PasswordGroupScreen
+import com.nielcode.kupass.ui.screens.home.VaultGroup
 import com.nielcode.kupass.ui.screens.lock.SensitiveActionGuidance
 import com.nielcode.kupass.ui.screens.settings.SettingsScreen
 import kotlinx.coroutines.flow.Flow
@@ -162,6 +163,8 @@ fun MainPagerScreen(
 ) {
     val authState by authentication.state.collectAsStateWithLifecycle()
     val passwords by homeViewModel.allPasswords.collectAsStateWithLifecycle()
+    val visibleGroups by homeViewModel.visibleGroups.collectAsStateWithLifecycle()
+    val filteredPasswords by homeViewModel.passwords.collectAsStateWithLifecycle()
     val searchQuery by homeViewModel.searchQuery.collectAsStateWithLifecycle()
     val importPrompt by backupViewModel.importPrompt.collectAsStateWithLifecycle()
     val backupBusy by backupViewModel.backupBusy.collectAsStateWithLifecycle()
@@ -197,6 +200,8 @@ fun MainPagerScreen(
         authState.pending != null || authState.nativeRequest != null || authState.export != null
     MainPagerContent(
         passwords = passwords,
+        visibleGroups = visibleGroups,
+        filteredPasswords = filteredPasswords,
         searchQuery = searchQuery,
         siteIcons = siteIcons,
         onSearchQueryChange = homeViewModel::onSearchQueryChange,
@@ -219,6 +224,8 @@ fun MainPagerScreen(
 @Composable
 private fun MainPagerContent(
     passwords: List<PasswordEntity>,
+    visibleGroups: List<VaultGroup>,
+    filteredPasswords: List<PasswordEntity>,
     searchQuery: String,
     siteIcons: SiteIcons,
     onSearchQueryChange: (String) -> Unit,
@@ -248,6 +255,8 @@ private fun MainPagerContent(
                     contentPadding = contentPadding,
                     siteIcons = siteIcons,
                     onNavigateToGroup = onNavigateToGroup,
+                    visibleGroups = visibleGroups,
+                    filteredPasswords = filteredPasswords,
                 )
             MainTab.Data ->
                 DataScreen(

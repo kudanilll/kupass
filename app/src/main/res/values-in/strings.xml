@@ -89,7 +89,7 @@
     <string name="toast_failed_import">File gagal dibaca. Pilih cadangan Kupass atau CSV Google Password Manager.</string>
     <string name="toast_import_read_failed">File yang dipilih gagal dibuka. Unduh ke perangkat ini lalu pilih kembali.</string>
     <string name="toast_import_store_failed">Akun hasil impor gagal disimpan. Akun yang sudah ada tidak diubah.</string>
-    <string name="toast_failed_csv_import">CSV gagal diimpor. Kolom name, url, username, dan password wajib ada; note bersifat opsional.</string>
+    <string name="toast_failed_csv_import">CSV gagal diimpor. Kolom name, url, username, atau password wajib ada.</string>
 
     <!-- Error -->
     <string name="error_required">Kolom ini wajib diisi</string>

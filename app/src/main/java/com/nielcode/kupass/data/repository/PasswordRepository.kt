@@ -48,17 +48,16 @@ class PasswordRepository(
         passwordDao.update(withContext(cryptoDispatcher) { password.encrypted() })
 
     /**
-     * Adds backup entries to the vault atomically. Entries without a site name or password, and
-     * duplicates of an existing entry or of an earlier entry in the same backup, are skipped. A
-     * duplicate has the same site name (ignoring case and surrounding spaces), username, URL, and
-     * password.
+     * Adds backup entries to the vault atomically. Entries without a site name, and duplicates of
+     * an existing entry or of an earlier entry in the same backup, are skipped. A duplicate has the
+     * same site name (ignoring case and surrounding spaces), username, URL, and password.
      */
     suspend fun importPasswords(entries: List<PasswordEntity>): ImportResult {
         val existing = getAllPasswords().first()
         return withContext(cryptoDispatcher) {
             val seen = existing.mapTo(HashSet()) { it.identity() }
             val toInsert = entries.filter {
-                it.siteName.isNotBlank() && it.password.isNotEmpty() && seen.add(it.identity())
+                it.siteName.isNotBlank() && seen.add(it.identity())
             }
             // Encrypt everything before touching the database so a crypto failure inserts nothing.
             val encrypted = toInsert.map { it.copy(id = 0).encrypted() }

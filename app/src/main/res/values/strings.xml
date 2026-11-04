@@ -89,7 +89,7 @@
     <string name="toast_failed_import">Could not read this file. Choose a Kupass backup or a Google Password Manager CSV.</string>
     <string name="toast_import_read_failed">Could not open the selected file. Download it to this device and select it again.</string>
     <string name="toast_import_store_failed">Could not save the imported accounts. Existing accounts were not changed.</string>
-    <string name="toast_failed_csv_import">Could not import this CSV. It needs name, url, username and password columns; note is optional.</string>
+    <string name="toast_failed_csv_import">Could not import this CSV. It needs at least a name, url, username, or password column.</string>
 
     <!-- Error -->
     <string name="error_required">This field is required</string>

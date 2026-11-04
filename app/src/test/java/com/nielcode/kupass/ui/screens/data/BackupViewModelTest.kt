@@ -58,7 +58,9 @@ class BackupViewModelTest {
     fun `CSV under a JSON name imports directly and closes the stream with combined skipped counts`() =
         runTest {
             val input =
-                registerInput(CSV + "\nSite,https://example.com,u, padded ,note\nMissing,,u,,")
+                registerInput(
+                    CSV + "\nSite,https://example.com,u, padded ,note\n,https://example.com,u,,"
+                )
             val vm = viewModel()
 
             vm.importPasswords(INPUT)

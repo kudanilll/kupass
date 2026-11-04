@@ -90,13 +90,18 @@ fun VaultList(
     onGroupClick: ((Long) -> Unit)? = null,
     showHeadline: Boolean = true,
     showSearch: Boolean = true,
+    visibleGroups: List<VaultGroup> = emptyList(),
+    filteredPasswords: List<PasswordEntity> = passwords,
 ) {
-    val groups = remember(passwords) { groupVault(passwords) }
-    val matching = remember(passwords, query) { passwords.filterByQuery(query) }
-    val matchingIds = remember(matching) { matching.mapTo(HashSet()) { it.id } }
-    val visibleGroups =
-        remember(groups, matchingIds) {
-            groups.filter { group -> group.accounts.any { it.id in matchingIds } }
+    val matching =
+        remember(passwords, query, filteredPasswords) {
+            if (filteredPasswords !== passwords || query.isEmpty()) filteredPasswords
+            else passwords.filterByQuery(query)
+        }
+    val activeGroups =
+        remember(passwords, visibleGroups) {
+            if (visibleGroups.isNotEmpty() || passwords.isEmpty()) visibleGroups
+            else groupVault(passwords)
         }
     val listState = rememberLazyListState()
     val scrolls = listState.canScrollForward || listState.canScrollBackward
@@ -133,7 +138,7 @@ fun VaultList(
                     )
                 }
             } else if (onGroupClick != null) {
-                groupRows(visibleGroups, onGroupClick, onItemClick, onDeleteItem, siteIcons)
+                groupRows(activeGroups, onGroupClick, onItemClick, onDeleteItem, siteIcons)
             } else {
                 accountRows(matching, onItemClick, onDeleteItem, siteIcons, !showHeadline)
             }

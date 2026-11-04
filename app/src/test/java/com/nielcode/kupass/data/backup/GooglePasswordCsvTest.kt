@@ -52,49 +52,131 @@ class GooglePasswordCsvTest {
     }
 
     @Test
-    fun `missing values and invalid URLs are skipped but empty username and note are valid`() {
+    fun `missing values and invalid URLs are skipped but empty username and password are valid`() {
         val result =
             GooglePasswordCsv.decode(
                 HEADER +
                     "\n" +
                     ",https://example.com,u,p,\n" +
-                    "No password,https://example.com,u,,\n" +
                     "Bad URL,not a url,u,p,\n" +
-                    "Missing URL,,u,p,\n" +
                     "Bad app,android://broken,u,p,\n" +
+                    "EmptyPass,https://example.com,u,,\n" +
                     "Valid,https://example.com,,p,"
             )
 
-        assertEquals(5, result.skipped)
-        assertEquals("Valid", result.entries.single().siteName)
+        assertEquals(3, result.skipped)
+        assertEquals(2, result.entries.size)
+        assertEquals("EmptyPass", result.entries[0].siteName)
+        assertEquals("", result.entries[0].password)
+        assertEquals("Valid", result.entries[1].siteName)
     }
 
     @Test
-    fun `malformed quotes separators and widths reject the whole file`() {
+    fun `CSV with missing password column or missing username column or extra columns and aliases work`() {
+        val noPass = "name,url,username\n" + "NoPassCol,https://example.com,alice\n"
+        val noPassResult = GooglePasswordCsv.decode(noPass)
+        assertEquals(0, noPassResult.skipped)
+        assertEquals("NoPassCol", noPassResult.entries.single().siteName)
+        assertEquals("", noPassResult.entries.single().password)
+        assertEquals("alice", noPassResult.entries.single().username)
+
+        val aliasesAndExtra =
+            "title,website,login,pass,notes,extra_col,folder\n" +
+                "MyBank,https://mybank.com,john,secret123,my note,ignored1,Personal\n"
+        val aliasResult = GooglePasswordCsv.decode(aliasesAndExtra)
+        assertEquals(0, aliasResult.skipped)
+        val entry = aliasResult.entries.single()
+        assertEquals("MyBank", entry.siteName)
+        assertEquals("https://mybank.com", entry.url)
+        assertEquals("john", entry.username)
+        assertEquals("secret123", entry.password)
+        assertEquals("my note", entry.notes)
+    }
+
+    @Test
+    fun `indonesian google export and large column count work`() {
+        val indo =
+            "Nama,URL,Nama Pengguna,Kata Sandi,Catatan\n" +
+                "Tokopedia,https://tokopedia.com,budi,rahasia123,akun utama\n"
+        val indoResult = GooglePasswordCsv.decode(indo)
+        assertEquals(0, indoResult.skipped)
+        val entry = indoResult.entries.single()
+        assertEquals("Tokopedia", entry.siteName)
+        assertEquals("https://tokopedia.com", entry.url)
+        assertEquals("budi", entry.username)
+        assertEquals("rahasia123", entry.password)
+        assertEquals("akun utama", entry.notes)
+
+        // 100 columns (unlimited)
+        val extraCols = (1..95).joinToString(",") { "col$it" }
+        val bigHeader = "name,url,username,password,note,$extraCols\n"
+        val extraVals = (1..95).joinToString(",") { "val$it" }
+        val bigRow = "BigSite,https://example.com,user,pass,note,$extraVals\n"
+        val bigResult = GooglePasswordCsv.decode(bigHeader + bigRow)
+        assertEquals(0, bigResult.skipped)
+        assertEquals("BigSite", bigResult.entries.single().siteName)
+    }
+
+    @Test
+    fun `rows with missing note column or empty url and username are imported successfully`() {
+        val csv =
+            HEADER +
+                "\n" +
+                "OnlyCreds,https://example.com,user,pass\n" +
+                "EmptyNote,https://example.com,user,pass,\n" +
+                "NoUrl, ,user,pass\n" +
+                "NoUsername,https://example.com,,pass\n" +
+                "BareMinimal,,,pass\n"
+        val result = GooglePasswordCsv.decode(csv)
+        assertEquals(0, result.skipped)
+        assertEquals(5, result.entries.size)
+
+        assertEquals("OnlyCreds", result.entries[0].siteName)
+        assertEquals("https://example.com", result.entries[0].url)
+        assertEquals("", result.entries[0].notes)
+
+        assertEquals("EmptyNote", result.entries[1].siteName)
+        assertEquals("", result.entries[1].notes)
+
+        assertEquals("NoUrl", result.entries[2].siteName)
+        assertEquals("", result.entries[2].url)
+        assertEquals("", result.entries[2].notes)
+
+        assertEquals("NoUsername", result.entries[3].siteName)
+        assertEquals("", result.entries[3].username)
+
+        assertEquals("BareMinimal", result.entries[4].siteName)
+        assertEquals("", result.entries[4].url)
+        assertEquals("", result.entries[4].username)
+        assertEquals("", result.entries[4].notes)
+    }
+
+    @Test
+    fun `malformed quotes reject the whole file but extra columns are tolerated`() {
         val valid = HEADER + "\nGood,https://example.com,u,p,\n"
         listOf(
                 "Bad,https://example.com,u,\"unterminated,",
                 "Bad,https://example.com,u,un\"quoted,",
                 "Bad,https://example.com,u,\"closed\"suffix,",
-                "Bad,https://example.com,u,p",
-                "Bad,https://example.com,u,p,,extra",
             )
             .forEach { row ->
                 assertThrows(BackupException.InvalidCsv::class.java) {
                     GooglePasswordCsv.decode(valid + row)
                 }
             }
+        // Extra columns in a data row are silently ignored, not rejected.
+        val extra = GooglePasswordCsv.decode(valid + "Site,https://example.org,u,p,n,extra1,extra2")
+        assertEquals(2, extra.entries.size)
+        assertEquals("Site", extra.entries[1].siteName)
     }
 
     @Test
-    fun `missing duplicate or unknown headers are rejected`() {
+    fun `unrelated or empty headers are rejected`() {
         listOf(
                 "",
-                "name,url,username",
+                "unrelated,headers,here",
+                "price,quantity,item",
                 "name,url,password,password",
-                "name,url,username,pass",
-                "name,url,username,password,note,notes",
-                "name,url,username,password,note,extra",
             )
             .forEach { csv ->
                 assertThrows(BackupException.InvalidCsv::class.java) {
@@ -132,11 +214,11 @@ class GooglePasswordCsvTest {
 
     @Test
     fun `data row cap includes skipped rows but not header or quoted newlines`() {
-        val atLimit = HEADER + "\n" + "Missing,,u,,\n".repeat(BackupCodec.MAX_ENTRIES)
+        val atLimit = HEADER + "\n" + ",,u,,\n".repeat(BackupCodec.MAX_ENTRIES)
         assertEquals(BackupCodec.MAX_ENTRIES, GooglePasswordCsv.decode(atLimit).skipped)
         assertEquals(BackupCodec.MAX_ENTRIES, GooglePasswordCsv.decode(atLimit + "\n").skipped)
         assertThrows(BackupException.TooLarge::class.java) {
-            GooglePasswordCsv.decode(atLimit + "Missing,,u,,\n")
+            GooglePasswordCsv.decode(atLimit + ",,u,,\n")
         }
         val multiline =
             HEADER +

@@ -42,14 +42,15 @@ fun PasswordGroupScreen(
     siteIcons: SiteIcons? = null,
     viewModel: HomeViewModel = viewModel(factory = HomeViewModel.Factory),
 ) {
-    val passwords by viewModel.allPasswords.collectAsStateWithLifecycle()
+    val groups by viewModel.groups.collectAsStateWithLifecycle()
     // Only a row ID is saved. Site names, URLs and credentials never enter saved state.
     var anchorId by rememberSaveable(groupId) { mutableLongStateOf(groupId) }
     var groupKey by remember(groupId) { mutableStateOf<VaultGroupKey?>(null) }
-    val resolvedKey = groupKey ?: passwords.firstOrNull { it.id == anchorId }?.let(::vaultGroupKey)
+    val resolvedKey =
+        groupKey ?: groups.firstOrNull { g -> g.accounts.any { it.id == anchorId } }?.key
     val accounts =
-        remember(passwords, resolvedKey) {
-            passwords.filter { resolvedKey != null && vaultGroupKey(it) == resolvedKey }
+        remember(groups, resolvedKey) {
+            groups.firstOrNull { it.key == resolvedKey }?.accounts.orEmpty()
         }
     SideEffect(resolvedKey, accounts) {
         if (groupKey == null) groupKey = resolvedKey
