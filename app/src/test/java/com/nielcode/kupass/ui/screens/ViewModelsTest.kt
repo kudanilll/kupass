@@ -2,6 +2,7 @@ package com.nielcode.kupass.ui.screens
 
 import android.net.Uri
 import com.nielcode.kupass.data.backup.GooglePasswordCsv
+import com.nielcode.kupass.data.local.db.PasswordDao
 import com.nielcode.kupass.data.local.db.PasswordEntity
 import com.nielcode.kupass.data.repository.PasswordRepository
 import com.nielcode.kupass.security.CryptoException
@@ -16,8 +17,11 @@ import com.nielcode.kupass.ui.screens.detail.PasswordDetailViewModel
 import com.nielcode.kupass.ui.screens.editor.PasswordEditorViewModel
 import com.nielcode.kupass.ui.screens.editor.SaveState
 import com.nielcode.kupass.ui.screens.home.HomeViewModel
+import com.nielcode.kupass.ui.screens.home.VaultUiState
 import javax.crypto.KeyGenerator
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
@@ -129,11 +133,29 @@ class ViewModelsTest {
         val vm = HomeViewModel(repository, filterDispatcher = mainDispatcher.dispatcher)
         backgroundScope.launchCollect(vm)
 
-        assertEquals(listOf("GitHub", "Google"), vm.passwords.value.map { it.siteName })
-        assertEquals(listOf("p2", "p1"), vm.passwords.value.map { it.password })
+        assertEquals(listOf("GitHub", "Google"), vm.matching().map { it.siteName })
+        assertEquals(listOf("p2", "p1"), vm.matching().map { it.password })
 
         vm.onSearchQueryChange("ali")
-        assertEquals(listOf("Google"), vm.passwords.value.map { it.siteName })
+        assertEquals(listOf("Google"), vm.matching().map { it.siteName })
+    }
+
+    @Test
+    fun `home shows loading until the vault is read, then an empty vault as ready`() = runTest {
+        val vault = MutableSharedFlow<List<PasswordEntity>>()
+        val slowDao =
+            object : PasswordDao by dao {
+                override fun getAll(): Flow<List<PasswordEntity>> = vault
+            }
+        val vm =
+            HomeViewModel(
+                PasswordRepository(slowDao, cryptoDispatcher = mainDispatcher.dispatcher),
+                filterDispatcher = mainDispatcher.dispatcher,
+            )
+
+        assertEquals(VaultUiState.Loading, vm.uiState.value)
+        vault.emit(emptyList())
+        assertEquals(VaultUiState.Ready(emptyList(), emptyList(), emptyList()), vm.uiState.value)
     }
 
     @Test
@@ -254,6 +276,8 @@ class ViewModelsTest {
     }
 
     private fun CoroutineScope.launchCollect(vm: HomeViewModel) {
-        launch(mainDispatcher.dispatcher) { vm.passwords.collect {} }
+        launch(mainDispatcher.dispatcher) { vm.uiState.collect {} }
     }
+
+    private fun HomeViewModel.matching() = (uiState.value as VaultUiState.Ready).matching
 }

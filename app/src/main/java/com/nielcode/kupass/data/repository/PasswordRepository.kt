@@ -1,5 +1,6 @@
 package com.nielcode.kupass.data.repository
 
+import com.nielcode.kupass.data.local.cache.VaultSnapshotStore
 import com.nielcode.kupass.data.local.db.PasswordDao
 import com.nielcode.kupass.data.local.db.PasswordEntity
 import com.nielcode.kupass.security.CryptoException
@@ -11,6 +12,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.withContext
 
 /**
@@ -22,16 +24,25 @@ import kotlinx.coroutines.withContext
  * holds ciphertext, sorting and search happen in memory after decryption (decision Q1). All crypto
  * runs on [cryptoDispatcher], never on the main thread. Read flows fail with [CryptoException] if
  * stored data can't be decrypted.
+ *
+ * Decrypted rows are cached ([VaultCache]), so only new or changed rows are decrypted, and an
+ * encrypted snapshot in [snapshotStore] lets the next app start skip decryption entirely.
  */
 class PasswordRepository(
     private val passwordDao: PasswordDao,
     private val cryptoDispatcher: CoroutineDispatcher = Dispatchers.Default,
+    snapshotStore: VaultSnapshotStore? = null,
 ) {
+    private val cache = VaultCache(snapshotStore)
 
     fun getAllPasswords(): Flow<List<PasswordEntity>> =
         passwordDao
             .getAll()
-            .map { rows -> rows.map { it.decrypted() }.sortedForDisplay() }
+            .transform { rows ->
+                emit(cache.decrypt(rows).sortedForDisplay())
+                // After emitting, so writing the snapshot never delays the list.
+                cache.persist()
+            }
             .flowOn(cryptoDispatcher)
 
     /** Case-insensitive match on site name, username, URL, and notes. */
@@ -39,13 +50,19 @@ class PasswordRepository(
         getAllPasswords().map { it.filterByQuery(query) }.flowOn(cryptoDispatcher)
 
     fun getPasswordById(id: Long): Flow<PasswordEntity?> =
+        // Not cached on purpose: a single row stays fail-closed whenever the Keystore can't
+        // decrypt.
         passwordDao.getById(id).map { it?.decrypted() }.flowOn(cryptoDispatcher)
 
-    suspend fun insertPassword(password: PasswordEntity): Long =
-        passwordDao.insert(withContext(cryptoDispatcher) { password.encrypted() })
+    suspend fun insertPassword(password: PasswordEntity): Long {
+        val encrypted = withContext(cryptoDispatcher) { password.encrypted() }
+        return storing(listOf(encrypted), listOf(password)) { passwordDao.insert(encrypted) }
+    }
 
-    suspend fun updatePassword(password: PasswordEntity) =
-        passwordDao.update(withContext(cryptoDispatcher) { password.encrypted() })
+    suspend fun updatePassword(password: PasswordEntity) {
+        val encrypted = withContext(cryptoDispatcher) { password.encrypted() }
+        storing(listOf(encrypted), listOf(password)) { passwordDao.update(encrypted) }
+    }
 
     /**
      * Adds backup entries to the vault atomically. Entries without a site name, and duplicates of
@@ -71,7 +88,9 @@ class PasswordRepository(
                 enc
             }
             currentCoroutineContext().ensureActive()
-            if (encrypted.isNotEmpty()) passwordDao.insertAll(encrypted)
+            if (encrypted.isNotEmpty()) {
+                storing(encrypted, toInsert) { passwordDao.insertAll(encrypted) }
+            }
             ImportResult(imported = encrypted.size, skipped = entries.size - encrypted.size)
         }
     }
@@ -89,20 +108,41 @@ class PasswordRepository(
      */
     suspend fun upgradeStoredFormat(): Int =
         withContext(cryptoDispatcher) {
-            val upgraded =
+            val rewritten =
                 passwordDao
                     .getAllOnce()
                     .filterNot { it.isCurrentFormat() }
                     .mapNotNull { row ->
                         try {
-                            row.decrypted().encrypted()
+                            row.decrypted().let { plain -> plain.encrypted() to plain }
                         } catch (_: CryptoException) {
                             null
                         }
                     }
-            if (upgraded.isNotEmpty()) passwordDao.updateAll(upgraded)
+            val upgraded = rewritten.map { it.first }
+            if (upgraded.isNotEmpty()) {
+                storing(upgraded, rewritten.map { it.second }) { passwordDao.updateAll(upgraded) }
+            }
             upgraded.size
         }
+
+    /**
+     * Runs [write] for [encrypted] rows, remembering their [plain] fields so the next read of those
+     * rows skips decryption. If the write fails, nothing is remembered.
+     */
+    private suspend fun <T> storing(
+        encrypted: List<PasswordEntity>,
+        plain: List<PasswordEntity>,
+        write: suspend () -> T,
+    ): T {
+        cache.remember(encrypted, plain)
+        var stored = false
+        try {
+            return write().also { stored = true }
+        } finally {
+            if (!stored) cache.forget(encrypted)
+        }
+    }
 }
 
 /** Outcome of [PasswordRepository.importPasswords]. */

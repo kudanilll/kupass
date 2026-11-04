@@ -74,6 +74,8 @@ private const val EMPTY_STATE_HEIGHT_FRACTION = 0.7f
  * A shared list for site rows on Home and individual accounts on a site's page.
  *
  * @param siteIcons icon loader, or null when site icons are turned off.
+ * @param loading true while the vault is still being read; shows placeholder rows, not the empty
+ *   state.
  */
 @Composable
 fun VaultList(
@@ -85,6 +87,7 @@ fun VaultList(
     onItemClick: (PasswordEntity) -> Unit,
     onDeleteItem: (PasswordEntity) -> Unit,
     modifier: Modifier = Modifier,
+    loading: Boolean = false,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     siteIcons: SiteIcons? = null,
     onGroupClick: ((Long) -> Unit)? = null,
@@ -129,7 +132,9 @@ fun VaultList(
                         onActiveChange = onSearchActiveChange,
                     )
                 }
-            if (matching.isEmpty()) {
+            if (loading) {
+                item(key = "loading", contentType = "loading") { VaultListSkeleton() }
+            } else if (matching.isEmpty()) {
                 item(key = "empty", contentType = "empty") {
                     VaultEmptyState(
                         query = query,

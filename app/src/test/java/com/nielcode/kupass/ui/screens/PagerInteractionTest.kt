@@ -59,7 +59,7 @@ class PagerInteractionTest {
         compose.onNodeWithTag("data-page").performTouchInput { swipeUp() }
         compose.onNodeWithContentDescription("Settings").assertIsDisplayed()
         compose.onNodeWithTag("data-page").performTouchInput { swipeDown() }
-        compose.onNodeWithContentDescription("Home").assertIsDisplayed()
+        compose.onNodeWithContentDescription("Vault").assertIsDisplayed()
         compose.onNodeWithText("Import Password").assertIsDisplayed().performClick()
         assertEquals(1, imports)
     }

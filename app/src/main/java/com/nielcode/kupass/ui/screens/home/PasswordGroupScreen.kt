@@ -1,14 +1,10 @@
 package com.nielcode.kupass.ui.screens.home
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
@@ -22,7 +18,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -35,6 +30,7 @@ import com.nielcode.kupass.data.siteicon.SiteIcons
 import com.nielcode.kupass.ui.components.DeletePasswordDialog
 import com.nielcode.kupass.ui.screens.VaultEventToasts
 import com.nielcode.kupass.ui.screens.home.components.VaultList
+import com.nielcode.kupass.ui.screens.home.components.VaultListSkeleton
 
 /** A public account list; opening any account still goes through the entry authentication gate. */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -80,12 +76,7 @@ fun PasswordGroupScreen(
         topBar = { GroupTopBar(resolvedKey?.value, onNavigateBack) },
     ) { padding ->
         if (groups.isEmpty()) {
-            Box(
-                modifier = Modifier.fillMaxSize().padding(padding),
-                contentAlignment = Alignment.Center,
-            ) {
-                CircularProgressIndicator(modifier = Modifier.size(36.dp), strokeWidth = 3.dp)
-            }
+            VaultListSkeleton(modifier = Modifier.padding(padding))
         } else {
             VaultList(
                 passwords = accounts,

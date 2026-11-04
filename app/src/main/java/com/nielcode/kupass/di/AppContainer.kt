@@ -6,11 +6,14 @@ import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.AP
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.nielcode.kupass.App
 import com.nielcode.kupass.BuildConfig
+import com.nielcode.kupass.data.local.cache.SiteIconStore
+import com.nielcode.kupass.data.local.cache.VaultSnapshotStore
 import com.nielcode.kupass.data.local.db.KupassDatabase
 import com.nielcode.kupass.data.local.prefs.PreferenceManager
 import com.nielcode.kupass.data.repository.PasswordRepository
 import com.nielcode.kupass.data.siteicon.FavgetIconSource
 import com.nielcode.kupass.data.siteicon.SiteIconRepository
+import java.io.File
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -30,7 +33,10 @@ class AppContainer(
     val applicationScope: CoroutineScope = CoroutineScope(SupervisorJob() + backgroundDispatcher)
 
     val passwordRepository: PasswordRepository by lazy {
-        PasswordRepository(KupassDatabase.getInstance(appContext).passwordDao())
+        PasswordRepository(
+            KupassDatabase.getInstance(appContext).passwordDao(),
+            snapshotStore = VaultSnapshotStore(File(appContext.noBackupFilesDir, "vault-cache")),
+        )
     }
 
     val preferenceManager: PreferenceManager by lazy { PreferenceManager(appContext) }
@@ -42,6 +48,7 @@ class AppContainer(
                 BuildConfig.FAVGET_API_KEY.takeIf { it.isNotEmpty() }
                     ?.let { FavgetIconSource(BuildConfig.FAVGET_API_URL, it) },
             scope = applicationScope,
+            store = SiteIconStore(File(appContext.noBackupFilesDir, "site-icons")),
         )
     }
 

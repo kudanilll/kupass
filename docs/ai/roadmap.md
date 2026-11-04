@@ -129,12 +129,12 @@ Confirmed decision, revised 2026-10-11: public launch/list/search/tabs/create; f
 
 ### Epic E5: Lightweight & Fast (M2, size S)
 
-| ID     | Type    | Title                                                                                                                            | Pts | Pri | Blocked by   | Source            |
-| ------ | ------- | -------------------------------------------------------------------------------------------------------------------------------- | --- | --- | ------------ | ----------------- |
-| EN-5.0 | Enabler | Record the APK size baseline in CI (release build size in the job summary)                                                       | 1   | P1  | EN-01        | Lightweight goal  |
-| S-5.1  | Story   | ✅ Done 2026-09-19. Subset/optimize `googlesansflex.ttf` (Latin + Indonesian glyphs, only the needed axis ranges). Keep the font | 3   | P1  | EN-5.0       | QA-3              |
-| EN-5.2 | Enabler | List without decrypting passwords (projection), debounce search, crypto on `Dispatchers.Default`                                 | 3   | P1  | EN-06, EN-07 | CONCERNS §4       |
-| EN-5.3 | Enabler | Replace `material-icons-extended` with the few vector icons used. Merge `mipmap-anydpi-v26`. Move bitmaps out of `drawable/`     | 2   | P2  | none         | CONCERNS §4, lint |
+| ID     | Type    | Title                                                                                                                                                                                                                    | Pts | Pri | Blocked by   | Source            |
+| ------ | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --- | --- | ------------ | ----------------- |
+| EN-5.0 | Enabler | Record the APK size baseline in CI (release build size in the job summary)                                                                                                                                               | 1   | P1  | EN-01        | Lightweight goal  |
+| S-5.1  | Story   | ✅ Done 2026-09-19. Subset/optimize `googlesansflex.ttf` (Latin + Indonesian glyphs, only the needed axis ranges). Keep the font                                                                                         | 3   | P1  | EN-5.0       | QA-3              |
+| EN-5.2 | Enabler | Partly done 2026-11-04: fingerprint-keyed decrypt cache + encrypted startup snapshot (`VaultCache`); crypto already runs on `Dispatchers.Default`. Open: list without decrypting passwords (projection), debounce search | 3   | P1  | EN-06, EN-07 | CONCERNS §4       |
+| EN-5.3 | Enabler | Replace `material-icons-extended` with the few vector icons used. Merge `mipmap-anydpi-v26`. Move bitmaps out of `drawable/`                                                                                             | 2   | P2  | none         | CONCERNS §4, lint |
 
 ### Epic E6: Feedback & Bug Report (M2, size S)
 

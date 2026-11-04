@@ -16,7 +16,10 @@ import com.nielcode.kupass.ui.components.DeletePasswordDialog
 import com.nielcode.kupass.ui.screens.home.components.VaultList
 import com.nielcode.kupass.ui.screens.pagerPageInsets
 
-/** The vault list with search. Stateless: the caller owns the data and handles every action. */
+/**
+ * The Vault tab: the vault list with search. Stateless: the caller owns the data and handles every
+ * action.
+ */
 @Composable
 fun HomeScreen(
     passwords: List<PasswordEntity>,
@@ -25,6 +28,7 @@ fun HomeScreen(
     onDeletePassword: (PasswordEntity) -> Unit,
     onNavigateToDetail: (Long) -> Unit,
     modifier: Modifier = Modifier,
+    loading: Boolean = false,
     contentPadding: PaddingValues = PaddingValues(),
     siteIcons: SiteIcons? = null,
     onNavigateToGroup: ((Long) -> Unit)? = null,
@@ -56,6 +60,7 @@ fun HomeScreen(
             onItemClick = { onNavigateToDetail(it.id) },
             onDeleteItem = { passwordToDelete = it },
             modifier = Modifier.padding(top = innerPadding.calculateTopPadding()),
+            loading = loading,
             contentPadding = contentPadding,
             siteIcons = siteIcons,
             onGroupClick = onNavigateToGroup,

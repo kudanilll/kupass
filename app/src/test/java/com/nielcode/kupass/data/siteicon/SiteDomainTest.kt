@@ -7,16 +7,30 @@ import org.junit.Test
 class SiteDomainTest {
 
     @Test
-    fun `Android facets never leak a package or fall back to a guessed domain`() {
-        listOf(
-                "android://cert@com.example.app/",
-                "android://malformed",
-                " ANDROID://cert@com.example.app/",
-            )
-            .forEach { facet ->
-                assertNull(siteDomainOf(facet, "Google"))
-                assertNull(siteDomainOf(facet, "google.com"))
-            }
+    fun `app entries use their site name`() {
+        assertEquals(
+            "instagram.com",
+            siteDomainOf("android://cert@com.instagram.android/", "Instagram"),
+        )
+        assertEquals("google.com", siteDomainOf(" ANDROID://cert@com.example.app/", "google.com"))
+    }
+
+    @Test
+    fun `app entries named after their package guess the domain from it`() {
+        val facet = "android://cert@com.instagram.android/"
+        assertEquals("instagram.com", siteDomainOf(facet, "com.instagram.android"))
+        assertEquals("instagram.com", siteDomainOf(facet, ""))
+        assertEquals("instagram.com", siteDomainOf(facet, "My Instagram"))
+        assertEquals("dana.id", siteDomainOf("android://cert@id.dana/", ""))
+        assertEquals("bri.co.id", siteDomainOf("android://cert@id.co.bri.brimo/", ""))
+        assertEquals("example.org", siteDomainOf("android://cert@org.example.app/", ""))
+    }
+
+    @Test
+    fun `app entries never send a package name or guess from unusable ones`() {
+        assertNull(siteDomainOf("android://malformed", "Google"))
+        assertNull(siteDomainOf("android://cert@android.app.settings/", ""))
+        assertNull(siteDomainOf("android://cert@local.corp.app/", ""))
         assertNull(siteDomainOf("", "android://cert@com.example.app/"))
     }
 

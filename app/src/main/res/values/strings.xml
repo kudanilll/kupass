@@ -46,7 +46,7 @@
     <!-- Navigation Drawer -->
     <string name="nav_export">Export Password</string>
     <string name="nav_import">Import Password</string>
-    <string name="nav_home">Home</string>
+    <string name="nav_home">Vault</string>
     <string name="nav_data">Data</string>
     <string name="nav_settings">Settings</string>
 
@@ -167,7 +167,8 @@
     <string name="search_clear">Clear search</string>
     <string name="navigate_back">Back</string>
     <string name="empty_group_title">No accounts</string>
-    <string name="empty_group_body">Return to Home to choose another site or app.</string>
+    <string name="empty_group_body">Return to Vault to choose another site or app.</string>
+    <string name="vault_loading">Loading your vault</string>
     <string name="vault_group_unnamed">Unnamed site</string>
     <plurals name="vault_group_accounts">
         <item quantity="one">%1$d account</item>
