@@ -2,14 +2,19 @@ package com.nielcode.kupass.data.siteicon
 
 import android.graphics.Bitmap
 import androidx.compose.ui.graphics.asImageBitmap
+import com.nielcode.kupass.data.local.cache.SiteIconStore
+import com.nielcode.kupass.security.CryptoManager
+import java.io.File
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicInteger
+import javax.crypto.KeyGenerator
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
 import org.junit.After
@@ -18,7 +23,9 @@ import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
+import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
@@ -52,6 +59,59 @@ class SiteIconRepositoryTest {
             ioDispatcher = ioDispatcher,
             clock = { now },
         )
+    }
+
+    @get:Rule val folder = TemporaryFolder()
+
+    /** A repository backed by the same on-disk store, as after an app restart. */
+    private fun persistent(): SiteIconRepository {
+        val key = KeyGenerator.getInstance("AES").apply { init(256) }.generateKey()
+        CryptoManager.setKeyProviderForTesting { key }
+        val file = File(folder.root, "site-icons")
+        return SiteIconRepository(
+            source = {
+                fetches.incrementAndGet()
+                result
+            },
+            scope = scope,
+            store = SiteIconStore(file, clock = { now }),
+            decode = { Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888).asImageBitmap() },
+            ioDispatcher = dispatcher,
+            clock = { now },
+        )
+    }
+
+    @Test
+    fun `an icon fetched once is served from the store after a restart`() = scope.runTest {
+        assertNotNull(persistent().load("github.com"))
+        advanceUntilIdle() // lets the batched save run
+
+        val afterRestart =
+            SiteIconRepository(
+                source = {
+                    fetches.incrementAndGet()
+                    result
+                },
+                scope = scope,
+                store = SiteIconStore(File(folder.root, "site-icons"), clock = { now }),
+                decode = { Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888).asImageBitmap() },
+                ioDispatcher = dispatcher,
+                clock = { now },
+            )
+
+        assertNotNull(afterRestart.load("github.com"))
+        assertEquals(1, fetches.get())
+    }
+
+    @Test
+    fun `misses and failures are not stored`() = scope.runTest {
+        result = IconFetchResult.NotFound
+        assertNull(persistent().load("nothing.example"))
+        result = IconFetchResult.Failed
+        assertNull(persistent().load("down.example"))
+        advanceUntilIdle()
+
+        assertTrue(SiteIconStore(File(folder.root, "site-icons")).load().isEmpty())
     }
 
     @Test

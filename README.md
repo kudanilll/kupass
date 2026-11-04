@@ -18,7 +18,7 @@ Kupass is an offline, open-source password manager for Android. Your vault stays
 
 ## Privacy
 
-Kupass makes network requests only for site icons. For an entry with a public domain, it sends just that domain, such as `github.com`, to the Favget icon service and keeps the icon in memory. For an app entry, the domain comes from the app's name or its package name (`com.instagram.android` becomes `instagram.com`), and the package name itself is never sent. Usernames, passwords, notes, and full URLs are never sent. Favget and the CDN that serves the images can see which domains you have saved. When a site blocks Favget, the Favget server may ask Google's favicon service instead, so Google can see that domain too; the request comes from Favget, not from your phone.
+Kupass makes network requests only for site icons. For an entry with a public domain, it sends just that domain, such as `github.com`, to the Favget icon service and keeps the icon in an encrypted cache on the phone, so it is fetched only once. For an app entry, the domain comes from the app's name or its package name (`com.instagram.android` becomes `instagram.com`), and the package name itself is never sent. Usernames, passwords, notes, and full URLs are never sent. Favget and the CDN that serves the images can see which domains you have saved. When a site blocks Favget, the Favget server may ask Google's favicon service instead, so Google can see that domain too; the request comes from Favget, not from your phone.
 
 [SECURITY.md](SECURITY.md) explains the security model, its known limitations, and how to report a vulnerability.
 

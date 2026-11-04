@@ -50,8 +50,8 @@ com/nielcode/kupass/
 │   │   ├── GooglePasswordCsv.kt   strict Google/Chromium CSV import, optional note, exact credential fields
 │   │   └── BackupInput.kt         bounded strict UTF-8 input (32 MiB, optional BOM)
 │   ├── local/prefs/PreferenceManager.kt SharedPreferences "kupass_preferences"
-│   ├── siteicon/                  site icons: SiteDomain (domain extraction), FavgetIconSource (HTTP), SiteIconRepository (memory cache, dedupe, decode)
-│   ├── local/cache/               VaultSnapshotStore: encrypted on-disk vault cache (noBackupFilesDir/vault-cache)
+│   ├── siteicon/                  site icons: SiteDomain (domain extraction), FavgetIconSource (HTTP), SiteIconRepository (memory + sealed disk cache, dedupe, decode)
+│   ├── local/cache/               SealedFile (encrypted file), VaultSnapshotStore (vault-cache), SiteIconStore (site-icons), all in noBackupFilesDir
 │   └── repository/PasswordRepository.kt encrypt/decrypt all text fields, in-memory sort+search, legacy format upgrade
 │       └── repository/VaultEntityMapping.kt  field encrypt/decrypt, identity, search match, sort
 ├── ui/

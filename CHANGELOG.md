@@ -23,7 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Local import from Google Password Manager CSV exports, including notes and Android app entries. Quoted multiline fields and exact password whitespace are preserved; invalid records and duplicates are reported as skipped.
 - Account authentication unlocks an activity-local session with fingerprint/face or device credentials. Accounts can be opened and edited without another prompt until the selected background timeout expires. Launch, browsing, search, tabs, and new-entry creation stay public; export still requires fresh authentication.
-- Site icons in the vault list, with domain-only requests to the Favget icon service and in-memory caching.
+- Site icons in the vault list, with domain-only requests to the Favget icon service. Icons are kept in memory and in an encrypted file on the phone, so each icon is fetched once instead of on every app start.
 - Empty states for an empty vault (with an "Add password" button) and for searches without results.
 - Portable encrypted backups: export asks for a backup password and encrypts the whole vault (PBKDF2-HMAC-SHA256 + AES-256-GCM), so a backup can be restored on a new phone or after reinstalling.
 

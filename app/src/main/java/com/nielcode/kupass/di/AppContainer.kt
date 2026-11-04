@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.AP
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.nielcode.kupass.App
 import com.nielcode.kupass.BuildConfig
+import com.nielcode.kupass.data.local.cache.SiteIconStore
 import com.nielcode.kupass.data.local.cache.VaultSnapshotStore
 import com.nielcode.kupass.data.local.db.KupassDatabase
 import com.nielcode.kupass.data.local.prefs.PreferenceManager
@@ -47,6 +48,7 @@ class AppContainer(
                 BuildConfig.FAVGET_API_KEY.takeIf { it.isNotEmpty() }
                     ?.let { FavgetIconSource(BuildConfig.FAVGET_API_URL, it) },
             scope = applicationScope,
+            store = SiteIconStore(File(appContext.noBackupFilesDir, "site-icons")),
         )
     }
 

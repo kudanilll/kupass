@@ -4,14 +4,20 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.LruCache
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.core.graphics.scale
+import com.nielcode.kupass.data.local.cache.SiteIconStore
+import com.nielcode.kupass.data.local.cache.StoredIcon
+import java.io.ByteArrayOutputStream
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 /** Site icons as the UI sees them: a synchronous cache peek and a suspending load. */
 interface SiteIcons {
@@ -25,15 +31,18 @@ interface SiteIcons {
 /**
  * Site icons fetched from Favget when this build has an API key.
  *
- * Icons are cached in memory only. A disk cache would reveal which sites are in the vault even
- * though the vault itself is encrypted. Concurrent requests for a domain share one fetch, and
- * misses and failures are remembered for a while so scrolling doesn't hammer the API.
+ * Icons are kept in memory and, between launches, in [store]: an encrypted file, so the disk never
+ * reveals which sites are in the vault. Each icon is therefore fetched once, not on every app
+ * start. Concurrent requests for a domain share one fetch, and misses and failures are remembered
+ * for a while so scrolling doesn't hammer the API.
  *
  * @param source null when this build has no Favget API key; the feature is then unavailable.
+ * @param store icons from earlier launches; null keeps icons in memory only.
  */
 class SiteIconRepository(
     private val source: IconSource?,
     private val scope: CoroutineScope,
+    private val store: SiteIconStore? = null,
     private val decode: (ByteArray) -> ImageBitmap? = ::decodeSiteIcon,
     private val ioDispatcher: CoroutineDispatcher =
         Dispatchers.IO.limitedParallelism(MAX_CONCURRENT_FETCHES),
@@ -48,16 +57,36 @@ class SiteIconRepository(
     private val inFlight = HashMap<String, Deferred<ImageBitmap?>>()
     private val lock = Any()
 
+    /** Icons for [store], guarded by [lock]. Decoded lazily, so memory holds only shown ones. */
+    private val stored = HashMap<String, StoredIcon>()
+    private var saveScheduled = false
+    private val saveLock = Any()
+
+    /**
+     * Reads [store] once (one Keystore operation) before the first fetch of this session. Created
+     * on first use, so a repository without an API key never leaves an unstarted coroutine behind.
+     */
+    private val restored by lazy {
+        scope.async(ioDispatcher) {
+            store?.load()?.let { synchronized(lock) { stored.putAll(it) } }
+        }
+    }
+
     override fun peek(domain: String): ImageBitmap? = icons.get(domain)
 
     override suspend fun load(domain: String): ImageBitmap? {
         val iconSource = source ?: return null
+        restored.await()
         return icons.get(domain)
+            ?: storedIcon(domain)
             ?: pendingFetch(iconSource, domain)?.run {
                 start()
                 await()
             }
     }
+
+    private fun storedIcon(domain: String): ImageBitmap? =
+        synchronized(lock) { stored[domain]?.png }?.let(decode)?.also { icons.put(domain, it) }
 
     /** The shared fetch for [domain], or null while a recent miss or failure is remembered. */
     private fun pendingFetch(iconSource: IconSource, domain: String): Deferred<ImageBitmap?>? =
@@ -84,7 +113,32 @@ class SiteIconRepository(
                 else -> retryAfter[domain] = clock() + MISS_RETRY_MILLIS
             }
         }
+        icon?.let { remember(domain, it) }
         return icon
+    }
+
+    /** Adds a fetched icon to [store]; icons arriving close together are written in one go. */
+    private fun remember(domain: String, icon: ImageBitmap) {
+        val store = store ?: return
+        val png = encodeSiteIcon(icon) ?: return
+        val firstSinceSave =
+            synchronized(lock) {
+                stored[domain] = StoredIcon(png, clock())
+                val first = !saveScheduled
+                saveScheduled = true
+                first
+            }
+        if (firstSinceSave) {
+            scope.launch(ioDispatcher) {
+                delay(SAVE_DELAY_MILLIS)
+                val snapshot =
+                    synchronized(lock) {
+                        saveScheduled = false
+                        HashMap(stored)
+                    }
+                synchronized(saveLock) { store.save(snapshot) }
+            }
+        }
     }
 
     private companion object {
@@ -92,11 +146,22 @@ class SiteIconRepository(
         const val MEMORY_CACHE_BYTES = 4 * 1024 * 1024
         const val FAILURE_RETRY_MILLIS = 5 * 60 * 1000L
         const val MISS_RETRY_MILLIS = 6 * 60 * 60 * 1000L
+        const val SAVE_DELAY_MILLIS = 2_000L
     }
 }
 
 /** Longest side of a decoded icon; rows show them at 28dp, so this covers xxxhdpi. */
 private const val ICON_SIZE_PX = 96
+
+/** Ignored for PNG, which is lossless; the API still requires a value. */
+private const val PNG_QUALITY = 100
+
+/** PNG bytes of a decoded (already downscaled) icon, for [SiteIconStore]. */
+fun encodeSiteIcon(icon: ImageBitmap): ByteArray? {
+    val out = ByteArrayOutputStream()
+    val written = icon.asAndroidBitmap().compress(Bitmap.CompressFormat.PNG, PNG_QUALITY, out)
+    return if (written) out.toByteArray() else null
+}
 
 /** Decodes and downsizes an icon. Returns null for anything that isn't a decodable image. */
 fun decodeSiteIcon(bytes: ByteArray): ImageBitmap? {
