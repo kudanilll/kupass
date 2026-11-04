@@ -15,6 +15,7 @@
 
 ```text
 User action (Compose) -> ViewModel (viewModelScope) -> PasswordRepository (encrypt/decrypt)
+    -> VaultCache (decrypted rows by ciphertext fingerprint) -> VaultSnapshotStore (encrypted, no_backup)
     -> PasswordDao (Room, Flow/suspend) -> SQLite "kupass_database"
     <- Flow<List<PasswordEntity>> -> StateFlow -> collectAsStateWithLifecycle() -> recomposition
 ```
@@ -25,7 +26,9 @@ User action (Compose) -> ViewModel (viewModelScope) -> PasswordRepository (encry
 2. `PasswordEditorViewModel.savePassword` trims the fields, builds a `PasswordEntity`, and sets `SaveState.Saving`.
 3. `PasswordRepository.insertPassword` → `CryptoManager.encrypt` on every text field (on `Dispatchers.Default`) → `PasswordDao.insert` (REPLACE).
 4. On success `SaveState.Success` is set, and the screen's `LaunchedEffect(saveState)` pops the back stack.
-5. `HomeViewModel.allPasswords` caches the decrypted vault; `passwords` remains the filtered Flow API. Home and the group page use the full cache so `VaultList` can filter results while keeping accurate total group counts, without decrypting on each keystroke.
+5. The repository remembered the saved row's plaintext, so the next vault emission decrypts nothing. `HomeViewModel.uiState` is `Loading` until the first read, then `Ready(all, matching, visibleGroups)`; the Vault tab shows skeleton rows while loading and the group page keeps the full groups, so `VaultList` filters without decrypting on each keystroke.
+
+**Vault cache:** `VaultCache` keys decrypted fields by a SHA-256 fingerprint of each row's ciphertext (fresh IV per encryption, so equal fingerprints mean equal plaintext). Each emission decrypts only unseen rows and keeps exactly the current rows. Writes (`insert`, `update`, `import`, format upgrade) remember their plaintext until Room returns the rows; a failed write forgets it. After each emission `VaultSnapshotStore` writes the vault to `noBackupFilesDir/vault-cache`, sealed with a per-write AES-256-GCM key wrapped by the Keystore key, so a cold start costs one Keystore operation. Unreadable snapshots are deleted. `getPasswordById` (detail/editor) bypasses the cache to stay fail-closed.
 
 **Grouped Home presentation:** `ui/screens/home/VaultGrouping.kt` gives each group a typed, namespaced identity: normalized HTTP(S) host (ROOT lowercase, `www.` stripped; credentials, port, path, query and fragment ignored), Android facet package (certificate ignored, handled before web parsing), or trimmed ROOT-lowercase site name for missing/invalid URLs. Private hosts, local names and IPs are accepted locally; subdomains remain distinct. Grouping never uses the public-only, domain-guessing `siteDomainOf` icon helper. Groups are alphabetically ordered; lazy keys are `group:<namespace>:<value>` and `account:<id>`.
 
@@ -70,7 +73,7 @@ Multi-account groups reuse `PasswordListItem` with a primary-color count badge a
 | Manual DI container + `viewModelFactory { initializer { } }` | `di/AppContainer.kt`, `*ViewModel.Factory`                                                                                                        | Constructor injection without a DI framework (lightweight, testable) |
 | Sealed interface operation state                             | `SaveState`, `DeleteState`                                                                                                                        | Drive navigation after async work via `LaunchedEffect`               |
 | Sealed one-shot events over a `Channel`                      | `HomeViewModel.events`, `BackupViewModel.events` (`VaultEvent`) → `MainAppScreen` (`repeatOnLifecycle`)                                           | Toasts after read failures and export/import, delivered exactly once |
-| Cached vault + `combine` + `stateIn(WhileSubscribed(5000))`  | `HomeViewModel.passwords`                                                                                                                         | Reactive search without repeated decryption                          |
+| Sealed UI state + `combine` + `stateIn(Eagerly)`             | `HomeViewModel.uiState` (`VaultUiState.Loading` / `Ready`)                                                                                        | Loading and data change in one emission; no empty-state flash        |
 | Type-safe navigation with `@Serializable` routes             | `MainAppScreen`                                                                                                                                   | Compile-time route args                                              |
 | Stateless screens, state hoisted to the pager                | `MainPagerScreen` collects `HomeViewModel` + auth-bound `BackupViewModel`; `MainPagerContent` renders Home/Data/Settings from state and callbacks | No ViewModel forwarding between composables (compose-rules)          |
 
@@ -79,7 +82,7 @@ Multi-account groups reuse `PasswordListItem` with a primary-color count badge a
 - ~~Backups bound to one device key~~: fixed by F-2.1 (password-based portable backups). The _database_ is still bound to the device Keystore key by design.
 - ~~Fail-open crypto~~: fixed by EN-06 (CryptoManager v2 is fail-closed and versioned).
 - ~~No DB migration path~~: fixed by EN-03 (exported schemas, `MIGRATIONS` registry, `KupassDatabaseMigrationTest`).
-- **Decrypt-on-list:** every database change decrypts every field of every row (on `Dispatchers.Default`), although the list shows no passwords. Search filters that cached list. See CONCERNS §4.
+- **First start without a snapshot:** after install, an update that discards the snapshot, or a Keystore key change, the first read still decrypts every field of every row once (one Keystore operation per field). Later changes decrypt only new rows. See CONCERNS §4.
 - **Two dynamic-color mechanisms:** `DynamicColors.applyToActivitiesIfAvailable` (View theme) in `App` and the `KupassTheme(dynamicColor)` Compose scheme in `MainActivity`. Only the latter affects Compose UI. [TODO] confirm whether the View-level call is still needed (splash/system dialogs).
 
 ## 6) Evidence

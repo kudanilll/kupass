@@ -68,7 +68,7 @@ import com.nielcode.kupass.ui.screens.data.ImportPasswordDialog
 import com.nielcode.kupass.ui.screens.home.HomeScreen
 import com.nielcode.kupass.ui.screens.home.HomeViewModel
 import com.nielcode.kupass.ui.screens.home.PasswordGroupScreen
-import com.nielcode.kupass.ui.screens.home.VaultGroup
+import com.nielcode.kupass.ui.screens.home.VaultUiState
 import com.nielcode.kupass.ui.screens.lock.SensitiveActionGuidance
 import com.nielcode.kupass.ui.screens.settings.SettingsScreen
 import kotlinx.coroutines.flow.Flow
@@ -165,9 +165,7 @@ fun MainPagerScreen(
     backupViewModel: BackupViewModel = viewModel(factory = BackupViewModel.factory(authentication)),
 ) {
     val authState by authentication.state.collectAsStateWithLifecycle()
-    val passwords by homeViewModel.allPasswords.collectAsStateWithLifecycle()
-    val visibleGroups by homeViewModel.visibleGroups.collectAsStateWithLifecycle()
-    val filteredPasswords by homeViewModel.passwords.collectAsStateWithLifecycle()
+    val vault by homeViewModel.uiState.collectAsStateWithLifecycle()
     val searchQuery by homeViewModel.searchQuery.collectAsStateWithLifecycle()
     val importPrompt by backupViewModel.importPrompt.collectAsStateWithLifecycle()
     val backupBusy by backupViewModel.backupBusy.collectAsStateWithLifecycle()
@@ -204,9 +202,7 @@ fun MainPagerScreen(
     val exportPending =
         authState.pending != null || authState.nativeRequest != null || authState.export != null
     MainPagerContent(
-        passwords = passwords,
-        visibleGroups = visibleGroups,
-        filteredPasswords = filteredPasswords,
+        vault = vault,
         searchQuery = searchQuery,
         siteIcons = siteIcons,
         onSearchQueryChange = homeViewModel::onSearchQueryChange,
@@ -228,9 +224,7 @@ fun MainPagerScreen(
 
 @Composable
 private fun MainPagerContent(
-    passwords: List<PasswordEntity>,
-    visibleGroups: List<VaultGroup>,
-    filteredPasswords: List<PasswordEntity>,
+    vault: VaultUiState,
     searchQuery: String,
     siteIcons: SiteIcons,
     onSearchQueryChange: (String) -> Unit,
@@ -250,19 +244,22 @@ private fun MainPagerContent(
         modifier = modifier,
     ) { tab, contentPadding ->
         when (tab) {
-            MainTab.Home ->
+            MainTab.Home -> {
+                val ready = vault as? VaultUiState.Ready
                 HomeScreen(
-                    passwords = passwords,
+                    passwords = ready?.all.orEmpty(),
                     searchQuery = searchQuery,
                     onSearchQueryChange = onSearchQueryChange,
                     onDeletePassword = onDeletePassword,
                     onNavigateToDetail = onNavigateToDetail,
+                    loading = ready == null,
                     contentPadding = contentPadding,
                     siteIcons = siteIcons,
                     onNavigateToGroup = onNavigateToGroup,
-                    visibleGroups = visibleGroups,
-                    filteredPasswords = filteredPasswords,
+                    visibleGroups = ready?.visibleGroups.orEmpty(),
+                    filteredPasswords = ready?.matching.orEmpty(),
                 )
+            }
             MainTab.Data ->
                 DataScreen(
                     onExportClick = onExportClick,

@@ -6,11 +6,13 @@ import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.AP
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.nielcode.kupass.App
 import com.nielcode.kupass.BuildConfig
+import com.nielcode.kupass.data.local.cache.VaultSnapshotStore
 import com.nielcode.kupass.data.local.db.KupassDatabase
 import com.nielcode.kupass.data.local.prefs.PreferenceManager
 import com.nielcode.kupass.data.repository.PasswordRepository
 import com.nielcode.kupass.data.siteicon.FavgetIconSource
 import com.nielcode.kupass.data.siteicon.SiteIconRepository
+import java.io.File
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -30,7 +32,10 @@ class AppContainer(
     val applicationScope: CoroutineScope = CoroutineScope(SupervisorJob() + backgroundDispatcher)
 
     val passwordRepository: PasswordRepository by lazy {
-        PasswordRepository(KupassDatabase.getInstance(appContext).passwordDao())
+        PasswordRepository(
+            KupassDatabase.getInstance(appContext).passwordDao(),
+            snapshotStore = VaultSnapshotStore(File(appContext.noBackupFilesDir, "vault-cache")),
+        )
     }
 
     val preferenceManager: PreferenceManager by lazy { PreferenceManager(appContext) }

@@ -13,8 +13,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Copied passwords are cleared from the clipboard after 45 seconds on every Android version, including when Kupass is in the background.
 - Vault data is excluded from Android cloud backup and device-to-device transfer on every Android version. Use the password-protected export to move your vault.
 - Site names, usernames, URLs, and notes are now encrypted on the device like passwords. Existing vaults are upgraded automatically on first launch.
+- The vault cache that speeds up app start is stored encrypted (AES-256-GCM, with a key wrapped by the vault's Keystore key) in app storage that Android never backs up or transfers. Kupass deletes it whenever it can't be read.
 
 ### Added
+
+- The vault opens faster. Decrypted entries are cached, so only new or changed entries are decrypted, and the next app start reads the encrypted cache instead of decrypting every entry again. Switching to the vault after a large import no longer waits for the whole vault to be decrypted again.
+- While the vault loads, the list shows placeholder rows instead of the empty-vault message.
+- App entries imported from Google Password Manager get site icons, from the app's name or a domain read from its package name (for example `com.instagram.android` becomes `instagram.com`). Only that domain is sent; the package name never leaves the device.
 
 - Local import from Google Password Manager CSV exports, including notes and Android app entries. Quoted multiline fields and exact password whitespace are preserved; invalid records and duplicates are reported as skipped.
 - Account authentication unlocks an activity-local session with fingerprint/face or device credentials. Accounts can be opened and edited without another prompt until the selected background timeout expires. Launch, browsing, search, tabs, and new-entry creation stay public; export still requires fresh authentication.
@@ -23,6 +28,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Portable encrypted backups: export asks for a backup password and encrypts the whole vault (PBKDF2-HMAC-SHA256 + AES-256-GCM), so a backup can be restored on a new phone or after reinstalling.
 
 ### Changed
+
+- The Home tab is now called Vault (Brankas in Indonesian) and uses a padlock icon.
 
 - Encrypted backups now use the name `kupass-backup.kupass`, with the same portable v2 encrypted JSON format. Older `.json` backups remain importable, and import detects the format from validated content rather than filenames or provider MIME types.
 - Every export requires fresh native authentication before the backup-password dialog. Permission is bound to one export request, expires after five minutes, and is consumed before writing the encrypted backup. Cancelled or stale pickers cannot export.

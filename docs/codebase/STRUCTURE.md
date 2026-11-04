@@ -51,6 +51,7 @@ com/nielcode/kupass/
 │   │   └── BackupInput.kt         bounded strict UTF-8 input (32 MiB, optional BOM)
 │   ├── local/prefs/PreferenceManager.kt SharedPreferences "kupass_preferences"
 │   ├── siteicon/                  site icons: SiteDomain (domain extraction), FavgetIconSource (HTTP), SiteIconRepository (memory cache, dedupe, decode)
+│   ├── local/cache/               VaultSnapshotStore: encrypted on-disk vault cache (noBackupFilesDir/vault-cache)
 │   └── repository/PasswordRepository.kt encrypt/decrypt all text fields, in-memory sort+search, legacy format upgrade
 │       └── repository/VaultEntityMapping.kt  field encrypt/decrypt, identity, search match, sort
 ├── ui/

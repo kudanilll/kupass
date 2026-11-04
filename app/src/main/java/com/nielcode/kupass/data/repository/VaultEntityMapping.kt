@@ -1,21 +1,49 @@
 package com.nielcode.kupass.data.repository
 
+import com.nielcode.kupass.data.local.cache.DecryptedFields
 import com.nielcode.kupass.data.local.db.PasswordEntity
 import com.nielcode.kupass.security.CryptoManager
+import java.nio.ByteBuffer
+import java.security.MessageDigest
+import java.util.Base64
 
 /*
  * Field-level mapping between stored rows (every text field encrypted) and plaintext entities,
  * plus the in-memory search, ordering, and duplicate identity used once rows are decrypted.
  */
 
-internal fun PasswordEntity.decrypted() =
-    copy(
+internal fun PasswordEntity.decrypted() = withFields(decryptFields())
+
+internal fun PasswordEntity.decryptFields() =
+    DecryptedFields(
         siteName = CryptoManager.decrypt(siteName),
         username = CryptoManager.decrypt(username),
         password = CryptoManager.decrypt(password),
         url = CryptoManager.decrypt(url),
         notes = CryptoManager.decrypt(notes),
     )
+
+internal fun PasswordEntity.fields() = DecryptedFields(siteName, username, password, url, notes)
+
+internal fun PasswordEntity.withFields(fields: DecryptedFields) =
+    copy(
+        siteName = fields.siteName,
+        username = fields.username,
+        password = fields.password,
+        url = fields.url,
+        notes = fields.notes,
+    )
+
+/** SHA-256 over a stored row's text fields; length prefixes keep field boundaries unambiguous. */
+internal fun PasswordEntity.fingerprint(): String {
+    val digest = MessageDigest.getInstance("SHA-256")
+    listOf(siteName, username, password, url, notes).forEach { field ->
+        val bytes = field.encodeToByteArray()
+        digest.update(ByteBuffer.allocate(Int.SIZE_BYTES).putInt(bytes.size).array())
+        digest.update(bytes)
+    }
+    return Base64.getEncoder().encodeToString(digest.digest())
+}
 
 internal fun PasswordEntity.encrypted() =
     copy(

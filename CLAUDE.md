@@ -18,7 +18,7 @@ Kupass is an open-source (GPL-3.0) offline password manager for Android by **nie
 
 ```plaintext
 MainActivity -> MainAppScreen (NavHost)
-  ├─ HomeBase: HorizontalPager [Home | Data | Settings] + BottomNav
+  ├─ HomeBase: HorizontalPager [Home (labelled "Vault") | Data | Settings] + BottomNav
   ├─ PasswordGroup(groupId): public site/app account list
   ├─ PasswordDetail(passwordId)
   └─ PasswordEditor(passwordId = -1 for create)
@@ -28,7 +28,8 @@ MainAppScreen: entry-bound grants gate detail/positive-ID editor before screen/V
 Export: fresh native auth → backup-password dialog → bounded, single-use SAF consent
 
 Screen (Compose) -> ViewModel(Factory) -> PasswordRepository -> PasswordDao (Room)
-                                              └─ CryptoManager (Keystore AES-GCM, every field, `kp2:` format)
+                                              ├─ CryptoManager (Keystore AES-GCM, every field, `kp2:` format)
+                                              └─ VaultCache (by ciphertext fingerprint) + VaultSnapshotStore (encrypted, no_backup)
 Backup: BackupCodec (PBKDF2-HMAC-SHA256 + AES-256-GCM, password-protected, portable)
 ```
 

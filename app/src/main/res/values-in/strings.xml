@@ -46,7 +46,7 @@
     <!-- Navigation Drawer -->
     <string name="nav_export">Ekspor Kata Sandi</string>
     <string name="nav_import">Impor Kata Sandi</string>
-    <string name="nav_home">Beranda</string>
+    <string name="nav_home">Brankas</string>
     <string name="nav_data">Data</string>
     <string name="nav_settings">Pengaturan</string>
 
@@ -163,7 +163,8 @@
     <string name="search_clear">Hapus pencarian</string>
     <string name="navigate_back">Kembali</string>
     <string name="empty_group_title">Tidak ada akun</string>
-    <string name="empty_group_body">Kembali ke Beranda untuk memilih situs atau aplikasi lain.</string>
+    <string name="empty_group_body">Kembali ke Brankas untuk memilih situs atau aplikasi lain.</string>
+    <string name="vault_loading">Memuat brankas</string>
     <string name="vault_group_unnamed">Situs tanpa nama</string>
     <plurals name="vault_group_accounts">
         <item quantity="other">%1$d akun</item>
