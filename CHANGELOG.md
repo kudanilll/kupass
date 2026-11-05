@@ -17,10 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Instant password generator on the password editor screen: generate strong, cryptographically secure 16-character passwords using a dice button next to the password field.
 - The vault opens faster. Decrypted entries are cached, so only new or changed entries are decrypted, and the next app start reads the encrypted cache instead of decrypting every entry again. Switching to the vault after a large import no longer waits for the whole vault to be decrypted again.
 - While the vault loads, the list shows placeholder rows instead of the empty-vault message.
 - App entries imported from Google Password Manager get site icons, from the app's name or a domain read from its package name (for example `com.instagram.android` becomes `instagram.com`). Only that domain is sent; the package name never leaves the device.
-
 - Local import from Google Password Manager CSV exports, including notes and Android app entries. Quoted multiline fields and exact password whitespace are preserved; invalid records and duplicates are reported as skipped.
 - Account authentication unlocks an activity-local session with fingerprint/face or device credentials. Accounts can be opened and edited without another prompt until the selected background timeout expires. Launch, browsing, search, tabs, and new-entry creation stay public; export still requires fresh authentication.
 - Site icons in the vault list, with domain-only requests to the Favget icon service. Icons are kept in memory and in an encrypted file on the phone, so each icon is fetched once instead of on every app start.
@@ -30,7 +30,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - The Home tab is now called Vault (Brankas in Indonesian) and uses a padlock icon.
-
 - Encrypted backups now use the name `kupass-backup.kupass`, with the same portable v2 encrypted JSON format. Older `.json` backups remain importable, and import detects the format from validated content rather than filenames or provider MIME types.
 - Every export requires fresh native authentication before the backup-password dialog. Permission is bound to one export request, expires after five minutes, and is consumed before writing the encrypted backup. Cancelled or stale pickers cannot export.
 - Restored detail/editor destinations require authentication before any sensitive screen or ViewModel loads. Devices without a screen lock show guidance only when opening an existing account or exporting. An existing account that fails to load in the editor can never become an accidental new account.

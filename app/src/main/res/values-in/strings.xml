@@ -116,6 +116,7 @@
     <string name="button_save">SIMPAN</string>
     <string name="button_request">MINTA</string>
     <string name="button_generate">GENERATE</string>
+    <string name="generate_password">Buat kata sandi acak</string>
     <string name="button_edit">EDIT</string>
 
     <!-- Hint -->

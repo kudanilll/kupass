@@ -3,13 +3,20 @@ package com.nielcode.kupass.ui.screens.editor
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
@@ -26,6 +33,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -39,8 +47,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nielcode.kupass.R
 import com.nielcode.kupass.data.local.db.PasswordEntity
+import com.nielcode.kupass.security.PasswordGenerator
 import com.nielcode.kupass.ui.components.PasswordVisibilityToggle
 import com.nielcode.kupass.ui.components.SecretKeyboardOptions
+import com.nielcode.kupass.ui.components.VaultFieldShape
 import com.nielcode.kupass.ui.components.VaultTextField
 import com.nielcode.kupass.ui.components.pageVerticalScroll
 
@@ -92,11 +102,13 @@ fun PasswordEditorScreen(
                 viewModel.resetSaveState()
                 currentOnNavigateBack()
             }
+
             SaveState.Error -> {
                 // Keep the form so nothing typed is lost; the user can retry.
                 Toast.makeText(context, saveFailedText, Toast.LENGTH_LONG).show()
                 viewModel.resetSaveState()
             }
+
             else -> Unit
         }
     }
@@ -221,21 +233,7 @@ private fun EditorForm(form: EditorFormState, modifier: Modifier = Modifier) {
             label = stringResource(R.string.username_hint),
             keyboardOptions = UsernameKeyboard,
         )
-        VaultTextField(
-            value = form.password,
-            onValueChange = { form.password = it },
-            label = stringResource(R.string.password_hint),
-            keyboardOptions = SecretKeyboardOptions,
-            visualTransformation =
-                if (form.passwordVisible) VisualTransformation.None
-                else PasswordVisualTransformation(),
-            trailingIcon = {
-                PasswordVisibilityToggle(
-                    visible = form.passwordVisible,
-                    onToggle = { form.passwordVisible = !form.passwordVisible },
-                )
-            },
-        )
+        PasswordFieldRow(form = form)
         VaultTextField(
             value = form.url,
             onValueChange = { form.url = it },
@@ -249,5 +247,44 @@ private fun EditorForm(form: EditorFormState, modifier: Modifier = Modifier) {
             label = stringResource(R.string.note_hint),
             singleLine = false,
         )
+    }
+}
+
+@Composable
+private fun PasswordFieldRow(form: EditorFormState, modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier.fillMaxWidth().height(IntrinsicSize.Min),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        VaultTextField(
+            value = form.password,
+            onValueChange = { form.password = it },
+            label = stringResource(R.string.password_hint),
+            modifier = Modifier.weight(1f),
+            keyboardOptions = SecretKeyboardOptions,
+            visualTransformation =
+                if (form.passwordVisible) VisualTransformation.None
+                else PasswordVisualTransformation(),
+            trailingIcon = {
+                PasswordVisibilityToggle(
+                    visible = form.passwordVisible,
+                    onToggle = { form.passwordVisible = !form.passwordVisible },
+                )
+            },
+        )
+        FilledTonalIconButton(
+            onClick = {
+                form.password = PasswordGenerator.generate()
+                form.passwordVisible = true
+            },
+            modifier = Modifier.fillMaxHeight().aspectRatio(1f),
+            shape = VaultFieldShape,
+        ) {
+            Icon(
+                imageVector = Icons.Default.Shuffle,
+                contentDescription = stringResource(R.string.generate_password),
+            )
+        }
     }
 }
