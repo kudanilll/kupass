@@ -103,6 +103,36 @@ class ImportedEntryEditorTest {
         assertEquals(" \t ", saved?.password)
     }
 
+    @Test
+    fun `clicking password generator button generates a password and enables save`() {
+        val key = KeyGenerator.getInstance("AES").apply { init(256) }.generateKey()
+        CryptoManager.setKeyProviderForTesting { key }
+        val repository = PasswordRepository(FakePasswordDao())
+        val vm = PasswordEditorViewModel(repository, requestedId = -1L)
+        compose.setContent {
+            MaterialTheme {
+                PasswordEditorScreen(
+                    passwordId = -1L,
+                    onNavigateBack = {},
+                    viewModel = vm,
+                )
+            }
+        }
+        val app = RuntimeEnvironment.getApplication()
+        val site = compose.onNodeWithText(app.getString(R.string.site_or_app_hint))
+        site.performTextReplacement("Example Site")
+
+        val save = compose.onNodeWithContentDescription(app.getString(R.string.button_save))
+        save.assertIsNotEnabled()
+
+        val generateButton =
+            compose.onNodeWithContentDescription(app.getString(R.string.generate_password))
+        generateButton.assertIsEnabled()
+        generateButton.performClick()
+
+        save.assertIsEnabled()
+    }
+
     private fun authenticatedEditor(id: Long) =
         EntryAuthenticationViewModel({ 30_000L }, { 1_000L }).apply {
             setDestination("editor", id)

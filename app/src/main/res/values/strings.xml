@@ -116,6 +116,7 @@
     <string name="button_save">SAVE</string>
     <string name="button_request">REQUEST</string>
     <string name="button_generate">GENERATE</string>
+    <string name="generate_password">Generate strong password</string>
     <string name="button_edit">EDIT</string>
 
     <!-- Hint -->
