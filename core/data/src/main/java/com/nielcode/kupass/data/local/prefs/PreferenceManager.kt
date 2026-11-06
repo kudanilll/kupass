@@ -36,6 +36,13 @@ class PreferenceManager(context: Context) {
         get() = sharedPreferences.getBoolean(KEY_EXCLUDE_LOOKALIKE, false)
         set(value) = edit { putBoolean(KEY_EXCLUDE_LOOKALIKE, value) }
 
+    /**
+     * Autofill offers to save sign-ins Kupass doesn't know yet. Generated passwords always save.
+     */
+    var offerToSaveLogins: Boolean
+        get() = sharedPreferences.getBoolean(KEY_AUTOFILL_OFFER_SAVE, true)
+        set(value) = edit { putBoolean(KEY_AUTOFILL_OFFER_SAVE, value) }
+
     companion object {
         private const val PREF_NAME = "kupass_preferences"
         private const val KEY_LANGUAGE = "language"
@@ -43,5 +50,6 @@ class PreferenceManager(context: Context) {
         private const val KEY_DYNAMIC_COLOR = "dynamic_color"
         private const val KEY_AUTO_LOCK_SECONDS = "auto_lock_seconds"
         private const val KEY_EXCLUDE_LOOKALIKE = "exclude_lookalike"
+        private const val KEY_AUTOFILL_OFFER_SAVE = "autofill_offer_save"
     }
 }
