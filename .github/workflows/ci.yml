@@ -55,8 +55,8 @@ jobs:
         with:
           name: reports
           path: |
-            app/build/reports/
-            app/build/test-results/
+            **/build/reports/
+            **/build/test-results/
           retention-days: 7
 
   dependency-submission:

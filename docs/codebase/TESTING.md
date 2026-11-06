@@ -17,14 +17,14 @@ ANDROID_SERIAL=<device> ./gradlew :app:connectedDebugAndroidTest   # instrumente
 # coverage: [TODO] not configured (no JaCoCo/Kover)
 ```
 
-Results land in `app/build/test-results/testDebugUnitTest/*.xml` and `app/build/reports/tests/`.
+Results land in each module's `build/test-results/testDebugUnitTest/*.xml` and `build/reports/tests/` (`app/`, `core/security/`, `core/data/`).
 
 ## 2) Test Layout
 
-- Unit tests: `app/src/test/java/` mirroring the source package (`security/CryptoManagerTest.kt`, `data/backup/BackupCodecTest.kt`).
+- Unit tests: each module's `src/test/java/`, mirroring the source package (`core/security/.../CryptoManagerTest.kt`, `app/.../data/backup/BackupCodecTest.kt`).
 - Instrumented: `app/src/androidTest/java/.../ExampleInstrumentedTest.kt` (template only).
 - Naming: `<ClassUnderTest>Test`, with backtick sentence method names and Arrange/Act/Assert comments.
-- Setup files: none (no shared rules, fixtures, or `robolectric.properties`).
+- Setup files: shared fakes and rules (`FakePasswordDao`, `MainDispatcherRule`) live in `:core:testing`, used as `testImplementation`; no `robolectric.properties`.
 
 ## 3) Test Scope Matrix
 
@@ -95,7 +95,7 @@ Final grouped/auth/backup integration verification in the grouped worktree on 20
 ## 6) Evidence
 
 - `app/build.gradle.kts` (test dependencies)
-- `app/src/test/java/com/nielcode/kupass/security/CryptoManagerTest.kt`
+- `core/security/src/test/java/com/nielcode/kupass/security/CryptoManagerTest.kt`
 - `app/src/test/java/com/nielcode/kupass/data/backup/BackupCodecTest.kt`
 - `core/security/src/main/java/com/nielcode/kupass/security/CryptoManager.kt` (test key branch)
 - `./gradlew :app:testDebugUnitTest` output on 2026-09-18: BUILD SUCCESSFUL. Suites: ExampleUnitTest 1, JsonExportImportTest 4, CryptoManagerTest 4. 0 failures
