@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.Contrast
 import androidx.compose.material.icons.filled.Gavel
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Password
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -63,6 +64,7 @@ private enum class SettingsDialog {
     AutoLock,
     Theme,
     DynamicColor,
+    ExcludeLookalike,
     Restart,
 }
 
@@ -99,6 +101,7 @@ fun SettingsScreen(
                 SecuritySection(
                     autoLockSeconds = settings.autoLockSeconds,
                     onAutoLockClick = { openDialog = SettingsDialog.AutoLock },
+                    onExcludeLookalikeClick = { openDialog = SettingsDialog.ExcludeLookalike },
                 )
                 AppearanceSection(
                     themeIndex = settings.theme,
@@ -148,6 +151,9 @@ private class SettingsController(
     var autoLockSeconds by mutableIntStateOf(prefs.autoLockSeconds)
         private set
 
+    var excludeLookalike by mutableStateOf(prefs.excludeLookalike)
+        private set
+
     fun selectLanguage(index: Int) {
         if (index == language) return
         prefs.language = index
@@ -177,6 +183,12 @@ private class SettingsController(
         prefs.autoLockSeconds = seconds
         autoLockSeconds = seconds
     }
+
+    fun selectExcludeLookalike(enabled: Boolean) {
+        if (enabled == excludeLookalike) return
+        prefs.excludeLookalike = enabled
+        excludeLookalike = enabled
+    }
 }
 
 @Composable
@@ -201,8 +213,10 @@ private fun GeneralSection(
 private fun SecuritySection(
     autoLockSeconds: Int,
     onAutoLockClick: () -> Unit,
+    onExcludeLookalikeClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val lookalikeSummary = stringResource(R.string.settings_exclude_lookalike_summary)
     Column(modifier = modifier) {
         SectionHeader(title = stringResource(R.string.settings_category_security))
         SectionItem(
@@ -210,6 +224,12 @@ private fun SecuritySection(
             title = stringResource(R.string.settings_auto_lock_title),
             subtitle = autoLockLabel(autoLockSeconds),
             onClick = onAutoLockClick,
+        )
+        SectionItem(
+            icon = Icons.Default.Password,
+            title = stringResource(R.string.settings_exclude_lookalike_title),
+            subtitle = lookalikeSummary,
+            onClick = onExcludeLookalikeClick,
         )
     }
 }
@@ -331,19 +351,44 @@ private fun SettingsDialogHost(
                 },
             )
         SettingsDialog.DynamicColor ->
-            SingleChoiceDialog(
+            BinaryChoiceDialog(
                 title = stringResource(R.string.settings_dynamic_colors_title),
-                options = listOf(stringResource(R.string.enable), stringResource(R.string.disable)),
-                selectedIndex =
-                    if (settings.dynamicColor == AppConfig.DynamicColors.Code.ENABLE) 0 else 1,
+                enabled = settings.dynamicColor == AppConfig.DynamicColors.Code.ENABLE,
                 onDismiss = onDismiss,
                 onConfirm = {
-                    if (settings.selectDynamicColor(enabled = it == 0)) onRestartRequest()
-                    else onDismiss()
+                    if (settings.selectDynamicColor(it)) onRestartRequest() else onDismiss()
+                },
+            )
+        SettingsDialog.ExcludeLookalike ->
+            BinaryChoiceDialog(
+                title = stringResource(R.string.settings_exclude_lookalike_title),
+                enabled = settings.excludeLookalike,
+                onDismiss = onDismiss,
+                onConfirm = {
+                    settings.selectExcludeLookalike(it)
+                    onDismiss()
                 },
             )
         SettingsDialog.Restart -> RestartDialog()
     }
+}
+
+@Composable
+private fun BinaryChoiceDialog(
+    title: String,
+    enabled: Boolean,
+    onDismiss: () -> Unit,
+    onConfirm: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    SingleChoiceDialog(
+        title = title,
+        options = listOf(stringResource(R.string.enable), stringResource(R.string.disable)),
+        selectedIndex = if (enabled) 0 else 1,
+        onDismiss = onDismiss,
+        onConfirm = { onConfirm(it == 0) },
+        modifier = modifier,
+    )
 }
 
 /** Dynamic colors only apply after a restart; this dialog can't be dismissed without one. */

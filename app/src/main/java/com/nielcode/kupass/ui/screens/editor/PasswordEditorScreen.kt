@@ -17,6 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Shuffle
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
@@ -24,6 +25,7 @@ import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.SideEffect
@@ -45,6 +47,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.nielcode.kupass.App
 import com.nielcode.kupass.R
 import com.nielcode.kupass.data.local.db.PasswordEntity
 import com.nielcode.kupass.security.PasswordGenerator
@@ -86,6 +89,8 @@ fun PasswordEditorScreen(
 ) {
     val isEditMode = passwordId > 0
     val context = LocalContext.current
+    val container = remember(context) { (context.applicationContext as? App)?.container }
+    val excludeLookalike = container?.preferenceManager?.excludeLookalike ?: false
     val form = remember { EditorFormState() }
     val existingPassword by viewModel.existingPassword.collectAsStateWithLifecycle()
     val saveState by viewModel.saveState.collectAsStateWithLifecycle()
@@ -96,22 +101,12 @@ fun PasswordEditorScreen(
 
     SideEffect(passwordId) { if (isEditMode) viewModel.loadPassword(passwordId) }
     SideEffect(existingPassword) { existingPassword?.let(form::prefillOnce) }
-    SideEffect(saveState) {
-        when (saveState) {
-            SaveState.Success -> {
-                viewModel.resetSaveState()
-                currentOnNavigateBack()
-            }
-
-            SaveState.Error -> {
-                // Keep the form so nothing typed is lost; the user can retry.
-                Toast.makeText(context, saveFailedText, Toast.LENGTH_LONG).show()
-                viewModel.resetSaveState()
-            }
-
-            else -> Unit
-        }
-    }
+    HandleSaveState(
+        saveState = saveState,
+        saveFailedText = saveFailedText,
+        onSuccess = currentOnNavigateBack,
+        onReset = viewModel::resetSaveState,
+    )
 
     Scaffold(
         modifier = modifier,
@@ -141,7 +136,36 @@ fun PasswordEditorScreen(
                 modifier = Modifier.padding(innerPadding).padding(20.dp),
             )
         } else {
-            EditorForm(form = form, modifier = Modifier.padding(innerPadding))
+            EditorForm(
+                form = form,
+                excludeLookalike = excludeLookalike,
+                modifier = Modifier.padding(innerPadding),
+            )
+        }
+    }
+}
+
+@Composable
+private fun HandleSaveState(
+    saveState: SaveState,
+    saveFailedText: String,
+    onSuccess: () -> Unit,
+    onReset: () -> Unit,
+) {
+    val context = LocalContext.current
+    SideEffect(saveState) {
+        when (saveState) {
+            SaveState.Success -> {
+                onReset()
+                onSuccess()
+            }
+
+            SaveState.Error -> {
+                Toast.makeText(context, saveFailedText, Toast.LENGTH_LONG).show()
+                onReset()
+            }
+
+            else -> Unit
         }
     }
 }
@@ -210,7 +234,11 @@ private fun EditorTopBar(
 }
 
 @Composable
-private fun EditorForm(form: EditorFormState, modifier: Modifier = Modifier) {
+private fun EditorForm(
+    form: EditorFormState,
+    excludeLookalike: Boolean,
+    modifier: Modifier = Modifier,
+) {
     Column(
         modifier =
             modifier
@@ -233,7 +261,7 @@ private fun EditorForm(form: EditorFormState, modifier: Modifier = Modifier) {
             label = stringResource(R.string.username_hint),
             keyboardOptions = UsernameKeyboard,
         )
-        PasswordFieldRow(form = form)
+        PasswordFieldRow(form = form, excludeLookalike = excludeLookalike)
         VaultTextField(
             value = form.url,
             onValueChange = { form.url = it },
@@ -251,7 +279,13 @@ private fun EditorForm(form: EditorFormState, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun PasswordFieldRow(form: EditorFormState, modifier: Modifier = Modifier) {
+private fun PasswordFieldRow(
+    form: EditorFormState,
+    excludeLookalike: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    var showReplaceConfirmDialog by remember { mutableStateOf(false) }
+
     Row(
         modifier = modifier.fillMaxWidth().height(IntrinsicSize.Min),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -275,8 +309,12 @@ private fun PasswordFieldRow(form: EditorFormState, modifier: Modifier = Modifie
         )
         FilledTonalIconButton(
             onClick = {
-                form.password = PasswordGenerator.generate()
-                form.passwordVisible = true
+                if (form.password.isBlank()) {
+                    form.password = PasswordGenerator.generate(excludeLookalike = excludeLookalike)
+                    form.passwordVisible = true
+                } else {
+                    showReplaceConfirmDialog = true
+                }
             },
             modifier = Modifier.fillMaxHeight().aspectRatio(1f),
             shape = VaultFieldShape,
@@ -287,4 +325,39 @@ private fun PasswordFieldRow(form: EditorFormState, modifier: Modifier = Modifie
             )
         }
     }
+
+    if (showReplaceConfirmDialog) {
+        ReplacePasswordConfirmDialog(
+            onDismiss = { showReplaceConfirmDialog = false },
+            onConfirm = {
+                form.password = PasswordGenerator.generate(excludeLookalike = excludeLookalike)
+                form.passwordVisible = true
+                showReplaceConfirmDialog = false
+            },
+        )
+    }
+}
+
+@Composable
+private fun ReplacePasswordConfirmDialog(
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.dialog_replace_password_title)) },
+        text = { Text(stringResource(R.string.dialog_replace_password_message)) },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text(stringResource(R.string.button_replace))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.button_cancel))
+            }
+        },
+        modifier = modifier,
+    )
 }

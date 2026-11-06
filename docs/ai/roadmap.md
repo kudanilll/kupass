@@ -6,6 +6,7 @@
 
 ## 0. Progress (updated 2026-09-19)
 
+- **M3 Features in progress:** S-7.1 Password Generator partly done (cryptographically secure generator, accidental overwrite protection, lookalike character exclusion setting; open: custom length slider modal & strength meter).
 - **M1 Trustworthy Vault: done**, merged to `master` in PR #2: EN-00, EN-01, EN-03, EN-06 (+EN-06b), F-2.1, EN-04, S-3.1, S-3.2, EN-07, EN-05, S-2.4, S-2.5, S-3.3, plus a security-review fix for the app lock.
 - **M0 Foundation: done.** EN-02 (Spotless/ktfmt + detekt with Compose rules, 0 findings, enforced in CI) is on `build/format-and-static-analysis`.
 - **Next:** M2 (Polish & Light), then F-7.2 Autofill.
@@ -145,14 +146,14 @@ Confirmed decision, revised 2026-10-11: public launch/list/search/tabs/create; f
 
 ### Epic E7: Power Features (M3, size XL, to be split per feature)
 
-| ID     | Type    | Title                                                                                                                 | Pts | Pri | Blocked by | Source        |
-| ------ | ------- | --------------------------------------------------------------------------------------------------------------------- | --- | --- | ---------- | ------------- |
-| S-7.1  | Story   | Password generator (length, character sets, strength meter) in the editor                                             | 5   | P2  | none       | SEC-7         |
-| F-7.2  | Feature | **Android Autofill service** (proposed, needs approval): split with the `breakdown-feature-prd` skill before starting | 13+ | P1? | E2, E3     | FEAT-1        |
-| S-7.3  | Story   | ✅ Done 2026-09-19; revised 2026-09-21. Always-on favicons via Favget (public domain only, memory cached)             | 5   | P2  | EN-01      | FEAT-2        |
-| S-7.4  | Story   | Categories/tags and favorites (proposed)                                                                              | 5   | P3  | EN-03      | FEAT-3        |
-| S-7.5  | Story   | Adaptive list-detail layout for tablets/foldables (proposed)                                                          | 5   | P3  | none       | FEAT-4        |
-| EN-7.6 | Enabler | Migrate Navigation 2.x (maintenance mode) → Navigation 3                                                              | 5   | P3  | EN-04      | CONCERNS debt |
+| ID     | Type    | Title                                                                                                                                                                                              | Pts | Pri | Blocked by | Source        |
+| ------ | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- | --- | ---------- | ------------- |
+| S-7.1  | Story   | Password generator: ✅ partly done (cryptographically secure generator, accidental overwrite protection, lookalike character exclusion setting). Open: custom length slider modal & strength meter | 5   | P2  | none       | SEC-7         |
+| F-7.2  | Feature | **Android Autofill service** (proposed, needs approval): split with the `breakdown-feature-prd` skill before starting                                                                              | 13+ | P1? | E2, E3     | FEAT-1        |
+| S-7.3  | Story   | ✅ Done 2026-09-19; revised 2026-09-21. Always-on favicons via Favget (public domain only, memory cached)                                                                                          | 5   | P2  | EN-01      | FEAT-2        |
+| S-7.4  | Story   | Categories/tags and favorites (proposed)                                                                                                                                                           | 5   | P3  | EN-03      | FEAT-3        |
+| S-7.5  | Story   | Adaptive list-detail layout for tablets/foldables (proposed)                                                                                                                                       | 5   | P3  | none       | FEAT-4        |
+| EN-7.6 | Enabler | Migrate Navigation 2.x (maintenance mode) → Navigation 3                                                                                                                                           | 5   | P3  | EN-04      | CONCERNS debt |
 
 ## 4. Critical Path & Order
 

@@ -105,9 +105,12 @@
     <string name="dialog_message_language">We need to restart app for change language</string>
     <string name="dialog_message_delete">Are you sure you want to delete</string>
     <string name="dialog_message_permission">We need permission to access write files</string>
+    <string name="dialog_replace_password_title">Replace password?</string>
+    <string name="dialog_replace_password_message">Generating a new password will replace your current password. Continue?</string>
 
     <!-- Button -->
     <string name="button_cancel">CANCEL</string>
+    <string name="button_replace">REPLACE</string>
     <string name="button_apply">APPLY</string>
     <string name="button_delete">DELETE</string>
     <string name="button_export">EXPORT</string>
@@ -136,6 +139,8 @@
     <string name="settings_category_security">Security</string>
     <string name="settings_auto_lock_title">Lock session after background</string>
     <string name="auto_lock_immediately">Immediately</string>
+    <string name="settings_exclude_lookalike_title">Exclude lookalike characters</string>
+    <string name="settings_exclude_lookalike_summary">Avoid confusing characters such as 0, O, 1, l, and I in generated passwords</string>
     <string name="lock_title">Session is locked</string>
     <string name="lock_message">Unlock to view or edit accounts until the session locks after your background timeout. Browsing and creating entries stay available.</string>
     <string name="lock_button_unlock">Unlock</string>

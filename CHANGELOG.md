@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Accidental password overwrite protection in the password editor: clicking the generator button when a password is already present displays a confirmation dialog before replacing it.
+- Setting to exclude lookalike and ambiguous characters (O, 0, I, l, 1, |) from generated passwords in Security settings.
 - Instant password generator on the password editor screen: generate strong, cryptographically secure 16-character passwords using a dice button next to the password field.
 - The vault opens faster. Decrypted entries are cached, so only new or changed entries are decrypted, and the next app start reads the encrypted cache instead of decrypting every entry again. Switching to the vault after a large import no longer waits for the whole vault to be decrypted again.
 - While the vault loads, the list shows placeholder rows instead of the empty-vault message.

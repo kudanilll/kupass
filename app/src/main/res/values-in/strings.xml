@@ -105,9 +105,12 @@
     <string name="dialog_message_language">Kita butuh memulai ulang aplikasi untuk mengganti bahasa</string>
     <string name="dialog_message_delete">Apakah Anda yakin ingin menghapus</string>
     <string name="dialog_message_permission">Kita memerlukan akses untuk menulis files</string>
+    <string name="dialog_replace_password_title">Ganti kata sandi?</string>
+    <string name="dialog_replace_password_message">Membuat kata sandi baru akan menggantikan kata sandi saat ini. Lanjutkan?</string>
 
     <!-- Button -->
     <string name="button_cancel">BATAL</string>
+    <string name="button_replace">GANTI</string>
     <string name="button_apply">TERAPKAN</string>
     <string name="button_delete">HAPUS</string>
     <string name="button_export">EKSPOR</string>
@@ -136,6 +139,8 @@
     <string name="settings_category_security">Keamanan</string>
     <string name="settings_auto_lock_title">Kunci sesi setelah di latar belakang</string>
     <string name="auto_lock_immediately">Segera</string>
+    <string name="settings_exclude_lookalike_title">Kecualikan karakter ambigu</string>
+    <string name="settings_exclude_lookalike_summary">Hindari karakter mirip seperti 0, O, 1, l, dan I pada kata sandi yang dibuat</string>
     <string name="lock_title">Sesi terkunci</string>
     <string name="lock_message">Buka kunci untuk melihat atau mengubah akun sampai sesi terkunci setelah batas waktu di latar belakang. Jelajahi dan tambah akun tetap tersedia.</string>
     <string name="lock_button_unlock">Buka kunci</string>
