@@ -3,7 +3,8 @@
 /local.properties
 /.idea/
 .DS_Store
-/build
+# Every module's (and build-logic's) build output.
+build/
 /captures
 .externalNativeBuild
 .cxx

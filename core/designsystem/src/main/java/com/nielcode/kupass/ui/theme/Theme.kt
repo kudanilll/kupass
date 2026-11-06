@@ -90,14 +90,14 @@ private val darkScheme =
         surfaceContainerHighest = surfaceContainerHighestDark,
     )
 
-internal fun kupassLightColorScheme(context: Context, dynamicColor: Boolean): ColorScheme =
+fun kupassLightColorScheme(context: Context, dynamicColor: Boolean): ColorScheme =
     if (dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
         dynamicLightColorScheme(context)
     } else {
         lightScheme
     }
 
-internal fun kupassDarkColorScheme(context: Context, dynamicColor: Boolean): ColorScheme =
+fun kupassDarkColorScheme(context: Context, dynamicColor: Boolean): ColorScheme =
     if (dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
         dynamicDarkColorScheme(context)
     } else {
