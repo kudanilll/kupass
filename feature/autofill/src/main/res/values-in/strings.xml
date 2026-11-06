@@ -9,4 +9,9 @@
     <string name="autofill_no_username">(tanpa nama pengguna)</string>
     <string name="autofill_save_failed">Kupass gagal menyimpan data masuk ini.</string>
     <string name="autofill_generate_failed">Kata sandi gagal disimpan, jadi tidak ada yang diisi.</string>
+    <string name="autofill_prompt_title">Buka Kupass</string>
+    <string name="autofill_prompt_subtitle">Isi data masuk ini</string>
+    <string name="autofill_search_placeholder">Cari akun</string>
+    <string name="autofill_empty">Akun tidak ditemukan</string>
+    <string name="autofill_no_lock_screen">Atur PIN, pola, atau kata sandi perangkat untuk mengisi data masuk yang tersimpan.</string>
 </resources>

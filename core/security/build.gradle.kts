@@ -4,6 +4,7 @@ android { namespace = "com.nielcode.kupass.core.security" }
 
 dependencies {
     implementation(libs.androidx.annotation)
+    implementation(libs.androidx.biometric)
     implementation(libs.kotlinx.coroutines.core)
 
     testImplementation(libs.junit)

@@ -3,15 +3,11 @@ package com.nielcode.kupass
 import android.app.KeyguardManager
 import android.content.ActivityNotFoundException
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
-import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_WEAK
-import androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL
 import androidx.biometric.BiometricPrompt
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -23,6 +19,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.nielcode.kupass.security.EntryAuthenticationViewModel
+import com.nielcode.kupass.security.kupassAuthenticators
 import com.nielcode.kupass.ui.screens.MainAppScreen
 import com.nielcode.kupass.ui.theme.KupassTheme
 import com.nielcode.kupass.utils.AppConfig
@@ -139,13 +136,6 @@ class MainActivity : AppCompatActivity() {
     private fun promptInfo(
         action: EntryAuthenticationViewModel.Action
     ): BiometricPrompt.PromptInfo {
-        val authenticators =
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                BIOMETRIC_STRONG or DEVICE_CREDENTIAL
-            } else {
-                // BIOMETRIC_STRONG | DEVICE_CREDENTIAL is unsupported on API 28-29.
-                BIOMETRIC_WEAK or DEVICE_CREDENTIAL
-            }
         return BiometricPrompt.PromptInfo.Builder()
             .setTitle(getString(R.string.lock_prompt_title))
             .setSubtitle(
@@ -155,7 +145,7 @@ class MainActivity : AppCompatActivity() {
                     else R.string.lock_prompt_subtitle
                 )
             )
-            .setAllowedAuthenticators(authenticators)
+            .setAllowedAuthenticators(kupassAuthenticators())
             .build()
     }
 
