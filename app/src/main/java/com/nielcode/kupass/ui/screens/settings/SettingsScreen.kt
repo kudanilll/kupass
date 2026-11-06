@@ -100,7 +100,6 @@ fun SettingsScreen(
                 )
                 SecuritySection(
                     autoLockSeconds = settings.autoLockSeconds,
-                    excludeLookalike = settings.excludeLookalike,
                     onAutoLockClick = { openDialog = SettingsDialog.AutoLock },
                     onExcludeLookalikeClick = { openDialog = SettingsDialog.ExcludeLookalike },
                 )
@@ -213,13 +212,10 @@ private fun GeneralSection(
 @Composable
 private fun SecuritySection(
     autoLockSeconds: Int,
-    excludeLookalike: Boolean,
     onAutoLockClick: () -> Unit,
     onExcludeLookalikeClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val lookalikeStatus =
-        stringResource(if (excludeLookalike) R.string.enable else R.string.disable)
     val lookalikeSummary = stringResource(R.string.settings_exclude_lookalike_summary)
     Column(modifier = modifier) {
         SectionHeader(title = stringResource(R.string.settings_category_security))
@@ -232,7 +228,7 @@ private fun SecuritySection(
         SectionItem(
             icon = Icons.Default.Password,
             title = stringResource(R.string.settings_exclude_lookalike_title),
-            subtitle = "$lookalikeStatus • $lookalikeSummary",
+            subtitle = lookalikeSummary,
             onClick = onExcludeLookalikeClick,
         )
     }
