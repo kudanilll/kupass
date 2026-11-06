@@ -1,6 +1,7 @@
 package com.nielcode.kupass.security
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
@@ -75,5 +76,45 @@ class PasswordGeneratorTest {
 
         assertTrue(hasUpper || hasLower || hasDigit)
         assertNotEquals("All first chars were identical", 1, firstChars.toSet().size)
+    }
+
+    @Test
+    fun `generate with excludeLookalike true does not contain lookalike characters`() {
+        repeat(100) { _ ->
+            val password = PasswordGenerator.generate(excludeLookalike = true)
+            val hasLookalike = password.any { char -> char in PasswordGenerator.LOOKALIKE_CHARS }
+            assertFalse("Expected no lookalike chars in $password", hasLookalike)
+        }
+    }
+
+    @Test
+    fun `generate with excludeLookalike true maintains category invariants`() {
+        repeat(100) { _ ->
+            val password = PasswordGenerator.generate(length = 16, excludeLookalike = true)
+
+            val hasUpper = password.any { char ->
+                char in 'A'..'Z' && char !in PasswordGenerator.LOOKALIKE_CHARS
+            }
+            val hasLower = password.any { char ->
+                char in 'a'..'z' && char !in PasswordGenerator.LOOKALIKE_CHARS
+            }
+            val hasDigit = password.any { char ->
+                char in '0'..'9' && char !in PasswordGenerator.LOOKALIKE_CHARS
+            }
+            val hasSymbol = password.any { char ->
+                char in PasswordGenerator.SYMBOLS && char !in PasswordGenerator.LOOKALIKE_CHARS
+            }
+
+            assertTrue("Expected uppercase in $password", hasUpper)
+            assertTrue("Expected lowercase in $password", hasLower)
+            assertTrue("Expected digit in $password", hasDigit)
+            assertTrue("Expected symbol in $password", hasSymbol)
+        }
+    }
+
+    @Test
+    fun `generate with excludeLookalike false preserves default behavior`() {
+        val password = PasswordGenerator.generate(excludeLookalike = false)
+        assertEquals(PasswordGenerator.DEFAULT_LENGTH, password.length)
     }
 }
