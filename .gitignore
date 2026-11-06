@@ -1,5 +1,7 @@
 *.iml
 .gradle
+# Kotlin daemon/compiler error logs and session data.
+.kotlin/
 /local.properties
 /.idea/
 .DS_Store
