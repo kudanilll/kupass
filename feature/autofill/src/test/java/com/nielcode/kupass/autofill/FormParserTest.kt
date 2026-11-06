@@ -129,15 +129,35 @@ class FormParserTest {
     }
 
     @Test
-    fun `non-fillable fields are skipped but their labels can mark a sign-up`() {
+    fun `a login page with a sign-up link stays a login`() {
         val form =
             parse(
                 FormField(0, autofillHints = listOf("username")),
                 FormField(1, autofillHints = listOf("password")),
-                FormField(2, value = "Daftar", isFillable = false),
-                FormField(3, autofillHints = listOf("password"), isFillable = false),
+                FormField(2, value = "Belum punya akun? Daftar", isFillable = false),
+                FormField(3, value = "Sign up", isFillable = false),
+                FormField(4, autofillHints = listOf("password"), isFillable = false),
+            )
+        assertShape(form, username = 0, passwords = listOf(1), signUp = false)
+    }
+
+    @Test
+    fun `sign-up words on the credential field itself mark a sign-up`() {
+        val form =
+            parse(
+                FormField(0, idEntry = "email"),
+                FormField(1, inputType = PASSWORD_INPUT, idEntry = "register_password"),
             )
         assertShape(form, username = 0, passwords = listOf(1), signUp = true)
+        assertTrue(
+            parse(
+                    FormField(
+                        0,
+                        htmlAttributes = mapOf("type" to "password", "name" to "new-password"),
+                    )
+                )
+                .isSignUp
+        )
     }
 
     @Test

@@ -2,7 +2,7 @@ package com.nielcode.kupass.autofill
 
 /**
  * A plain snapshot of one `AssistStructure.ViewNode`, so form heuristics run without framework
- * types. [value] holds what the user typed (a secret for fillable fields) or a label's text.
+ * types. [value] holds what the user typed (a secret); Android leaves it empty in fill requests.
  */
 data class FormField(
     val index: Int,

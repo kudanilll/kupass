@@ -14,10 +14,9 @@ internal data class ReadStructure(
     val ids: List<AutofillId?>,
 )
 
-/** Flattens an [AssistStructure] into fillable fields plus short labels (for sign-up words). */
+/** Flattens an [AssistStructure] into its fillable fields (plus nodes that carry a web domain). */
 internal object StructureReader {
 
-    private const val MAX_LABEL_LENGTH = 64
     private val HTML_KEYS = setOf("type", "autocomplete", "name", "id")
 
     fun read(structure: AssistStructure): ReadStructure {
@@ -33,8 +32,7 @@ internal object StructureReader {
     }
 
     private fun collect(node: ViewNode, into: MutableList<ViewNode>) {
-        val label = node.text?.length?.let { it in 1..MAX_LABEL_LENGTH } == true
-        if (node.isFillable() || label || node.webDomain != null) into += node
+        if (node.isFillable() || node.webDomain != null) into += node
         for (child in 0 until node.childCount) collect(node.getChildAt(child), into)
     }
 
@@ -69,9 +67,7 @@ internal object StructureReader {
             idEntry = idEntry,
             hint = hint,
             contentDescription = contentDescription?.toString(),
-            value =
-                if (fillable) autofillValue?.takeIf { it.isText }?.textValue?.toString()
-                else text?.toString(),
+            value = autofillValue?.takeIf { fillable && it.isText }?.textValue?.toString(),
             webDomain = webDomain,
             isFocused = isFocused,
             isFillable = fillable,

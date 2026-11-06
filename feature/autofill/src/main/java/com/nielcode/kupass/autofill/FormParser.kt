@@ -27,7 +27,11 @@ object FormParser {
             isSignUp =
                 Kind.NewPassword in kinds.values ||
                     passwords.size >= 2 ||
-                    fields.any { field -> SIGN_UP_WORDS.any { it in labelText(field) } },
+                    // Only the credential fields themselves: page links ("Sign up", "Daftar")
+                    // sit on most login screens too.
+                    fields
+                        .filter { it.isFillable }
+                        .any { field -> SIGN_UP_WORDS.any { it in labelText(field) } },
             usernameValue = usernameField?.let { byIndex[it]?.value },
             passwordValue = passwords.firstOrNull()?.let { byIndex[it]?.value },
         )
@@ -98,7 +102,7 @@ object FormParser {
         }
     }
 
-    /** Describing text only. A fillable field's [FormField.value] is user input, never a label. */
+    /** Describing text only. [FormField.value] is user input, never a label. */
     private fun labelText(field: FormField): String =
         listOfNotNull(
                 field.idEntry,
@@ -106,7 +110,6 @@ object FormParser {
                 field.contentDescription,
                 field.htmlAttributes["name"],
                 field.htmlAttributes["id"],
-                field.value.takeUnless { field.isFillable },
             )
             .joinToString(" ")
             .lowercase(Locale.ROOT)
@@ -127,6 +130,9 @@ object FormParser {
             "buat akun",
             "confirm",
             "konfirmasi",
+            "new-password",
+            "new_password",
+            "newpassword",
         )
 
     // android.text.InputType values, kept local so the parser stays plain Kotlin.
