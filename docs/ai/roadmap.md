@@ -4,12 +4,12 @@
 >
 > Each item ID (e.g. `EN-06`) is meant to become one GitHub issue and one branch (`feat/…`, `fix/…`, `chore/…`). Update the checkboxes and IDs here as issues are created and merged.
 
-## 0. Progress (updated 2026-09-19)
+## 0. Progress (updated 2026-11-06)
 
 - **M3 Features in progress:** S-7.1 Password Generator partly done (cryptographically secure generator, accidental overwrite protection, lookalike character exclusion setting; open: custom length slider modal & strength meter).
 - **M1 Trustworthy Vault: done**, merged to `master` in PR #2: EN-00, EN-01, EN-03, EN-06 (+EN-06b), F-2.1, EN-04, S-3.1, S-3.2, EN-07, EN-05, S-2.4, S-2.5, S-3.3, plus a security-review fix for the app lock.
 - **M0 Foundation: done.** EN-02 (Spotless/ktfmt + detekt with Compose rules, 0 findings, enforced in CI) is on `build/format-and-static-analysis`.
-- **Next:** M2 (Polish & Light), then F-7.2 Autofill.
+- **Next:** M2 (Polish & Light). F-7.2 Autofill v1 is done (2026-11-06); its follow-ups are listed in E7.
 
 ## 1. Overview
 
@@ -149,7 +149,7 @@ Confirmed decision, revised 2026-10-11: public launch/list/search/tabs/create; f
 | ID     | Type    | Title                                                                                                                                                                                              | Pts | Pri | Blocked by | Source        |
 | ------ | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- | --- | ---------- | ------------- |
 | S-7.1  | Story   | Password generator: ✅ partly done (cryptographically secure generator, accidental overwrite protection, lookalike character exclusion setting). Open: custom length slider modal & strength meter | 5   | P2  | none       | SEC-7         |
-| F-7.2  | Feature | **Android Autofill service** (proposed, needs approval): split with the `breakdown-feature-prd` skill before starting                                                                              | 13+ | P1? | E2, E3     | FEAT-1        |
+| F-7.2  | Feature | ✅ Done 2026-11-06 (v1): fill in apps and browsers after verification, generate-and-save on sign-up, save offer (Settings). Follow-ups: Credential Manager provider/passkeys, inline (keyboard) suggestions, browser signing-certificate check, updating an entry when its password changes                                                                              | 13+ | P1? | E2, E3     | FEAT-1        |
 | S-7.3  | Story   | ✅ Done 2026-09-19; revised 2026-09-21. Always-on favicons via Favget (public domain only, memory cached)                                                                                          | 5   | P2  | EN-01      | FEAT-2        |
 | S-7.4  | Story   | Categories/tags and favorites (proposed)                                                                                                                                                           | 5   | P3  | EN-03      | FEAT-3        |
 | S-7.5  | Story   | Adaptive list-detail layout for tablets/foldables (proposed)                                                                                                                                       | 5   | P3  | none       | FEAT-4        |
