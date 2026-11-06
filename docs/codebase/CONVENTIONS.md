@@ -20,10 +20,10 @@
 
 ## 2) Formatting and Linting
 
-- Formatter: **ktfmt 0.64 (kotlinlang style: 4-space indent, 100 columns) via Spotless 8.10.4**, configured in the root `build.gradle.kts` for `**/*.kt` and `*.gradle.kts`. ktfmt also removes unused imports.
-- Static analysis: **detekt 2.0.0-alpha.6** (built for Kotlin 2.4 / AGP 9.3) + **io.nlopez.compose.rules 0.6.8**, config `config/detekt/detekt.yml` on top of the defaults, no baseline. Android Lint defaults (0 errors).
-- Run: `./gradlew spotlessApply` (fix) / `spotlessCheck`, `./gradlew :app:detektMain :app:detektTest` (type-resolved), `./gradlew :app:lintDebug`. CI runs all three.
-- Main-variant detekt classpaths include compiled Kotlin and generated Java classes, so references to `BuildConfig` resolve during type-aware analysis.
+- Formatter: **ktfmt 0.64 (kotlinlang style: 4-space indent, 100 columns) via Spotless 8.10.4**, configured in the root `build.gradle.kts` for `**/*.kt` and every `*.gradle.kts` (including `build-logic/` and nested modules). ktfmt also removes unused imports.
+- Static analysis: **detekt 2.0.0-alpha.6** (built for Kotlin 2.4 / AGP 9.3) + **io.nlopez.compose.rules 0.6.8**, config `config/detekt/detekt.yml` on top of the defaults, no baseline, applied to every module by the `build-logic` convention plugins. Android Lint defaults (0 errors).
+- Run: `./gradlew spotlessApply` (fix) / `spotlessCheck`, `./gradlew detektMain detektTest` (type-resolved, every module), `./gradlew lintDebug`. CI runs all three. On Windows, if detekt or a `bundle*ClassesToCompileJar` task fails on a missing or locked `classes.jar` right after code moves between modules, run `./gradlew --stop` once (the daemon cached the old jar).
+- `:app` main-variant detekt classpaths (its build script) include compiled Kotlin and generated Java classes, so references to `BuildConfig` resolve during type-aware analysis.
 - Compose conventions enforced by the rules: every public composable takes `modifier: Modifier = Modifier` applied at its root; parameter order is required params, `modifier`, optional params, then a content slot; event lambdas are present tense (`onTabClick`, not `onTabSelected`); effects read changing lambdas through `rememberUpdatedState`; non-suspending effects use keyed `SideEffect(key)` (the `BiometricPrompt` call in `LockScreen` stays a `LaunchedEffect`, with a documented `@Suppress`); screens receive state and callbacks, never a ViewModel from a parent.
 
 ## 3) Import and Module Conventions
@@ -57,6 +57,6 @@
 
 - `gradle.properties`, `.idea/google-java-format.xml`
 - `app/src/main/java/com/nielcode/kupass/ui/screens/editor/PasswordEditorViewModel.kt`
-- `app/src/main/java/com/nielcode/kupass/security/CryptoManager.kt`, `AppConfig.kt`
+- `core/security/src/main/java/com/nielcode/kupass/security/CryptoManager.kt`, `core/data/src/main/java/com/nielcode/kupass/utils/AppConfig.kt`
 - `app/src/main/res/values/strings.xml`, `values-in/strings.xml`, `values/arrays.xml`
 - `app/src/test/java/com/nielcode/kupass/data/backup/BackupCodecTest.kt`

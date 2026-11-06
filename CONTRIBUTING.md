@@ -39,7 +39,7 @@ Format the code, then run the same checks as CI:
 
 ```bash
 ./gradlew spotlessApply
-./gradlew spotlessCheck :app:detektMain :app:detektTest :app:testDebugUnitTest :app:lintDebug :app:assembleDebug
+./gradlew spotlessCheck detektMain detektTest testDebugUnitTest lintDebug assembleDebug
 ```
 
 Everything must pass. Detekt has no baseline and must report 0 issues; if you suppress a rule, write the reason next to the `@Suppress`. Lint must report 0 errors.
@@ -47,7 +47,7 @@ Everything must pass. Detekt has no baseline and must report 0 issues; if you su
 If you touch the database or the Keystore code, also run the instrumented tests on an emulator or a device:
 
 ```bash
-./gradlew :app:connectedDebugAndroidTest
+./gradlew :core:data:connectedDebugAndroidTest :core:security:connectedDebugAndroidTest
 ```
 
 ## Commits

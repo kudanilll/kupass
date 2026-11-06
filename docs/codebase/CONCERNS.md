@@ -66,8 +66,8 @@ The UI/import revision replaces accordion headers with regular badged rows and a
 ## 6) Evidence
 
 - `docs/codebase/.codebase-scan.txt` (TODO, HIGH-CHURN, CODE METRICS sections)
-- `app/src/main/java/com/nielcode/kupass/security/` (`CryptoManager.kt`, `AppLock.kt`, `SecureClipboard.kt`)
-- `app/src/main/java/com/nielcode/kupass/data/` (`backup/BackupCodec.kt`, `repository/PasswordRepository.kt`, `local/db/KupassDatabase.kt`, `siteicon/`)
+- `core/security/src/main/java/com/nielcode/kupass/security/` (`CryptoManager.kt`, `AppLock.kt`), `app/src/main/java/com/nielcode/kupass/security/SecureClipboard.kt`
+- `app/src/main/java/com/nielcode/kupass/data/` (`backup/BackupCodec.kt`, `siteicon/`), `core/data/src/main/java/com/nielcode/kupass/data/` (`repository/PasswordRepository.kt`, `local/db/KupassDatabase.kt`)
 - `app/src/main/java/com/nielcode/kupass/ui/screens/` (`MainAppScreen.kt`, `home/HomeViewModel.kt`, `detail/PasswordDetailScreen.kt`)
 - `app/src/main/res/xml/data_extraction_rules.xml`, `app/build.gradle.kts`
 - Product decisions behind the accepted risks above: `docs/ai/prd.md` §8 Decision Log

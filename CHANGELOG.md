@@ -31,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The code is split into core modules (security, data, design system) built with shared Gradle convention plugins. The app behaves exactly as before, and CI now checks every module.
 - The Home tab is now called Vault (Brankas in Indonesian) and uses a padlock icon.
 - Encrypted backups now use the name `kupass-backup.kupass`, with the same portable v2 encrypted JSON format. Older `.json` backups remain importable, and import detects the format from validated content rather than filenames or provider MIME types.
 - Every export requires fresh native authentication before the backup-password dialog. Permission is bound to one export request, expires after five minutes, and is consumed before writing the encrypted backup. Cancelled or stale pickers cannot export.
@@ -58,6 +59,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The release workflow called a release unit-test task that AGP 9 no longer creates, so a tagged release would have failed before building. It now runs the unit tests of every module.
 - Google CSV import accepts normalized headers and aliases, optional username/password/url/note columns or empty values, extra unrecognized columns, blank record separators, comma/semicolon delimiters, omitted trailing columns, and BOM-marked UTF-16 as well as strict UTF-8. Credential fields are preserved exactly; malformed data still inserts nothing.
 - CSV errors identify the supported columns instead of incorrectly referring to a JSON file.
 - Import errors distinguish selected-file access failures from account storage/encryption failures, while keeping error messages free of credential values.

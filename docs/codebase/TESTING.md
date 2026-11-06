@@ -9,9 +9,10 @@
 - Instrumented: AndroidX Test JUnit 1.3.0, Espresso 3.7.0, `compose-ui-test-junit4` (dependencies exist, no real tests yet).
 
 ```bash
-./gradlew :app:testDebugUnitTest            # all unit tests (verified: BUILD SUCCESSFUL, 9/9 pass, 2026-09-18)
-./gradlew :app:testDebugUnitTest --tests "com.nielcode.kupass.security.CryptoManagerTest"
+./gradlew testDebugUnitTest                 # all unit tests in every module
+./gradlew :core:security:testDebugUnitTest --tests "com.nielcode.kupass.security.CryptoManagerTest"
 ANDROID_SERIAL=<device> ./gradlew :app:connectedDebugAndroidTest   # instrumented. It UNINSTALLS the app afterwards, so use a dedicated/read-only emulator, never a device with real vault data
+./gradlew :core:data:connectedDebugAndroidTest :core:security:connectedDebugAndroidTest   # migration, legacy-upgrade and Keystore device tests; they install their own test APKs and leave the Kupass app alone
 ./gradlew :app:testDebugUnitTest -Pkupass.snapshots --tests "*UiSnapshotTest"   # renders screens to app/build/ui-snapshots/*.png (own JVM, opt-in)
 # coverage: [TODO] not configured (no JaCoCo/Kover)
 ```
@@ -96,5 +97,5 @@ Final grouped/auth/backup integration verification in the grouped worktree on 20
 - `app/build.gradle.kts` (test dependencies)
 - `app/src/test/java/com/nielcode/kupass/security/CryptoManagerTest.kt`
 - `app/src/test/java/com/nielcode/kupass/data/backup/BackupCodecTest.kt`
-- `app/src/main/java/com/nielcode/kupass/security/CryptoManager.kt` (test key branch)
+- `core/security/src/main/java/com/nielcode/kupass/security/CryptoManager.kt` (test key branch)
 - `./gradlew :app:testDebugUnitTest` output on 2026-09-18: BUILD SUCCESSFUL. Suites: ExampleUnitTest 1, JsonExportImportTest 4, CryptoManagerTest 4. 0 failures

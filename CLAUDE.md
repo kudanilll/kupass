@@ -31,6 +31,10 @@ Screen (Compose) -> ViewModel(Factory) -> PasswordRepository -> PasswordDao (Roo
                                               ├─ CryptoManager (Keystore AES-GCM, every field, `kp2:` format)
                                               └─ VaultCache (by ciphertext fingerprint) + VaultSnapshotStore (encrypted, no_backup)
 Backup: BackupCodec (PBKDF2-HMAC-SHA256 + AES-256-GCM, password-protected, portable)
+
+Modules: :app → :core:data (Room, repository, caches, prefs) → :core:security (CryptoManager, PasswordGenerator, AppLock)
+         :app → :core:designsystem (theme, fonts); :core:testing = shared test fakes (testImplementation only)
+         build-logic/ = convention plugins kupass.android.{application,library,compose}. Kotlin packages are unchanged.
 ```
 
 No DI framework: `App.container` (`di/AppContainer`) provides the repository and prefs; each ViewModel exposes a `Factory`. The authenticated account session and private `AppLock` timer share an activity-retained `EntryAuthenticationViewModel`, never saved state, prefs, or a process singleton. The first account open unlocks a session; later account opens reuse it until the background timeout expires. Destination grants still bind entry/account IDs before sensitive screen creation. Export always requires fresh native authentication and single-use consent. Public pages and creation remain accessible; bounded exemptions and timeout defaults remain unchanged.
@@ -77,12 +81,13 @@ Confirmed product decisions (app lock, portable backups, font, CI, etc.) are in 
 
 ```bash
 ./gradlew :app:assembleDebug        # build debug APK
-./gradlew :app:testDebugUnitTest    # JVM + Robolectric unit tests
-./gradlew :app:lintDebug            # Android lint
-./gradlew :app:connectedDebugAndroidTest   # instrumented tests (device/emulator required)
+./gradlew testDebugUnitTest         # JVM + Robolectric unit tests, every module
+./gradlew lintDebug                 # Android lint, every module
+./gradlew :core:data:connectedDebugAndroidTest :core:security:connectedDebugAndroidTest   # DB migration + Keystore device tests (emulator)
+./gradlew :app:connectedDebugAndroidTest   # app device tests; uninstalls Kupass afterwards (emulator only)
 ./gradlew :app:testDebugUnitTest -Pkupass.snapshots --tests "*UiSnapshotTest"  # UI PNGs in app/build/ui-snapshots/
 ./gradlew spotlessApply            # format all Kotlin/Gradle files with ktfmt (spotlessCheck verifies)
-./gradlew :app:detektMain :app:detektTest  # static analysis incl. Compose rules (must report 0 issues)
+./gradlew detektMain detektTest  # static analysis, every module, incl. Compose rules (must report 0 issues)
 ```
 
 ## Agent Protocol

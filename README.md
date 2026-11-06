@@ -60,7 +60,7 @@ cd kupass
 ./gradlew :app:assembleDebug
 ```
 
-On Windows, use `gradlew.bat` instead of `./gradlew`. The APK is written to `app/build/outputs/apk/debug/app-debug.apk`, and `./gradlew :app:testDebugUnitTest` runs the unit tests.
+On Windows, use `gradlew.bat` instead of `./gradlew`. The APK is written to `app/build/outputs/apk/debug/app-debug.apk`, and `./gradlew testDebugUnitTest` runs the unit tests of every module.
 
 Site icons need a Favget API key in a `secrets.properties` file at the repository root:
 
