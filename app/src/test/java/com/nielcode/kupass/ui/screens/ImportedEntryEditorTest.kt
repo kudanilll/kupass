@@ -1,6 +1,7 @@
 package com.nielcode.kupass.ui.screens
 
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.v2.createComposeRule
@@ -130,6 +131,63 @@ class ImportedEntryEditorTest {
         generateButton.assertIsEnabled()
         generateButton.performClick()
 
+        save.assertIsEnabled()
+    }
+
+    @Test
+    fun `clicking password generator when password is present shows confirmation dialog`() {
+        val key = KeyGenerator.getInstance("AES").apply { init(256) }.generateKey()
+        CryptoManager.setKeyProviderForTesting { key }
+        val repository = PasswordRepository(FakePasswordDao())
+        val vm = PasswordEditorViewModel(repository, requestedId = -1L)
+        compose.setContent {
+            MaterialTheme {
+                PasswordEditorScreen(
+                    passwordId = -1L,
+                    onNavigateBack = {},
+                    viewModel = vm,
+                )
+            }
+        }
+        val app = RuntimeEnvironment.getApplication()
+        val site = compose.onNodeWithText(app.getString(R.string.site_or_app_hint))
+        site.performTextReplacement("Example Site")
+
+        val passwordField = compose.onNodeWithText(app.getString(R.string.password_hint))
+        val initialPassword = "existingSecretPassword"
+        passwordField.performTextReplacement(initialPassword)
+
+        val generateButton =
+            compose.onNodeWithContentDescription(app.getString(R.string.generate_password))
+        generateButton.assertIsEnabled()
+        generateButton.performClick()
+
+        // Dialog konfirmasi muncul
+        val dialogTitle =
+            compose.onNodeWithText(app.getString(R.string.dialog_replace_password_title))
+        val dialogMessage =
+            compose.onNodeWithText(app.getString(R.string.dialog_replace_password_message))
+        dialogTitle.assertIsDisplayed()
+        dialogMessage.assertIsDisplayed()
+
+        // Tekan batal -> password lama tidak berubah dan dialog ditutup
+        val cancelButton = compose.onNodeWithText(app.getString(R.string.button_cancel))
+        cancelButton.performClick()
+        dialogTitle.assertDoesNotExist()
+        dialogMessage.assertDoesNotExist()
+        compose.onNodeWithText(initialPassword).assertExists()
+
+        // Tekan tombol generator lagi -> dialog muncul kembali
+        generateButton.performClick()
+        dialogTitle.assertIsDisplayed()
+
+        // Tekan ganti -> password terbarui dan save button aktif
+        val replaceButton = compose.onNodeWithText(app.getString(R.string.button_replace))
+        replaceButton.performClick()
+        dialogTitle.assertDoesNotExist()
+        compose.onNodeWithText(initialPassword).assertDoesNotExist()
+
+        val save = compose.onNodeWithContentDescription(app.getString(R.string.button_save))
         save.assertIsEnabled()
     }
 
