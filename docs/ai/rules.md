@@ -29,7 +29,7 @@ If a skill or MCP server fits the task, use it and name it in the end-of-turn re
 1. **Understand first.** Read `CLAUDE.md`, the relevant file in `docs/ai/`, and the code you are about to change. Treat the docs as a snapshot and trust the code when they disagree.
 2. **Plan non-trivial work.** Anything touching crypto, the Room schema, import/export, or more than about 3 files gets a short plan first. Confirm product-level choices with Danil.
 3. **Keep changes small and focused.** Don't refactor unrelated code in a feature or bugfix change.
-4. **Verify.** For code changes run `./gradlew spotlessApply`, then `spotlessCheck :app:detektMain :app:detektTest :app:testDebugUnitTest :app:lintDebug :app:assembleDebug`. All must pass: detekt 0 issues (fix findings; a `@Suppress` needs a written reason next to it, and there is no baseline), lint 0 errors. Add or update unit tests for logic changes (repository, crypto, import/export, ViewModels).
+4. **Verify.** For code changes run `./gradlew spotlessApply`, then `spotlessCheck detektMain detektTest testDebugUnitTest lintDebug assembleDebug` (every module). All must pass: detekt 0 issues (fix findings; a `@Suppress` needs a written reason next to it, and there is no baseline), lint 0 errors. Add or update unit tests for logic changes (repository, crypto, import/export, ViewModels).
 5. **Report honestly.** If a build or test fails or a step was skipped, say so, with the output.
 6. **Update docs.** If behavior, structure, or known issues change, update `docs/codebase/CONCERNS.md` (and whichever other `docs/codebase/*` or `docs/ai/*` file is affected) in the same change.
 

@@ -44,10 +44,10 @@ jobs:
         run: ./gradlew spotlessCheck --console=plain
 
       - name: Static analysis (detekt + Compose rules)
-        run: ./gradlew :app:detektMain :app:detektTest --console=plain
+        run: ./gradlew detektMain detektTest --console=plain
 
       - name: Build, unit test, lint
-        run: ./gradlew :app:assembleDebug :app:testDebugUnitTest :app:lintDebug --console=plain
+        run: ./gradlew assembleDebug testDebugUnitTest lintDebug --console=plain
 
       - name: Upload reports
         if: failure()
@@ -55,8 +55,8 @@ jobs:
         with:
           name: reports
           path: |
-            app/build/reports/
-            app/build/test-results/
+            **/build/reports/
+            **/build/test-results/
           retention-days: 7
 
   dependency-submission:

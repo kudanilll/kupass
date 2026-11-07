@@ -1,4 +1,6 @@
 pluginManagement {
+    // Convention plugins (kupass.android.*) shared by every module.
+    includeBuild("build-logic")
     repositories {
         google {
             content {
@@ -25,3 +27,11 @@ dependencyResolutionManagement {
 rootProject.name = "kupass"
 
 include(":app")
+
+include(":core:data")
+
+include(":core:designsystem")
+
+include(":core:security")
+
+include(":core:testing")
