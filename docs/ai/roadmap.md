@@ -4,12 +4,12 @@
 >
 > Each item ID (e.g. `EN-06`) is meant to become one GitHub issue and one branch (`feat/…`, `fix/…`, `chore/…`). Update the checkboxes and IDs here as issues are created and merged.
 
-## 0. Progress (updated 2026-11-06)
+## 0. Progress (updated 2026-11-07)
 
 - **M3 Features in progress:** S-7.1 Password Generator partly done (cryptographically secure generator, accidental overwrite protection, lookalike character exclusion setting; open: custom length slider modal & strength meter).
 - **M1 Trustworthy Vault: done**, merged to `master` in PR #2: EN-00, EN-01, EN-03, EN-06 (+EN-06b), F-2.1, EN-04, S-3.1, S-3.2, EN-07, EN-05, S-2.4, S-2.5, S-3.3, plus a security-review fix for the app lock.
 - **M0 Foundation: done.** EN-02 (Spotless/ktfmt + detekt with Compose rules, 0 findings, enforced in CI) is on `build/format-and-static-analysis`.
-- **Next:** M2 (Polish & Light). F-7.2 Autofill v1 is done (2026-11-06); its follow-ups are listed in E7.
+- **Next:** M2 (Polish & Light). F-7.2 Autofill v1 is built on `feat/autofill`, which sits on top of the module split in `refactor/core-modules`. Neither branch is pushed yet. The autofill branch has only had a self-review, so it needs an independent review before merge. Its open problems are S-7.2a, S-7.2b and EN-7.2c in E7.
 
 ## 1. Overview
 
@@ -121,12 +121,13 @@ Confirmed decision, revised 2026-10-11: public launch/list/search/tabs/create; f
 
 ### Epic E4: Reliability & UX (M2, size M)
 
-| ID     | Type    | Title                                                                                                                                           | Pts | Pri | Blocked by | Source    |
-| ------ | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | --- | --- | ---------- | --------- |
-| S-4.1  | Story   | Undo delete via snackbar (in addition to the confirm dialog)                                                                                    | 3   | P1  | EN-05      | REL-3     |
-| S-4.2  | Story   | Localize the remaining hardcoded strings (EN + ID) and fix `ButtonCase`                                                                         | 2   | P1  | none       | REL-4     |
-| EN-4.3 | Enabler | `SettingsViewModel`: move prefs I/O out of composition. Remove the duplicate dynamic-color path if it's unneeded                                | 3   | P2  | EN-04      | Tech debt |
-| EN-4.4 | Enabler | Code hygiene: unused code/resources (keep the Favget hooks), the `TextField.kt` package mismatch, duplicated nav transitions, placeholder tests | 2   | P2  | EN-02      | Tech debt |
+| ID     | Type    | Title                                                                                                                                                                                                                                                                                   | Pts | Pri | Blocked by | Source    |
+| ------ | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- | --- | ---------- | --------- |
+| S-4.1  | Story   | Undo delete via snackbar (in addition to the confirm dialog)                                                                                                                                                                                                                            | 3   | P1  | EN-05      | REL-3     |
+| S-4.2  | Story   | Localize the remaining hardcoded strings (EN + ID) and fix `ButtonCase`                                                                                                                                                                                                                 | 2   | P1  | none       | REL-4     |
+| EN-4.3 | Enabler | `SettingsViewModel`: move prefs I/O out of composition. Remove the duplicate dynamic-color path if it's unneeded                                                                                                                                                                        | 3   | P2  | EN-04      | Tech debt |
+| EN-4.4 | Enabler | Code hygiene: unused code/resources (keep the Favget hooks), the `TextField.kt` package mismatch, duplicated nav transitions, placeholder tests                                                                                                                                         | 2   | P2  | EN-02      | Tech debt |
+| EN-4.5 | Enabler | Fix the flaky `PagerInteractionTest`. When NATIVE and LEGACY graphics-mode tests share one JVM, Robolectric 4.17 sometimes throws `FileSystemAlreadyExistsException` while copying fonts. Try Robolectric 4.18 once it is stable, or run the NATIVE-mode classes in their own test task | 2   | P2  | none       | CONCERNS  |
 
 ### Epic E5: Lightweight & Fast (M2, size S)
 
@@ -146,14 +147,17 @@ Confirmed decision, revised 2026-10-11: public launch/list/search/tabs/create; f
 
 ### Epic E7: Power Features (M3, size XL, to be split per feature)
 
-| ID     | Type    | Title                                                                                                                                                                                              | Pts | Pri | Blocked by | Source        |
-| ------ | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- | --- | ---------- | ------------- |
-| S-7.1  | Story   | Password generator: ✅ partly done (cryptographically secure generator, accidental overwrite protection, lookalike character exclusion setting). Open: custom length slider modal & strength meter | 5   | P2  | none       | SEC-7         |
-| F-7.2  | Feature | ✅ Done 2026-11-06 (v1): fill in apps and browsers after verification, generate-and-save on sign-up, save offer (Settings). Follow-ups: Credential Manager provider/passkeys, inline (keyboard) suggestions, browser signing-certificate check, updating an entry when its password changes                                                                              | 13+ | P1? | E2, E3     | FEAT-1        |
-| S-7.3  | Story   | ✅ Done 2026-09-19; revised 2026-09-21. Always-on favicons via Favget (public domain only, memory cached)                                                                                          | 5   | P2  | EN-01      | FEAT-2        |
-| S-7.4  | Story   | Categories/tags and favorites (proposed)                                                                                                                                                           | 5   | P3  | EN-03      | FEAT-3        |
-| S-7.5  | Story   | Adaptive list-detail layout for tablets/foldables (proposed)                                                                                                                                       | 5   | P3  | none       | FEAT-4        |
-| EN-7.6 | Enabler | Migrate Navigation 2.x (maintenance mode) → Navigation 3                                                                                                                                           | 5   | P3  | EN-04      | CONCERNS debt |
+| ID      | Type    | Title                                                                                                                                                                                                                                                                                                                                                       | Pts | Pri | Blocked by | Source        |
+| ------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- | --- | ---------- | ------------- |
+| S-7.1   | Story   | Password generator: ✅ partly done (cryptographically secure generator, accidental overwrite protection, lookalike character exclusion setting). Open: custom length slider modal & strength meter                                                                                                                                                          | 5   | P2  | none       | SEC-7         |
+| F-7.2   | Feature | Built 2026-11-06 (v1) on `feat/autofill`, not merged: fill in apps and browsers after verification, generate-and-save on sign-up, save offer (Settings). Open problems: S-7.2a, S-7.2b, EN-7.2c. Later: Credential Manager provider/passkeys, inline (keyboard) suggestions, browser signing-certificate check, updating an entry when its password changes | 13+ | P1? | E2, E3     | FEAT-1        |
+| S-7.2a  | Story   | Keep the username when a suggested password is saved. Android leaves typed text out of fill requests, so the entry only gets its username when the user taps Save on the system save prompt after submitting. If the prompt is dismissed, the entry has no username. One option: ask for the username on the generate screen                                | 3   | P2  | F-7.2      | CONCERNS      |
+| S-7.2b  | Story   | Autofill account picker: while a new search query runs, the full account list shows for a moment before the filtered results. Keep the previous results until the new ones arrive                                                                                                                                                                           | 1   | P3  | F-7.2      | Self-review   |
+| EN-7.2c | Test    | Autofill device QA that hasn't been run: sign-up and login forms in a native app, Firefox and other browsers, an API 27 emulator, Indonesian locale, dark theme, and auto-lock at 0 s and 5 min. Manual testing so far covers Chrome 149 on one emulator; unit tests cover the logic                                                                        | 2   | P1  | F-7.2      | QA            |
+| S-7.3   | Story   | ✅ Done 2026-09-19; revised 2026-09-21. Always-on favicons via Favget (public domain only, memory cached)                                                                                                                                                                                                                                                   | 5   | P2  | EN-01      | FEAT-2        |
+| S-7.4   | Story   | Categories/tags and favorites (proposed)                                                                                                                                                                                                                                                                                                                    | 5   | P3  | EN-03      | FEAT-3        |
+| S-7.5   | Story   | Adaptive list-detail layout for tablets/foldables (proposed)                                                                                                                                                                                                                                                                                                | 5   | P3  | none       | FEAT-4        |
+| EN-7.6  | Enabler | Migrate Navigation 2.x (maintenance mode) → Navigation 3                                                                                                                                                                                                                                                                                                    | 5   | P3  | EN-04      | CONCERNS debt |
 
 ## 4. Critical Path & Order
 
