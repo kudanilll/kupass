@@ -13,6 +13,7 @@
 | `core/data/schemas/`                                        | Room exported schemas (`<version>.json`), committed. Source of truth for migration tests | `core/data/build.gradle.kts` (`room { schemaDirectory }`) |
 | `core/designsystem/`                                        | `:core:designsystem`: Kupass theme (`Color`, `Theme`, `Type`) and the `res/font/` files | `core/designsystem/build.gradle.kts` |
 | `core/testing/`                                             | `:core:testing`: shared test fakes (`FakePasswordDao`, `MainDispatcherRule`), used only as `testImplementation` | `core/testing/build.gradle.kts` |
+| `feature/autofill/`                                         | `:feature:autofill`: Android `AutofillService`, unlock/generate activities, form parser, target matcher, autofill session | `feature/autofill/build.gradle.kts` |
 | `build-logic/`                                              | Included build with the convention plugins `kupass.android.application`, `kupass.android.library`, `kupass.android.compose` (SDK levels, Java 11, Robolectric args, detekt) | `settings.gradle.kts` (`includeBuild`) |
 | `gradle/`                                                   | Version catalog, wrapper, daemon JVM toolchain                                                                                                                                                                                                                                                                                                                                 | `libs.versions.toml`                                                                        |
 | `config/detekt/detekt.yml`                                  | detekt overrides on top of the defaults (Compose rules enabled)                                                                                                                                                                                                                                                                                                                | `build-logic/.../Detekt.kt`                                                                 |
@@ -30,7 +31,7 @@
 - Process entry: `App.kt` (`android:name=".App"`). It blocks screenshots on every Activity (`FLAG_SECURE`) and applies the saved locale, night mode, and dynamic colors.
 - UI entry: `MainActivity.kt`, the only exported launcher Activity. It installs splash/edge-to-edge, reattaches `BiometricPrompt` to the activity-retained authentication request, and always hosts public `MainAppScreen`. Sensitive destinations show `LockScreen` until their entry/account-bound grant permits screen/ViewModel creation. There is no global launch gate.
 - Navigation root: `ui/screens/MainAppScreen.kt` (`NavHost`, start destination `HomeBase`).
-- Secondary entry points: none (no services, receivers, providers, or workers in `AndroidManifest.xml`).
+- Secondary entry points: `KupassAutofillService` (bound only by the system through `BIND_AUTOFILL_SERVICE`) and the non-exported `AutofillUnlockActivity` / `AutofillGenerateActivity`, all in `:feature:autofill`. No receivers, providers, or workers.
 
 ## 3) Source Map
 

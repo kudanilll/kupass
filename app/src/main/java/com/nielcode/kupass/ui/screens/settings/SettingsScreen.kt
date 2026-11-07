@@ -65,6 +65,7 @@ private enum class SettingsDialog {
     Theme,
     DynamicColor,
     ExcludeLookalike,
+    OfferToSave,
     Restart,
 }
 
@@ -103,6 +104,10 @@ fun SettingsScreen(
                     onAutoLockClick = { openDialog = SettingsDialog.AutoLock },
                     onExcludeLookalikeClick = { openDialog = SettingsDialog.ExcludeLookalike },
                 )
+                AutofillSection(
+                    onAllowBackground = onAllowBackground,
+                    onOfferToSaveClick = { openDialog = SettingsDialog.OfferToSave },
+                )
                 AppearanceSection(
                     themeIndex = settings.theme,
                     dynamicColor = settings.dynamicColor,
@@ -135,7 +140,7 @@ fun SettingsScreen(
 
 /** Current settings values, persisted and applied as soon as they change. */
 @Stable
-private class SettingsController(
+internal class SettingsController(
     private val context: Context,
     private val prefs: PreferenceManager,
 ) {
@@ -152,6 +157,9 @@ private class SettingsController(
         private set
 
     var excludeLookalike by mutableStateOf(prefs.excludeLookalike)
+        private set
+
+    var offerToSaveLogins by mutableStateOf(prefs.offerToSaveLogins)
         private set
 
     fun selectLanguage(index: Int) {
@@ -188,6 +196,12 @@ private class SettingsController(
         if (enabled == excludeLookalike) return
         prefs.excludeLookalike = enabled
         excludeLookalike = enabled
+    }
+
+    fun selectOfferToSaveLogins(enabled: Boolean) {
+        if (enabled == offerToSaveLogins) return
+        prefs.offerToSaveLogins = enabled
+        offerToSaveLogins = enabled
     }
 }
 
@@ -359,18 +373,34 @@ private fun SettingsDialogHost(
                     if (settings.selectDynamicColor(it)) onRestartRequest() else onDismiss()
                 },
             )
-        SettingsDialog.ExcludeLookalike ->
-            BinaryChoiceDialog(
-                title = stringResource(R.string.settings_exclude_lookalike_title),
-                enabled = settings.excludeLookalike,
-                onDismiss = onDismiss,
-                onConfirm = {
-                    settings.selectExcludeLookalike(it)
-                    onDismiss()
-                },
-            )
+        SettingsDialog.ExcludeLookalike,
+        SettingsDialog.OfferToSave -> ToggleSettingDialog(dialog, settings, onDismiss)
         SettingsDialog.Restart -> RestartDialog()
     }
+}
+
+/** On/off settings that apply at once: lookalike exclusion and the autofill save offer. */
+@Composable
+private fun ToggleSettingDialog(
+    dialog: SettingsDialog,
+    settings: SettingsController,
+    onDismiss: () -> Unit,
+) {
+    val lookalike = dialog == SettingsDialog.ExcludeLookalike
+    BinaryChoiceDialog(
+        title =
+            stringResource(
+                if (lookalike) R.string.settings_exclude_lookalike_title
+                else R.string.settings_offer_save
+            ),
+        enabled = if (lookalike) settings.excludeLookalike else settings.offerToSaveLogins,
+        onDismiss = onDismiss,
+        onConfirm = {
+            if (lookalike) settings.selectExcludeLookalike(it)
+            else settings.selectOfferToSaveLogins(it)
+            onDismiss()
+        },
+    )
 }
 
 @Composable

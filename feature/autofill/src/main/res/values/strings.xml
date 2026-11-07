@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<resources>
+    <string name="autofill_service_label">Kupass</string>
+    <string name="autofill_unlock_title">Kupass</string>
+    <string name="autofill_unlock_subtitle">Unlock to fill</string>
+    <string name="autofill_generate_title">Suggest strong password</string>
+    <string name="autofill_generate_subtitle">Saved to Kupass automatically</string>
+    <string name="autofill_search_title">Search Kupass</string>
+    <string name="autofill_no_username">(no username)</string>
+    <string name="autofill_save_failed">Kupass couldn\'t save this sign-in.</string>
+    <string name="autofill_generate_failed">Couldn\'t save the password, so nothing was filled.</string>
+    <string name="autofill_prompt_title">Unlock Kupass</string>
+    <string name="autofill_prompt_subtitle">Fill this sign-in</string>
+    <string name="autofill_search_placeholder">Search accounts</string>
+    <string name="autofill_empty">No accounts found</string>
+    <string name="autofill_no_lock_screen">Set a device PIN, pattern, or password to fill saved sign-ins.</string>
+</resources>

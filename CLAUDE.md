@@ -31,9 +31,12 @@ Screen (Compose) -> ViewModel(Factory) -> PasswordRepository -> PasswordDao (Roo
                                               ├─ CryptoManager (Keystore AES-GCM, every field, `kp2:` format)
                                               └─ VaultCache (by ciphertext fingerprint) + VaultSnapshotStore (encrypted, no_backup)
 Backup: BackupCodec (PBKDF2-HMAC-SHA256 + AES-256-GCM, password-protected, portable)
+Autofill: KupassAutofillService → locked "Kupass" rows (no values) | unlock (BiometricPrompt) → memory-only AutofillSession
+          (auto-lock timeout) → matching accounts; sign-up → AutofillGenerateActivity saves, then fills
 
 Modules: :app → :core:data (Room, repository, caches, prefs) → :core:security (CryptoManager, PasswordGenerator, AppLock)
          :app → :core:designsystem (theme, fonts); :core:testing = shared test fakes (testImplementation only)
+         :app → :feature:autofill → :core:data, :core:security, :core:designsystem (via CoreContainerProvider)
          build-logic/ = convention plugins kupass.android.{application,library,compose}. Kotlin packages are unchanged.
 ```
 

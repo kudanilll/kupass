@@ -5,17 +5,22 @@ import android.app.Application
 import android.os.Bundle
 import android.view.WindowManager
 import com.google.android.material.color.DynamicColors
+import com.nielcode.kupass.data.CoreContainer
+import com.nielcode.kupass.data.CoreContainerProvider
 import com.nielcode.kupass.data.local.prefs.PreferenceManager
 import com.nielcode.kupass.di.AppContainer
 import com.nielcode.kupass.ui.theme.AppearanceSettings
 import com.nielcode.kupass.utils.AppConfig
 import kotlinx.coroutines.launch
 
-class App : Application() {
+class App : Application(), CoreContainerProvider {
 
     /** Application-wide dependencies. See [AppContainer]. */
     lateinit var container: AppContainer
         private set
+
+    override val coreContainer: CoreContainer
+        get() = container
 
     override fun onCreate() {
         super.onCreate()

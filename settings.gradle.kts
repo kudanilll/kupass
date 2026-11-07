@@ -35,3 +35,5 @@ include(":core:designsystem")
 include(":core:security")
 
 include(":core:testing")
+
+include(":feature:autofill")

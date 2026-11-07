@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<resources>
+    <string name="autofill_service_label">Kupass</string>
+    <string name="autofill_unlock_title">Kupass</string>
+    <string name="autofill_unlock_subtitle">Buka untuk mengisi</string>
+    <string name="autofill_generate_title">Sarankan kata sandi kuat</string>
+    <string name="autofill_generate_subtitle">Otomatis disimpan ke Kupass</string>
+    <string name="autofill_search_title">Cari di Kupass</string>
+    <string name="autofill_no_username">(tanpa nama pengguna)</string>
+    <string name="autofill_save_failed">Kupass gagal menyimpan data masuk ini.</string>
+    <string name="autofill_generate_failed">Kata sandi gagal disimpan, jadi tidak ada yang diisi.</string>
+    <string name="autofill_prompt_title">Buka Kupass</string>
+    <string name="autofill_prompt_subtitle">Isi data masuk ini</string>
+    <string name="autofill_search_placeholder">Cari akun</string>
+    <string name="autofill_empty">Akun tidak ditemukan</string>
+    <string name="autofill_no_lock_screen">Atur PIN, pola, atau kata sandi perangkat untuk mengisi data masuk yang tersimpan.</string>
+</resources>

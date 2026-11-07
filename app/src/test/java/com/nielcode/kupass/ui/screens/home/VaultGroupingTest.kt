@@ -56,6 +56,15 @@ class VaultGroupingTest {
     }
 
     @Test
+    fun `plain android url groups by package like google facet`() {
+        assertEquals(
+            VaultGroupKey(VaultGroupKey.Namespace.AndroidPackage, "com.example.app"),
+            key("android://com.example.app"),
+        )
+        assertEquals(key("android://cert@com.example.app/"), key("android://com.example.app"))
+    }
+
+    @Test
     fun `missing bad and nonweb URLs fall back to trimmed name without com guessing`() {
         listOf(
                 "",
