@@ -4,7 +4,7 @@
 
 ## 1) Architectural Style
 
-- **Primary style:** single-module, layered MVVM (UI → ViewModel → Repository → DAO), with feature folders inside the UI layer.
+- **Primary style:** multi-module (`:app` plus `:core:security`, `:core:data`, `:core:designsystem`, test-only `:core:testing`; convention plugins in `build-logic/`), layered MVVM (UI → ViewModel → Repository → DAO), with feature folders inside the UI layer.
 - **Why:** each screen has a `*ViewModel : ViewModel` exposing `StateFlow`, constructed through its `Factory` from `App.container` (`di/AppContainer`). All ViewModels go through `PasswordRepository`, which wraps `PasswordDao`. There is no domain/use-case layer and no DI framework.
 - **Primary constraints:**
   1. Offline only: all data lives in the app sandbox (Room + SharedPreferences) with no backend.
@@ -90,7 +90,7 @@ Multi-account groups reuse `PasswordListItem` with a primary-color count badge a
 - `app/src/main/java/com/nielcode/kupass/App.kt`, `MainActivity.kt`
 - `app/src/main/java/com/nielcode/kupass/ui/screens/MainAppScreen.kt`
 - `app/src/main/java/com/nielcode/kupass/ui/screens/home/HomeViewModel.kt`, `editor/PasswordEditorViewModel.kt`, `detail/PasswordDetailViewModel.kt`
-- `app/src/main/java/com/nielcode/kupass/data/repository/PasswordRepository.kt`
-- `app/src/main/java/com/nielcode/kupass/data/local/db/KupassDatabase.kt`, `PasswordDao.kt`
-- `app/src/main/java/com/nielcode/kupass/security/CryptoManager.kt`, `data/backup/BackupCodec.kt`
-- `app/src/main/java/com/nielcode/kupass/ui/theme/Theme.kt`
+- `core/data/src/main/java/com/nielcode/kupass/data/repository/PasswordRepository.kt`
+- `core/data/src/main/java/com/nielcode/kupass/data/local/db/KupassDatabase.kt`, `PasswordDao.kt`
+- `core/security/src/main/java/com/nielcode/kupass/security/CryptoManager.kt`, `app/src/main/java/com/nielcode/kupass/data/backup/BackupCodec.kt`
+- `core/designsystem/src/main/java/com/nielcode/kupass/ui/theme/Theme.kt`

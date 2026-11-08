@@ -12,7 +12,7 @@
 
 ## Checklist
 
-- [ ] I ran `./gradlew spotlessApply`, and `./gradlew spotlessCheck :app:detektMain :app:detektTest :app:testDebugUnitTest :app:lintDebug :app:assembleDebug` passes.
+- [ ] I ran `./gradlew spotlessApply`, and `./gradlew spotlessCheck detektMain detektTest testDebugUnitTest lintDebug assembleDebug` passes.
 - [ ] Logic changes come with new or updated tests.
 - [ ] New user-facing text is in both `values/strings.xml` and `values-in/strings.xml`.
 - [ ] Room schema changes include a `Migration` and a migration test (or there is no schema change).

@@ -90,7 +90,8 @@ jobs:
           fi
 
       - name: Test
-        run: ./gradlew :app:testReleaseUnitTest --console=plain
+        # AGP 9 only creates unit tests for the tested (debug) build type.
+        run: ./gradlew testDebugUnitTest --console=plain
 
       - name: Build release APK
         run: ./gradlew :app:assembleRelease --console=plain

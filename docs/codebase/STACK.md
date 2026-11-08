@@ -7,9 +7,9 @@
 | Area                  | Value                                                                                                             | Evidence                                                                         |
 | --------------------- | ----------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
 | Primary language      | Kotlin 2.4.21 (33 `.kt` files, ~6.4k LOC total repo)                                                              | `gradle/libs.versions.toml` (`kotlin`), scan CODE METRICS                        |
-| Runtime               | Android. minSdk 27 (8.1), compileSdk/targetSdk 37                                                                 | `app/build.gradle.kts`                                                           |
-| JVM                   | Gradle daemon toolchain JDK 21 (foojay auto-provisioned). Bytecode target Java 11                                 | `gradle/gradle-daemon-jvm.properties`, `app/build.gradle.kts` (`compileOptions`) |
-| Build system          | Gradle 9.8.2 (Kotlin DSL), AGP 9.5.0 (max API 37), single module `:app`                                           | `gradle/wrapper/gradle-wrapper.properties`, `settings.gradle.kts`                |
+| Runtime               | Android. minSdk 27 (8.1), compileSdk/targetSdk 37                                                                 | `build-logic/convention/src/main/kotlin/com/nielcode/kupass/buildlogic/KotlinAndroid.kt`, `app/build.gradle.kts` (targetSdk) |
+| JVM                   | Gradle daemon toolchain JDK 21 (foojay auto-provisioned). Bytecode target Java 11                                 | `gradle/gradle-daemon-jvm.properties`, `build-logic/convention/src/main/kotlin/com/nielcode/kupass/buildlogic/KotlinAndroid.kt` |
+| Build system          | Gradle 9.8.2 (Kotlin DSL), AGP 9.5.0 (max API 37), modules `:app`, `:core:security`, `:core:data`, `:core:designsystem`, `:core:testing` (convention plugins in `build-logic/`)                                           | `gradle/wrapper/gradle-wrapper.properties`, `settings.gradle.kts`                |
 | Dependency management | Gradle version catalog `gradle/libs.versions.toml`, repos `google()` + `mavenCentral()` (`FAIL_ON_PROJECT_REPOS`) | `settings.gradle.kts`                                                            |
 | App identity          | `com.nielcode.kupass`, versionName `3.1.0`, versionCode `5`                                                       | `app/build.gradle.kts`                                                           |
 | License               | GPL-3.0                                                                                                           | `LICENSE`, `README.md`                                                           |
@@ -33,7 +33,7 @@
 | `androidx.biometric`                                                                            | 1.1.0                        | Fresh native account/export authentication, compatible credential fallback, rotation reattachment | `MainActivity.kt`, `EntryAuthenticationViewModel.kt` |
 | `lifecycle-runtime-compose`                                                                     | 2.11.0                       | `collectAsStateWithLifecycle`                                                                     | `ui/screens/**`                                      |
 
-Bundled assets that affect APK size: `res/font/googlesansflex.ttf` (236 KB, instanced from the ~3.9 MB variable font to opsz 18 / wght 400–700 with fonttools `varLib.instancer`) and `res/font/heming.ttf` (~30 KB), referenced in `ui/theme/Type.kt`.
+Bundled assets that affect APK size: `core/designsystem/src/main/res/font/googlesansflex.ttf` (236 KB, instanced from the ~3.9 MB variable font to opsz 18 / wght 400–700 with fonttools `varLib.instancer`) and `core/designsystem/src/main/res/font/heming.ttf` (~30 KB), referenced in `ui/theme/Type.kt`.
 
 ## 3) Development Toolchain
 
@@ -41,13 +41,13 @@ Bundled assets that affect APK size: `res/font/googlesansflex.ttf` (236 KB, inst
 | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
 | JUnit 4.13.2                                                                   | Unit tests                                                                                                                                                                                                                            | `libs.versions.toml`                               |
 | kotlinx-coroutines-test 1.11.0                                                 | ViewModel/repository tests (`runTest`, `MainDispatcherRule`)                                                                                                                                                                          | `libs.versions.toml`                               |
-| `room-testing` 2.8.5 + `androidx.room` Gradle plugin                           | `MigrationTestHelper`, schema export to `app/schemas/`                                                                                                                                                                                | `app/build.gradle.kts`                             |
+| `room-testing` 2.8.5 + `androidx.room` Gradle plugin                           | `MigrationTestHelper`, schema export to `core/data/schemas/`                                                                                                                                                                                | `core/data/build.gradle.kts`                             |
 | Robolectric 4.17 (supports SDK 37)                                             | Android framework on the JVM for unit tests                                                                                                                                                                                           | `app/build.gradle.kts`                             |
 | AndroidX Test (`junit` 1.3.0, `espresso-core` 3.7.0, `compose-ui-test-junit4`) | Instrumented tests                                                                                                                                                                                                                    | `libs.versions.toml`                               |
 | R8 (`isMinifyEnabled`, `isShrinkResources` in release)                         | Shrinking/obfuscation                                                                                                                                                                                                                 | `app/build.gradle.kts`                             |
-| Android Lint                                                                   | Static checks, default config (0 errors)                                                                                                                                                                                              | `./gradlew :app:lintDebug`                         |
+| Android Lint                                                                   | Static checks, default config (0 errors)                                                                                                                                                                                              | `./gradlew lintDebug` (every module)                         |
 | Spotless 8.10.4 + ktfmt 0.64 (kotlinlang style)                                | Formatting for `*.kt` / `*.gradle.kts`                                                                                                                                                                                                | root `build.gradle.kts`                            |
-| detekt 2.0.0-alpha.6 + compose-rules 0.6.8                                     | Static analysis with type resolution, no baseline                                                                                                                                                                                     | `app/build.gradle.kts`, `config/detekt/detekt.yml` |
+| detekt 2.0.0-alpha.6 + compose-rules 0.6.8                                     | Static analysis with type resolution, no baseline                                                                                                                                                                                     | `build-logic/convention/src/main/kotlin/com/nielcode/kupass/buildlogic/Detekt.kt`, `config/detekt/detekt.yml` |
 | `kotlin.code.style=official`                                                   | Kotlin style hint for the IDE                                                                                                                                                                                                         | `gradle.properties`                                |
 | CI/CD                                                                          | Release workflow (`.github/workflows/release.yml`, tag `v*`). Dependabot (`.github/dependabot.yml`). `ci.yml`: spotlessCheck + detekt + build + unit tests + lint on push/PR to `master`, and dependency-graph submission on `master` | `.github/`                                         |
 
@@ -56,9 +56,9 @@ Bundled assets that affect APK size: `res/font/googlesansflex.ttf` (236 KB, inst
 ```bash
 ./gradlew :app:assembleDebug              # build debug APK
 ./gradlew :app:assembleRelease            # needs release-key.jks + secrets.properties (falls back to debug signing)
-./gradlew :app:testDebugUnitTest          # JVM/Robolectric unit tests
-./gradlew :app:lintDebug                  # Android lint
-./gradlew :app:connectedDebugAndroidTest  # instrumented tests (device/emulator)
+./gradlew testDebugUnitTest               # JVM/Robolectric unit tests, every module
+./gradlew lintDebug                       # Android lint, every module
+./gradlew connectedDebugAndroidTest       # instrumented tests, every module (emulator only: :app's run uninstalls Kupass)
 ```
 
 ## 5) Environment and Config
@@ -75,5 +75,5 @@ Bundled assets that affect APK size: `res/font/googlesansflex.ttf` (236 KB, inst
 - `app/build.gradle.kts`
 - `settings.gradle.kts`, `build.gradle.kts`, `gradle.properties`
 - `gradle/wrapper/gradle-wrapper.properties`, `gradle/gradle-daemon-jvm.properties`
-- `app/src/main/java/com/nielcode/kupass/App.kt`, `MainActivity.kt`, `ui/theme/Type.kt`
+- `app/src/main/java/com/nielcode/kupass/App.kt`, `MainActivity.kt`, `core/designsystem/src/main/java/com/nielcode/kupass/ui/theme/Type.kt`
 - `docs/codebase/.codebase-scan.txt` (CODE METRICS, CI/CD sections)

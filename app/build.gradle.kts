@@ -3,18 +3,14 @@ import org.gradle.api.tasks.compile.JavaCompile
 import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
 plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kupass.android.application)
+    alias(libs.plugins.kupass.android.compose)
     alias(libs.plugins.kotlin.serialization)
-    alias(libs.plugins.ksp)
     alias(libs.plugins.oss.licenses)
-    alias(libs.plugins.room)
-    alias(libs.plugins.detekt)
 }
 
 android {
     namespace = "com.nielcode.kupass"
-    compileSdk = 37
 
     val properties = Properties()
     val secretsFile = rootProject.file("secrets.properties")
@@ -24,7 +20,6 @@ android {
 
     defaultConfig {
         applicationId = "com.nielcode.kupass"
-        minSdk = 27
         targetSdk = 37
         versionCode = 5
         versionName = "3.1.0"
@@ -83,43 +78,15 @@ android {
         }
     }
 
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
-
     testOptions {
-        // Robolectric needs merged resources/manifest (Compose UI tests, UiSnapshotTest).
-        unitTests.isIncludeAndroidResources = true
-        // Robolectric's SDK 37 runtime reaches into java.io.FileDescriptor via jdk.internal.access.
         unitTests.all {
-            it.jvmArgs(
-                "--add-opens=java.base/java.io=ALL-UNNAMED",
-                "--add-exports=java.base/jdk.internal.access=ALL-UNNAMED",
-            )
             // UiSnapshotTest uses Robolectric native graphics, which can't share a JVM with the
             // other sandboxes. Run it on its own: -Pkupass.snapshots --tests "*UiSnapshotTest".
             if (!project.hasProperty("kupass.snapshots")) it.exclude("**/UiSnapshotTest*")
         }
     }
 
-    buildFeatures {
-        compose = true
-        buildConfig = true
-    }
-}
-
-room {
-    // Exported schemas are committed and used by MigrationTestHelper (added to androidTest assets).
-    schemaDirectory("$projectDir/schemas")
-}
-
-detekt {
-    // Default rules plus the overrides in config/detekt/detekt.yml. No baseline: findings get
-    // fixed.
-    config.setFrom(rootProject.file("config/detekt/detekt.yml"))
-    buildUponDefaultConfig = true
-    parallel = true
+    buildFeatures { buildConfig = true }
 }
 
 // Detekt's Android classpath omits generated Java bytecode, including BuildConfig.
@@ -141,10 +108,12 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.room.testing)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
+    implementation(project(":core:data"))
+    implementation(project(":core:designsystem"))
+    implementation(project(":core:security"))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.biometric)
@@ -159,14 +128,11 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.navigation.compose)
-    implementation(libs.androidx.room.ktx)
-    implementation(libs.androidx.room.runtime)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.material)
     implementation(libs.play.services.oss.licenses)
     implementation(platform(libs.androidx.compose.bom))
-    detektPlugins(libs.compose.rules.detekt)
-    ksp(libs.androidx.room.compiler)
+    testImplementation(project(":core:testing"))
     testImplementation(libs.junit)
     testImplementation(libs.androidx.compose.ui.test.junit4)
     testImplementation(platform(libs.androidx.compose.bom))

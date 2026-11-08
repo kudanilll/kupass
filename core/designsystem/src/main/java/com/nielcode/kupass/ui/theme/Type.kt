@@ -6,7 +6,7 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
-import com.nielcode.kupass.R
+import com.nielcode.kupass.core.designsystem.R
 
 @OptIn(ExperimentalTextApi::class)
 val googleSansFlexFontFamily: FontFamily =
