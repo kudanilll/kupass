@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.AP
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.nielcode.kupass.App
 import com.nielcode.kupass.BuildConfig
+import com.nielcode.kupass.data.CoreContainer
 import com.nielcode.kupass.data.local.cache.SiteIconStore
 import com.nielcode.kupass.data.local.cache.VaultSnapshotStore
 import com.nielcode.kupass.data.local.db.KupassDatabase
@@ -26,20 +27,20 @@ import kotlinx.coroutines.SupervisorJob
 class AppContainer(
     context: Context,
     backgroundDispatcher: CoroutineDispatcher = Dispatchers.Default,
-) {
+) : CoreContainer {
     private val appContext = context.applicationContext
 
     /** Process-lifetime scope for background maintenance (never tied to a screen). */
     val applicationScope: CoroutineScope = CoroutineScope(SupervisorJob() + backgroundDispatcher)
 
-    val passwordRepository: PasswordRepository by lazy {
+    override val passwordRepository: PasswordRepository by lazy {
         PasswordRepository(
             KupassDatabase.getInstance(appContext).passwordDao(),
             snapshotStore = VaultSnapshotStore(File(appContext.noBackupFilesDir, "vault-cache")),
         )
     }
 
-    val preferenceManager: PreferenceManager by lazy { PreferenceManager(appContext) }
+    override val preferenceManager: PreferenceManager by lazy { PreferenceManager(appContext) }
 
     /** Site icons; fetches gracefully return null when the build has no Favget API key. */
     val siteIcons: SiteIconRepository by lazy {

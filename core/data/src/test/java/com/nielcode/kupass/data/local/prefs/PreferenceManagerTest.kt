@@ -27,4 +27,15 @@ class PreferenceManagerTest {
         prefs.excludeLookalike = false
         assertFalse(prefs.excludeLookalike)
     }
+
+    @Test
+    fun `offer to save logins defaults to on and persists`() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val prefs = PreferenceManager(context)
+
+        assertTrue(prefs.offerToSaveLogins)
+
+        prefs.offerToSaveLogins = false
+        assertFalse(PreferenceManager(context).offerToSaveLogins)
+    }
 }

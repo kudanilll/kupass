@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Autofill: Kupass fills saved sign-ins in apps and supported browsers after fingerprint/face or device-credential verification, and stays unlocked for your auto-lock time. Before verification it shows nothing but "Kupass".
+- On sign-up forms, Kupass suggests a strong password and saves it before filling it; the username is added when you confirm the save prompt. Kupass can also offer to save new sign-ins (Settings › Autofill, on by default).
 - Accidental password overwrite protection in the password editor: clicking the generator button when a password is already present displays a confirmation dialog before replacing it.
 - Setting to exclude lookalike and ambiguous characters (O, 0, I, l, 1, |) from generated passwords in Security settings.
 - Instant password generator on the password editor screen: generate strong, cryptographically secure 16-character passwords using a dice button next to the password field.

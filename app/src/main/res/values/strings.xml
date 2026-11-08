@@ -141,6 +141,13 @@
     <string name="auto_lock_immediately">Immediately</string>
     <string name="settings_exclude_lookalike_title">Exclude lookalike characters</string>
     <string name="settings_exclude_lookalike_summary">Avoid confusing characters such as 0, O, 1, l, and I in generated passwords</string>
+    <string name="settings_autofill">Autofill</string>
+    <string name="settings_autofill_service">Autofill service</string>
+    <string name="settings_autofill_on">Kupass fills sign-ins</string>
+    <string name="settings_autofill_off">Off. Tap to choose Kupass</string>
+    <string name="settings_offer_save">Offer to save logins</string>
+    <string name="settings_offer_save_desc">Ask to save sign-ins Kupass doesn\'t know yet</string>
+    <string name="settings_autofill_chrome_hint">In Chrome, turn on Settings › Autofill services › Autofill using another service.</string>
     <string name="lock_title">Session is locked</string>
     <string name="lock_message">Unlock to view or edit accounts until the session locks after your background timeout. Browsing and creating entries stay available.</string>
     <string name="lock_button_unlock">Unlock</string>

@@ -141,6 +141,13 @@
     <string name="auto_lock_immediately">Segera</string>
     <string name="settings_exclude_lookalike_title">Kecualikan karakter ambigu</string>
     <string name="settings_exclude_lookalike_summary">Hindari karakter mirip seperti 0, O, 1, l, dan I pada kata sandi yang dibuat</string>
+    <string name="settings_autofill">Isi otomatis</string>
+    <string name="settings_autofill_service">Layanan isi otomatis</string>
+    <string name="settings_autofill_on">Kupass mengisi data masuk</string>
+    <string name="settings_autofill_off">Nonaktif. Ketuk untuk memilih Kupass</string>
+    <string name="settings_offer_save">Tawarkan simpan login</string>
+    <string name="settings_offer_save_desc">Tanya untuk menyimpan login yang belum ada di Kupass</string>
+    <string name="settings_autofill_chrome_hint">Di Chrome, aktifkan Setelan › Layanan isi otomatis › Isi otomatis menggunakan layanan lain.</string>
     <string name="lock_title">Sesi terkunci</string>
     <string name="lock_message">Buka kunci untuk melihat atau mengubah akun sampai sesi terkunci setelah batas waktu di latar belakang. Jelajahi dan tambah akun tetap tersedia.</string>
     <string name="lock_button_unlock">Buka kunci</string>
