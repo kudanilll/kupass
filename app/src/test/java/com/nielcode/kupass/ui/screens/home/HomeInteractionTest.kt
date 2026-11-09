@@ -293,6 +293,22 @@ class HomeInteractionTest {
     }
 
     @Test
+    fun `clearing a search without results brings the site rows back`() {
+        val sites =
+            (1L..40L).map {
+                account(it, "user$it").copy(siteName = "Site$it", url = "https://site$it.test")
+            }
+        showHome(accounts = sites, grouped = true)
+        val search = compose.onNode(hasSetTextAction())
+        search.performTouchInput { click() }
+        search.performTextInput("zzqq")
+        compose.onNodeWithText("No results").assertIsDisplayed()
+        compose.onNodeWithContentDescription("Clear search").performClick()
+        compose.onNodeWithText("Site1").assertIsDisplayed()
+        compose.onNodeWithText("Site10").assertIsDisplayed()
+    }
+
+    @Test
     fun `search empty states and IME close retain the query without any expanded overlay`() {
         showHome()
         val search = compose.onNode(hasSetTextAction())

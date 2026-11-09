@@ -179,6 +179,9 @@ private fun LazyListScope.groupRows(
 ) {
     items(groups, key = { it.key.lazyKey }, contentType = { "entry" }) { group ->
         val account = group.accounts.first()
+        // Fade only: under the pinned search header, a placement animation fed back on itself when
+        // many rows appeared at once (clearing a search) and threw them off screen.
+        val rowAnimation = Modifier.animateItem(placementSpec = null)
         if (group.accounts.size > 1) {
             PasswordListItem(
                 title = account.siteName,
@@ -187,7 +190,7 @@ private fun LazyListScope.groupRows(
                 onClick = { onGroupClick(group.accounts.minOf { it.id }) },
                 icon = rememberSiteIcon(account, siteIcons),
                 accountCount = group.accounts.size,
-                modifier = Modifier.animateItem(),
+                modifier = rowAnimation,
             )
         } else {
             SwipeToDeleteRow(
@@ -195,7 +198,7 @@ private fun LazyListScope.groupRows(
                 siteIcons = siteIcons,
                 onClick = { onItemClick(account) },
                 onDelete = { onDelete(account) },
-                modifier = Modifier.animateItem(),
+                modifier = rowAnimation,
             )
         }
     }
