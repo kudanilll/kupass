@@ -26,6 +26,7 @@ Engineering guidelines for Kupass. When an API detail matters, confirm it agains
 ## Jetpack Compose
 
 - Keep screens stateless where possible. Hoist state to ViewModels and expose a single `StateFlow<UiState>` per screen.
+- Text that a `TextField` edits is the exception. Give the field a `TextFieldState` (the state-based `TextField(state = ...)`) and hold it in the ViewModel when the ViewModel needs the text, as `HomeViewModel.searchState` does. A `String` handed back to a value-based field arrives late when it goes through a `StateFlow` or a lazy list item, and the field then drops characters or puts the cursor back at the start.
 - Collect with `collectAsStateWithLifecycle()` (lifecycle-runtime-compose) rather than `collectAsState()`.
 - Give `LazyColumn` items stable keys (`key = { it.id }`, already done), and avoid heavy work inside item lambdas.
 - Use `remember`/`derivedStateOf` for derived values. Don't read `SharedPreferences` or do I/O in composition.

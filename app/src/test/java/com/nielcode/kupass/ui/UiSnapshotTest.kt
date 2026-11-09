@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -107,8 +108,7 @@ class UiSnapshotTest {
         snapshot("home_no_results") {
             HomeScreen(
                 passwords = emptyList(),
-                searchQuery = "bank",
-                onSearchQueryChange = {},
+                searchState = rememberTextFieldState("bank"),
                 onDeletePassword = {},
                 onNavigateToDetail = {},
             )
@@ -163,8 +163,7 @@ class UiSnapshotTest {
         HomeScreen(
             passwords = passwords,
             siteIcons = siteIcons,
-            searchQuery = "",
-            onSearchQueryChange = {},
+            searchState = rememberTextFieldState(),
             onDeletePassword = {},
             onNavigateToDetail = {},
             onNavigateToGroup = {},

@@ -3,6 +3,7 @@ package com.nielcode.kupass.ui.screens.home
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -23,8 +24,7 @@ import com.nielcode.kupass.ui.screens.pagerPageInsets
 @Composable
 fun HomeScreen(
     passwords: List<PasswordEntity>,
-    searchQuery: String,
-    onSearchQueryChange: (String) -> Unit,
+    searchState: TextFieldState,
     onDeletePassword: (PasswordEntity) -> Unit,
     onNavigateToDetail: (Long) -> Unit,
     modifier: Modifier = Modifier,
@@ -53,8 +53,7 @@ fun HomeScreen(
         innerPadding ->
         VaultList(
             passwords = passwords,
-            query = searchQuery,
-            onQueryChange = onSearchQueryChange,
+            search = searchState,
             searchActive = isSearchActive,
             onSearchActiveChange = { isSearchActive = it },
             onItemClick = { onNavigateToDetail(it.id) },

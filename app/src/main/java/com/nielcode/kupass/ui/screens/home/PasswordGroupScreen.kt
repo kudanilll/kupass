@@ -80,8 +80,6 @@ fun PasswordGroupScreen(
         } else {
             VaultList(
                 passwords = accounts,
-                query = "",
-                onQueryChange = {},
                 searchActive = false,
                 onSearchActiveChange = {},
                 onItemClick = { onNavigateToDetail(it.id) },
@@ -90,7 +88,6 @@ fun PasswordGroupScreen(
                 contentPadding = PaddingValues(bottom = 16.dp),
                 siteIcons = siteIcons,
                 showHeadline = false,
-                showSearch = false,
             )
         }
     }

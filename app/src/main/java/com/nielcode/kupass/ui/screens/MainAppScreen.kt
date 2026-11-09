@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -166,7 +167,6 @@ fun MainPagerScreen(
 ) {
     val authState by authentication.state.collectAsStateWithLifecycle()
     val vault by homeViewModel.uiState.collectAsStateWithLifecycle()
-    val searchQuery by homeViewModel.searchQuery.collectAsStateWithLifecycle()
     val importPrompt by backupViewModel.importPrompt.collectAsStateWithLifecycle()
     val backupBusy by backupViewModel.backupBusy.collectAsStateWithLifecycle()
     val backupOperation by backupViewModel.operation.collectAsStateWithLifecycle()
@@ -203,9 +203,8 @@ fun MainPagerScreen(
         authState.pending != null || authState.nativeRequest != null || authState.export != null
     MainPagerContent(
         vault = vault,
-        searchQuery = searchQuery,
+        searchState = homeViewModel.searchState,
         siteIcons = siteIcons,
-        onSearchQueryChange = homeViewModel::onSearchQueryChange,
         onDeletePassword = homeViewModel::deletePassword,
         onNavigateToDetail = onNavigateToDetail,
         onNavigateToGroup = onNavigateToGroup,
@@ -225,9 +224,8 @@ fun MainPagerScreen(
 @Composable
 private fun MainPagerContent(
     vault: VaultUiState,
-    searchQuery: String,
+    searchState: TextFieldState,
     siteIcons: SiteIcons,
-    onSearchQueryChange: (String) -> Unit,
     onDeletePassword: (PasswordEntity) -> Unit,
     onNavigateToDetail: (Long) -> Unit,
     onNavigateToGroup: (Long) -> Unit,
@@ -248,8 +246,7 @@ private fun MainPagerContent(
                 val ready = vault as? VaultUiState.Ready
                 HomeScreen(
                     passwords = ready?.all.orEmpty(),
-                    searchQuery = searchQuery,
-                    onSearchQueryChange = onSearchQueryChange,
+                    searchState = searchState,
                     onDeletePassword = onDeletePassword,
                     onNavigateToDetail = onNavigateToDetail,
                     loading = ready == null,

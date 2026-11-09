@@ -1,6 +1,8 @@
 package com.nielcode.kupass.ui.screens
 
 import android.net.Uri
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
+import androidx.compose.runtime.snapshots.Snapshot
 import com.nielcode.kupass.data.backup.GooglePasswordCsv
 import com.nielcode.kupass.data.local.db.PasswordDao
 import com.nielcode.kupass.data.local.db.PasswordEntity
@@ -136,7 +138,8 @@ class ViewModelsTest {
         assertEquals(listOf("GitHub", "Google"), vm.matching().map { it.siteName })
         assertEquals(listOf("p2", "p1"), vm.matching().map { it.password })
 
-        vm.onSearchQueryChange("ali")
+        vm.searchState.setTextAndPlaceCursorAtEnd("ali")
+        Snapshot.sendApplyNotifications()
         assertEquals(listOf("Google"), vm.matching().map { it.siteName })
     }
 

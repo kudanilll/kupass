@@ -1,5 +1,6 @@
 package com.nielcode.kupass.ui.screens.home
 
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
@@ -45,8 +46,7 @@ class VaultLoadingTest {
             KupassTheme(dynamicColor = false) {
                 HomeScreen(
                     passwords = emptyList(),
-                    searchQuery = "",
-                    onSearchQueryChange = {},
+                    searchState = rememberTextFieldState(),
                     onDeletePassword = {},
                     onNavigateToDetail = {},
                     loading = loading,
