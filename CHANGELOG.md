@@ -61,6 +61,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Typing in the vault search no longer drops letters or puts new letters in front of the ones already typed.
+- Clearing a search that found nothing with the X button shows the vault list again instead of an empty screen.
 - The release workflow called a release unit-test task that AGP 9 no longer creates, so a tagged release would have failed before building. It now runs the unit tests of every module.
 - Google CSV import accepts normalized headers and aliases, optional username/password/url/note columns or empty values, extra unrecognized columns, blank record separators, comma/semicolon delimiters, omitted trailing columns, and BOM-marked UTF-16 as well as strict UTF-8. Credential fields are preserved exactly; malformed data still inserts nothing.
 - CSV errors identify the supported columns instead of incorrectly referring to a JSON file.

@@ -18,8 +18,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberOverscrollEffect
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.clearText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
@@ -73,6 +75,7 @@ private const val EMPTY_STATE_HEIGHT_FRACTION = 0.7f
 /**
  * A shared list for site rows on Home and individual accounts on a site's page.
  *
+ * @param search the search field's state, or null for a list without a search bar.
  * @param siteIcons icon loader, or null when site icons are turned off.
  * @param loading true while the vault is still being read; shows placeholder rows, not the empty
  *   state.
@@ -80,22 +83,21 @@ private const val EMPTY_STATE_HEIGHT_FRACTION = 0.7f
 @Composable
 fun VaultList(
     passwords: List<PasswordEntity>,
-    query: String,
-    onQueryChange: (String) -> Unit,
     searchActive: Boolean,
     onSearchActiveChange: (Boolean) -> Unit,
     onItemClick: (PasswordEntity) -> Unit,
     onDeleteItem: (PasswordEntity) -> Unit,
     modifier: Modifier = Modifier,
+    search: TextFieldState? = null,
     loading: Boolean = false,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     siteIcons: SiteIcons? = null,
     onGroupClick: ((Long) -> Unit)? = null,
     showHeadline: Boolean = true,
-    showSearch: Boolean = true,
     visibleGroups: List<VaultGroup> = emptyList(),
     filteredPasswords: List<PasswordEntity> = passwords,
 ) {
+    val query = search?.text?.toString().orEmpty()
     val matching =
         remember(passwords, query, filteredPasswords) {
             if (filteredPasswords !== passwords || query.isEmpty()) filteredPasswords
@@ -123,11 +125,10 @@ fun VaultList(
             item(key = "headline", contentType = "headline") {
                 VaultHeadline(showHeadline && !searchActive)
             }
-            if (showSearch)
+            if (search != null)
                 stickyHeader(key = "search", contentType = "search") {
                     VaultSearchBar(
-                        query = query,
-                        onQueryChange = onQueryChange,
+                        state = search,
                         active = searchActive,
                         onActiveChange = onSearchActiveChange,
                     )
@@ -178,6 +179,9 @@ private fun LazyListScope.groupRows(
 ) {
     items(groups, key = { it.key.lazyKey }, contentType = { "entry" }) { group ->
         val account = group.accounts.first()
+        // Fade only: under the pinned search header, a placement animation fed back on itself when
+        // many rows appeared at once (clearing a search) and threw them off screen.
+        val rowAnimation = Modifier.animateItem(placementSpec = null)
         if (group.accounts.size > 1) {
             PasswordListItem(
                 title = account.siteName,
@@ -186,7 +190,7 @@ private fun LazyListScope.groupRows(
                 onClick = { onGroupClick(group.accounts.minOf { it.id }) },
                 icon = rememberSiteIcon(account, siteIcons),
                 accountCount = group.accounts.size,
-                modifier = Modifier.animateItem(),
+                modifier = rowAnimation,
             )
         } else {
             SwipeToDeleteRow(
@@ -194,7 +198,7 @@ private fun LazyListScope.groupRows(
                 siteIcons = siteIcons,
                 onClick = { onItemClick(account) },
                 onDelete = { onDelete(account) },
-                modifier = Modifier.animateItem(),
+                modifier = rowAnimation,
             )
         }
     }
@@ -221,8 +225,7 @@ private fun LazyListScope.accountRows(
 
 @Composable
 private fun VaultSearchBar(
-    query: String,
-    onQueryChange: (String) -> Unit,
+    state: TextFieldState,
     active: Boolean,
     onActiveChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
@@ -239,14 +242,13 @@ private fun VaultSearchBar(
                 )
                 .padding(horizontal = 16.dp)
     ) {
-        VaultSearchInput(query, onQueryChange, active, onActiveChange)
+        VaultSearchInput(state, active, onActiveChange)
     }
 }
 
 @Composable
 private fun VaultSearchInput(
-    query: String,
-    onQueryChange: (String) -> Unit,
+    state: TextFieldState,
     active: Boolean,
     onActiveChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
@@ -258,9 +260,8 @@ private fun VaultSearchInput(
         keyboard?.hide()
     }
     TextField(
-        value = query,
-        onValueChange = onQueryChange,
-        singleLine = true,
+        state = state,
+        lineLimits = TextFieldLineLimits.SingleLine,
         shape = CircleShape,
         colors =
             TextFieldDefaults.colors(
@@ -272,16 +273,12 @@ private fun VaultSearchInput(
         placeholder = { Text(stringResource(R.string.search_hint)) },
         leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
         trailingIcon = {
-            if (active || query.isNotEmpty()) {
-                VaultSearchAction(
-                    query = query,
-                    onQueryChange = onQueryChange,
-                    onClose = closeSearch,
-                )
+            if (active || state.text.isNotEmpty()) {
+                VaultSearchAction(state = state, onClose = closeSearch)
             }
         },
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-        keyboardActions = KeyboardActions(onSearch = { closeSearch() }),
+        onKeyboardAction = { closeSearch() },
         modifier =
             modifier.fillMaxWidth().padding(top = 16.dp, bottom = 8.dp).onFocusChanged {
                 onActiveChange(it.isFocused)
@@ -291,21 +288,19 @@ private fun VaultSearchInput(
 
 @Composable
 private fun VaultSearchAction(
-    query: String,
-    onQueryChange: (String) -> Unit,
+    state: TextFieldState,
     onClose: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val hasText = state.text.isNotEmpty()
     IconButton(
-        onClick = { if (query.isNotEmpty()) onQueryChange("") else onClose() },
+        onClick = { if (hasText) state.clearText() else onClose() },
         modifier = modifier,
     ) {
         Icon(
             Icons.Default.Close,
             contentDescription =
-                stringResource(
-                    if (query.isNotEmpty()) R.string.search_clear else R.string.search_close
-                ),
+                stringResource(if (hasText) R.string.search_clear else R.string.search_close),
         )
     }
 }

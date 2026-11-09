@@ -5,17 +5,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.Text
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertIsNotFocused
@@ -280,6 +278,37 @@ class HomeInteractionTest {
     }
 
     @Test
+    fun `typing in search keeps the cursor after what was typed`() {
+        showHome(grouped = true)
+        val search = compose.onNode(hasSetTextAction())
+        search.performTouchInput { click() }
+        search.performTextInput("g")
+        search.performTextInput("ithub")
+        compose.runOnIdle {
+            assertEquals(
+                "github",
+                search.fetchSemanticsNode().config[SemanticsProperties.EditableText].text,
+            )
+        }
+    }
+
+    @Test
+    fun `clearing a search without results brings the site rows back`() {
+        val sites =
+            (1L..40L).map {
+                account(it, "user$it").copy(siteName = "Site$it", url = "https://site$it.test")
+            }
+        showHome(accounts = sites, grouped = true)
+        val search = compose.onNode(hasSetTextAction())
+        search.performTouchInput { click() }
+        search.performTextInput("zzqq")
+        compose.onNodeWithText("No results").assertIsDisplayed()
+        compose.onNodeWithContentDescription("Clear search").performClick()
+        compose.onNodeWithText("Site1").assertIsDisplayed()
+        compose.onNodeWithText("Site10").assertIsDisplayed()
+    }
+
+    @Test
     fun `search empty states and IME close retain the query without any expanded overlay`() {
         showHome()
         val search = compose.onNode(hasSetTextAction())
@@ -309,15 +338,14 @@ class HomeInteractionTest {
             KupassTheme(dynamicColor = false) {
                 touchSlop = LocalViewConfiguration.current.touchSlop
                 pager = rememberPagerState(pageCount = { 2 })
-                var query by remember { mutableStateOf("") }
+                val search = rememberTextFieldState()
                 val intercept = if (consumeFirstMove) Modifier.consumeFirstMovement() else Modifier
                 Box(modifier = Modifier.fillMaxSize().then(intercept)) {
                     HorizontalPager(state = pager, modifier = Modifier.fillMaxSize()) { index ->
                         if (index == 0) {
                             HomeScreen(
                                 passwords = accounts,
-                                searchQuery = query,
-                                onSearchQueryChange = { query = it },
+                                searchState = search,
                                 onDeletePassword = { deleted += it },
                                 onNavigateToDetail = { navigated += it },
                                 onNavigateToGroup =

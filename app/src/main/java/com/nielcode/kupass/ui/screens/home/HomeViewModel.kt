@@ -1,5 +1,7 @@
 package com.nielcode.kupass.ui.screens.home
 
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -14,11 +16,9 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
@@ -46,8 +46,11 @@ class HomeViewModel(
     filterDispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) : ViewModel() {
 
-    private val _searchQuery = MutableStateFlow("")
-    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+    /**
+     * The search field's text and cursor, edited by the field itself. A `String` handed back to a
+     * value-based field inside the lazy list reached it late and put the cursor back at the start.
+     */
+    val searchState = TextFieldState()
 
     private val _events = Channel<VaultEvent>(Channel.BUFFERED)
 
@@ -70,9 +73,9 @@ class HomeViewModel(
     val groups: StateFlow<List<VaultGroup>> =
         vault.map { it.groups }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
-    /** The list state for the Vault tab, filtered by [searchQuery] off the main thread. */
+    /** The list state for the Vault tab, filtered by [searchState] off the main thread. */
     val uiState: StateFlow<VaultUiState> =
-        combine(vault, _searchQuery) { (entries, groups), query ->
+        combine(vault, snapshotFlow { searchState.text.toString() }) { (entries, groups), query ->
                 val matching = entries.filterByQuery(query)
                 val ids = matching.mapTo(HashSet()) { it.id }
                 VaultUiState.Ready(
@@ -83,10 +86,6 @@ class HomeViewModel(
             }
             .flowOn(filterDispatcher)
             .stateIn(viewModelScope, SharingStarted.Eagerly, VaultUiState.Loading)
-
-    fun onSearchQueryChange(query: String) {
-        _searchQuery.value = query
-    }
 
     fun deletePassword(password: PasswordEntity) {
         viewModelScope.launch { repository.deletePassword(password) }

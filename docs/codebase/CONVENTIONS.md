@@ -9,7 +9,7 @@
 | Files                | PascalCase = main declaration                                 | `PasswordEditorViewModel.kt`                                   | `ui/screens/editor/`                        |
 | Screens / ViewModels | `<Feature>Screen`, `<Feature>ViewModel`                       | `PasswordDetailScreen`, `PasswordDetailViewModel`              | `ui/screens/detail/`                        |
 | Composables          | PascalCase functions                                          | `VaultList`, `SectionItem`, `DetailField`                      | `ui/components/`, `PasswordDetailScreen.kt` |
-| Functions/methods    | camelCase verbs                                               | `savePassword`, `loadPassword`, `onSearchQueryChange`          | ViewModels                                  |
+| Functions/methods    | camelCase verbs                                               | `savePassword`, `loadPassword`, `deletePassword`               | ViewModels                                  |
 | Backing properties   | `_name` private `MutableStateFlow` + public `name: StateFlow` | `_saveState` / `saveState`                                     | `PasswordEditorViewModel.kt`                |
 | Types                | PascalCase. Sealed interfaces for states                      | `SaveState`, `DeleteState`                                     | ViewModels                                  |
 | Constants            | `UPPER_SNAKE` in `companion object` or nested `object`s       | `AppConfig.Theme.Code.DARK`, `KEY_LANGUAGE`                    | `AppConfig.kt`, `PreferenceManager.kt`      |
@@ -34,7 +34,7 @@
 
 ## 4) Error and Logging Conventions
 
-- **ViewModels:** `try/catch` around suspend work. Screen state is a `StateFlow` (`SaveState`, `DeleteState`, both `Error` variants rendered as toasts). One-shot results are a `sealed interface` sent through a `Channel` (`VaultEvent`, mapped to text by `VaultEvent.message(context)`).
+- **ViewModels:** `try/catch` around suspend work. Screen state is a `StateFlow` (`SaveState`, `DeleteState`, both `Error` variants rendered as toasts). Text a `TextField` edits is a `TextFieldState` instead (`HomeViewModel.searchState`). One-shot results are a `sealed interface` sent through a `Channel` (`VaultEvent`, mapped to text by `VaultEvent.message(context)`).
 - **Crypto:** fail-closed. `CryptoException` (message only, never secret values) is thrown by `CryptoManager` and caught in ViewModels (`.catch {}` on read flows, `try/catch` on writes). No `printStackTrace`/logging in crypto paths.
 - **UI feedback:** `Toast` with text from resources (plurals for counts). Compose collects state with `collectAsStateWithLifecycle()`.
 - **Logging:** there are no `Log.*` calls and no `printStackTrace()` in production code.
