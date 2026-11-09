@@ -20,7 +20,7 @@
 
 ## 2) Formatting and Linting
 
-- Formatter: **ktfmt 0.64 (kotlinlang style: 4-space indent, 100 columns) via Spotless 8.10.4**, configured in the root `build.gradle.kts` for `**/*.kt` and every `*.gradle.kts` (including `build-logic/` and nested modules). ktfmt also removes unused imports.
+- Formatter: **ktfmt 0.64 (kotlinlang style: 4-space indent, 100 columns) via Spotless 8.11.0**, configured in the root `build.gradle.kts` for `**/*.kt` and every `*.gradle.kts` (including `build-logic/` and nested modules). ktfmt also removes unused imports.
 - Static analysis: **detekt 2.0.0-alpha.6** (built for Kotlin 2.4 / AGP 9.3) + **io.nlopez.compose.rules 0.6.8**, config `config/detekt/detekt.yml` on top of the defaults, no baseline, applied to every module by the `build-logic` convention plugins. Android Lint defaults (0 errors).
 - Run: `./gradlew spotlessApply` (fix) / `spotlessCheck`, `./gradlew detektMain detektTest` (type-resolved, every module), `./gradlew lintDebug`. CI runs all three. detekt runs in a separate worker process (`detekt.use.worker.api=true` in `gradle.properties`) because in-process analysis kept module jars open in the Gradle daemon, and on Windows the next build could not rewrite them. If a stale `classes.jar` error still appears right after code moves between modules, run `./gradlew --stop` once.
 - `:app` main-variant detekt classpaths (its build script) include compiled Kotlin and generated Java classes, so references to `BuildConfig` resolve during type-aware analysis.
