@@ -27,7 +27,7 @@ navigationCompose = "2.10.2"
 ossLicenses = "0.13.0"
 playServicesOssLicenses = "17.5.3"
 room = "2.8.5"
-spotless = "8.10.4"
+spotless = "8.11.0"
 robolectric = "4.17"
 
 [libraries]
