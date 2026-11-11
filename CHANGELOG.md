@@ -63,6 +63,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Saving a two-step sign-in from autofill (username on one screen, password on the next) keeps the username.
 - Autofill unlock with a PIN, pattern, or password works on Android 8.1 to 10, where the PIN screen is a separate screen. Kupass closed its unlock screen as soon as the PIN screen opened, so nothing was filled after entering the PIN.
 - Tapping Kupass in an autofill list works even after Android has shown a newer list for another field; a newer list no longer disables the rows of an older one.
 - Rotating the screen during autofill no longer asks for verification again, and no longer saves a suggested password twice.
