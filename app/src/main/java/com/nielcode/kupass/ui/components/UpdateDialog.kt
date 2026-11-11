@@ -21,7 +21,6 @@ private const val PERCENT = 100f
 /** What a button of the update dialog does. */
 internal enum class UpdateAction {
     Download,
-    Later,
     Close,
     Cancel,
     OpenSettings,
@@ -55,7 +54,7 @@ internal fun updateDialogContent(state: UpdateState): UpdateDialogContent? =
                 title = R.string.update_title,
                 text = R.string.update_available,
                 confirm = UpdateButton(R.string.update_download, UpdateAction.Download),
-                dismiss = UpdateButton(R.string.update_later, UpdateAction.Later),
+                dismiss = UpdateButton(R.string.update_later, UpdateAction.Close),
             )
         is UpdateState.Downloading ->
             UpdateDialogContent(
@@ -92,14 +91,13 @@ internal fun updateDialogContent(state: UpdateState): UpdateDialogContent? =
  * The in-app update dialog for every [UpdateState] except Idle.
  *
  * @param onDownload "Download", and "Try again" after a failure.
- * @param onClose back or a tap outside: hidden until the app opens again.
+ * @param onClose "Later", back, or a tap outside: hidden until the app opens again.
  * @param onOpenPage the release page in the browser, the fallback when updating fails.
  */
 @Composable
 fun UpdateDialog(
     state: UpdateState,
     onDownload: () -> Unit,
-    onLater: () -> Unit,
     onClose: () -> Unit,
     onCancel: () -> Unit,
     onOpenSettings: () -> Unit,
@@ -111,7 +109,6 @@ fun UpdateDialog(
     val run: (UpdateAction) -> Unit = { action ->
         when (action) {
             UpdateAction.Download -> onDownload()
-            UpdateAction.Later -> onLater()
             UpdateAction.Close -> onClose()
             UpdateAction.Cancel -> onCancel()
             UpdateAction.OpenSettings -> onOpenSettings()

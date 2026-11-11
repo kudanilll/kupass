@@ -63,7 +63,7 @@ com/nielcode/kupass/
 │   ├── local/cache/               SealedFile (encrypted file), VaultSnapshotStore (vault-cache), SiteIconStore (site-icons), all in noBackupFilesDir
 │   └── repository/PasswordRepository.kt encrypt/decrypt all text fields, in-memory sort+search, legacy format upgrade
 │       └── repository/VaultEntityMapping.kt  field encrypt/decrypt, identity, search match, sort
-├── update/                       in-app updates: AppVersion (tag order), ReleaseFeed (GitHub list + newest eligible release), ReleaseSource (feed request), UpdateChecker (daily, remembered, skipped), UpdateDownloader (APK + SHA-256), UpdateInstaller + UpdateInstallReceiver (PackageInstaller self-update), UpdateManager (dialog state). Device-QA builds (`-Pkupass.updateFeedUrl`) also merge `app/src/qaFeed/`: plain HTTP to loopback only
+├── update/                       in-app updates: AppVersion (tag order), ReleaseFeed (GitHub list + newest eligible release), ReleaseSource (feed request), UpdateChecker (every app open), UpdateDownloader (APK + SHA-256), UpdateInstaller + UpdateInstallReceiver (PackageInstaller self-update), UpdateManager (dialog state). Device-QA builds (`-Pkupass.updateFeedUrl`) also merge `app/src/qaFeed/`: plain HTTP to loopback only
 ├── ui/
 │   ├── components/                BottomNav (+ navSpring, BottomNavHeight), MainTab, EmptyState, SectionHeader, SectionItem, VaultTextField (+ PasswordVisibilityToggle), DeletePasswordDialog, SingleChoiceDialog
 │   ├── screens/

@@ -211,11 +211,9 @@ internal class SettingsController(
     var checkForUpdates by mutableStateOf(prefs.checkForUpdates)
         private set
 
-    /** Turning the check off also forgets a release it already found. */
     fun selectCheckForUpdates(enabled: Boolean) {
         if (enabled == checkForUpdates) return
         prefs.checkForUpdates = enabled
-        if (!enabled) prefs.pendingUpdate = null
         checkForUpdates = enabled
     }
 }

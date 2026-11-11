@@ -75,7 +75,6 @@ class AppContainer(
             )
         UpdateManager(
             offer = checker::updateToOffer,
-            skip = checker::skip,
             download = UpdateDownloader(File(appContext.cacheDir, "updates"))::download,
             installer = UpdateInstaller(appContext),
             scope = applicationScope,

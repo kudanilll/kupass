@@ -39,7 +39,6 @@ sealed interface UpdateState {
  */
 internal class UpdateManager(
     private val offer: () -> AvailableUpdate?,
-    private val skip: (AvailableUpdate) -> Unit,
     private val download: suspend (AvailableUpdate, (Int) -> Unit) -> File?,
     private val installer: PackageUpdater,
     private val scope: CoroutineScope,
@@ -70,13 +69,7 @@ internal class UpdateManager(
         }
     }
 
-    /** "Later": hide it and don't offer this release again. */
-    fun later() {
-        (_state.value as? UpdateState.Available)?.let { skip(it.update) }
-        close()
-    }
-
-    /** Back or a tap outside: hide it until the app opens again. */
+    /** "Later", back, or a tap outside: hide it until the app opens again. */
     fun close() {
         job?.cancel()
         _state.value = UpdateState.Idle

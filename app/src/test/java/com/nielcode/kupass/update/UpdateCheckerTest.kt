@@ -14,7 +14,6 @@ class UpdateCheckerTest {
 
     private val prefs = PreferenceManager(ApplicationProvider.getApplicationContext<Context>())
     private val installed = AppVersion(3, 1, 0, beta = 1)
-    private var clock = START
     private var feed: List<GitHubRelease>? = listOf(release("v3.1.0-beta.2"))
     private var requests = 0
 
@@ -26,77 +25,27 @@ class UpdateCheckerTest {
                 requests++
                 feed
             },
-            now = { clock },
         )
 
     @Test
-    fun `the first open asks for the release list and offers the newer release`() {
+    fun `every open asks for the release list and offers the newest release`() {
         assertEquals("v3.1.0-beta.2", checker().updateToOffer()?.tag)
-        assertEquals(1, requests)
-        assertEquals(START, prefs.lastUpdateCheckMillis)
-    }
 
-    @Test
-    fun `within a day the release list is not asked again, and the found release stays offered`() {
-        checker().updateToOffer()
-        clock += DAY - 1
-        feed = emptyList()
-
-        assertEquals("v3.1.0-beta.2", checker().updateToOffer()?.tag)
-        assertEquals(1, requests)
-    }
-
-    @Test
-    fun `after a day the release list is asked again and replaces what was found`() {
-        checker().updateToOffer()
-        clock += DAY
         feed = listOf(release("v3.1.0-beta.3"), release("v3.1.0-beta.2"))
         assertEquals("v3.1.0-beta.3", checker().updateToOffer()?.tag)
+        assertEquals(2, requests)
+    }
 
-        clock += DAY
+    @Test
+    fun `a failed request or nothing newer offers nothing`() {
+        feed = null
+        assertNull(checker().updateToOffer())
+
         feed = emptyList()
         assertNull(checker().updateToOffer())
-        assertEquals(3, requests)
-    }
 
-    @Test
-    fun `a failed request waits a day too and keeps the release found before`() {
-        checker().updateToOffer()
-        clock += DAY
-        feed = null
-
-        assertEquals("v3.1.0-beta.2", checker().updateToOffer()?.tag)
-        assertEquals(clock, prefs.lastUpdateCheckMillis)
-        clock += 1
-        checker().updateToOffer()
-        assertEquals(2, requests)
-    }
-
-    @Test
-    fun `a clock set back asks again instead of waiting`() {
-        checker().updateToOffer()
-        clock -= 1
-
-        checker().updateToOffer()
-        assertEquals(2, requests)
-    }
-
-    @Test
-    fun `a release postponed with Later is not offered again, a newer one is`() {
-        val checker = checker()
-        checker.skip(requireNotNull(checker.updateToOffer()))
-        assertNull(checker.updateToOffer())
-
-        clock += DAY
-        feed = listOf(release("v3.1.0-beta.3"))
-        assertEquals("v3.1.0-beta.3", checker().updateToOffer()?.tag)
-    }
-
-    @Test
-    fun `a found release that is already installed is not offered`() {
-        checker().updateToOffer()
-
-        assertNull(checker(AppVersion(3, 1, 0, beta = 2)).updateToOffer())
+        feed = listOf(release("v3.1.0-beta.1"))
+        assertNull(checker().updateToOffer())
     }
 
     @Test
@@ -110,9 +59,6 @@ class UpdateCheckerTest {
     }
 
     private companion object {
-        const val START = 1_800_000_000_000L
-        const val DAY = 24 * 60 * 60 * 1000L
-
         fun release(tag: String) =
             GitHubRelease(
                 tagName = tag,

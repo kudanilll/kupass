@@ -203,7 +203,7 @@
     <string name="empty_search_title">No results</string>
     <string name="empty_search_body">Nothing in your vault matches “%1$s”.</string>
     <string name="settings_check_updates">Check for updates</string>
-    <string name="settings_check_updates_on">Once a day when Kupass opens</string>
+    <string name="settings_check_updates_on">Each time Kupass opens</string>
     <string name="settings_check_updates_off">Off</string>
     <string name="update_title">Update available</string>
     <string name="update_available">Kupass %1$s is ready to install. Your vault stays as it is.</string>
