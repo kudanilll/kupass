@@ -79,6 +79,21 @@ fun resolveSave(
     }
 }
 
+/**
+ * The username to save, from the screens of one save request (oldest first). A two-step login asks
+ * for it on an earlier screen, so when the last screen has none it comes from the newest earlier
+ * screen of the same app and site.
+ */
+fun saveUsername(forms: List<ParsedForm>): String {
+    val last = forms.lastOrNull() ?: return ""
+    val sameTarget = forms.filter {
+        it.packageName == last.packageName && it.webDomain == last.webDomain
+    }
+    return sameTarget.asReversed().firstNotNullOfOrNull { form ->
+        form.usernameValue?.takeIf { it.isNotBlank() }
+    } ?: last.usernameValue.orEmpty()
+}
+
 /** Sign-ups always offer saving; logins only when allowed and Kupass has nothing for the target. */
 fun shouldAttachSaveInfo(
     form: ParsedForm,

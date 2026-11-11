@@ -15,7 +15,9 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
 
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
     testImplementation(project(":core:testing"))
+    testImplementation(libs.androidx.compose.ui.test.junit4)
     testImplementation(libs.androidx.junit)
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)

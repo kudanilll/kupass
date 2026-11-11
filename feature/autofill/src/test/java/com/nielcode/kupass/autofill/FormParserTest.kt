@@ -9,6 +9,63 @@ import org.junit.Test
 class FormParserTest {
 
     @Test
+    fun `a login form in a third-party frame uses that frame's domain`() {
+        val form =
+            parse(
+                FormField(0, webDomain = "bank.com", isFillable = false),
+                FormField(1, autofillHints = listOf("username"), webDomain = "ads.example"),
+                FormField(2, autofillHints = listOf("password"), webDomain = "ads.example"),
+            )
+        assertEquals("ads.example", form.webDomain)
+    }
+
+    @Test
+    fun `fields from another frame are left out`() {
+        val form =
+            parse(
+                FormField(0, webDomain = "bank.com", isFillable = false),
+                FormField(1, autofillHints = listOf("username"), webDomain = "bank.com"),
+                FormField(
+                    2,
+                    autofillHints = listOf("password"),
+                    webDomain = "bank.com",
+                    isFocused = true,
+                ),
+                FormField(3, autofillHints = listOf("password"), webDomain = "ads.example"),
+            )
+        assertEquals("bank.com", form.webDomain)
+        assertShape(form, username = 1, passwords = listOf(2), signUp = false)
+    }
+
+    @Test
+    fun `the focused field picks the frame`() {
+        val form =
+            parse(
+                FormField(1, autofillHints = listOf("password"), webDomain = "bank.com"),
+                FormField(
+                    2,
+                    autofillHints = listOf("password"),
+                    webDomain = "ads.example",
+                    isFocused = true,
+                ),
+            )
+        assertEquals("ads.example", form.webDomain)
+        assertEquals(listOf(2), form.passwordFields)
+    }
+
+    @Test
+    fun `without focus the first password field picks the frame`() {
+        val form =
+            parse(
+                FormField(0, autofillHints = listOf("username"), webDomain = "ads.example"),
+                FormField(1, autofillHints = listOf("username"), webDomain = "bank.com"),
+                FormField(2, autofillHints = listOf("password"), webDomain = "bank.com"),
+            )
+        assertEquals("bank.com", form.webDomain)
+        assertShape(form, username = 1, passwords = listOf(2), signUp = false)
+    }
+
+    @Test
     fun `username and password login`() {
         val form =
             parse(
@@ -60,10 +117,21 @@ class FormParserTest {
                     1,
                     htmlAttributes =
                         mapOf("type" to "password", "autocomplete" to "current-password"),
+                    webDomain = "github.com",
                 ),
             )
         assertShape(form, username = 0, passwords = listOf(1), signUp = false)
         assertEquals("github.com", form.webDomain)
+    }
+
+    @Test
+    fun `the browser's own fields stay out of a web form`() {
+        val form =
+            parse(
+                FormField(0, hint = "Address"),
+                FormField(1, autofillHints = listOf("password"), webDomain = "github.com"),
+            )
+        assertShape(form, username = null, passwords = listOf(1), signUp = false)
     }
 
     @Test

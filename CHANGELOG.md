@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Autofill matches a login form inside a frame from another site (an iframe) against that frame's site, never against the page around it, so an embedded third-party frame can't receive the page's accounts.
+- The autofill unlock lasts for the auto-lock time from the last verification. Using autofill no longer extends it.
 - Account access and background exemptions are isolated per activity instance. Starting or authenticating another Kupass activity cannot revive an account whose background timeout has expired.
 - Copied passwords are cleared from the clipboard after 45 seconds on every Android version, including when Kupass is in the background.
 - Vault data is excluded from Android cloud backup and device-to-device transfer on every Android version. Use the password-protected export to move your vault.
@@ -61,6 +63,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Saving a two-step sign-in from autofill (username on one screen, password on the next) keeps the username.
+- The autofill account search no longer shows the whole vault for a moment on each keystroke.
 - Autofill unlock with a PIN, pattern, or password works on Android 8.1 to 10, where the PIN screen is a separate screen. Kupass closed its unlock screen as soon as the PIN screen opened, so nothing was filled after entering the PIN.
 - Tapping Kupass in an autofill list works even after Android has shown a newer list for another field; a newer list no longer disables the rows of an older one.
 - Rotating the screen during autofill no longer asks for verification again, and no longer saves a suggested password twice.

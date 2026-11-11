@@ -39,14 +39,15 @@ class KupassAutofillService : AutofillService() {
     }
 
     override fun onSaveRequest(request: SaveRequest, callback: SaveCallback) {
-        val structure = request.fillContexts.lastOrNull()?.structure
-        if (structure == null) {
+        // Every screen of the request, oldest first: a two-step login typed its username earlier.
+        val structures = request.fillContexts.mapNotNull { it.structure }
+        if (structures.isEmpty()) {
             callback.onSuccess()
             return
         }
         // Process-lifetime scope: a confirmed save must finish even if the service is unbound.
         AutofillGraph.scope.launch {
-            if (runCatching { save(structure) }.isSuccess) {
+            if (runCatching { save(structures) }.isSuccess) {
                 callback.onSuccess()
             } else {
                 callback.onFailure(getString(R.string.autofill_save_failed))
@@ -70,11 +71,9 @@ class KupassAutofillService : AutofillService() {
                 matches.isNotEmpty(),
                 core.preferenceManager.offerToSaveLogins,
             )
-        val session = AutofillGraph.session(this)
         val strings = autofillStrings()
         val plan =
-            if (session.isActive()) {
-                session.touch()
+            if (AutofillGraph.session(this).isActive()) {
                 ResponsePlanner.unlocked(form, matches, strings, attachSave)
             } else {
                 ResponsePlanner.locked(form, strings, attachSave)
@@ -82,16 +81,18 @@ class KupassAutofillService : AutofillService() {
         return FillResponseBuilder.response(this, plan, read.ids)
     }
 
-    private suspend fun save(structure: AssistStructure) {
-        val read = StructureReader.read(structure)
-        val form = FormParser.parse(read.packageName, read.fields)
-        val target = TargetResolver.resolve(read.packageName, form.webDomain, packageName) ?: return
+    private suspend fun save(structures: List<AssistStructure>) {
+        val forms = structures.map { structure ->
+            StructureReader.read(structure).let { FormParser.parse(it.packageName, it.fields) }
+        }
+        val form = forms.last()
+        val target = TargetResolver.resolve(form.packageName, form.webDomain, packageName) ?: return
         val repository = AutofillGraph.core(this).passwordRepository
         val decision =
             resolveSave(
                 repository.getAllPasswords().first(),
                 target,
-                form.usernameValue.orEmpty(),
+                saveUsername(forms),
                 form.passwordValue.orEmpty(),
                 appLabelOf(target),
             )
