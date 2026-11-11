@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+    Merged only into release builds made with -Pkupass.updateFeedUrl, for device QA of in-app
+    updates: a local feed reached through adb reverse needs plain HTTP to this device.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application android:networkSecurityConfig="@xml/qa_feed_network_security" />
+</manifest>

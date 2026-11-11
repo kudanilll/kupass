@@ -205,4 +205,16 @@
     <string name="settings_check_updates">Check for updates</string>
     <string name="settings_check_updates_on">Once a day when Kupass opens</string>
     <string name="settings_check_updates_off">Off</string>
+    <string name="update_title">Update available</string>
+    <string name="update_available">Kupass %1$s is ready to install. Your vault stays as it is.</string>
+    <string name="update_downloading">Downloading Kupass %1$s…</string>
+    <string name="update_permission">To update itself, Kupass needs permission to install apps. Allow it on the next screen, then come back.</string>
+    <string name="update_installing">Installing Kupass %1$s. Kupass closes while it updates.</string>
+    <string name="update_failed_title">Update failed</string>
+    <string name="update_failed">Kupass couldn\'t download or install %1$s. Nothing was changed.</string>
+    <string name="update_download">DOWNLOAD</string>
+    <string name="update_later">LATER</string>
+    <string name="update_open_settings">OPEN SETTINGS</string>
+    <string name="update_retry">TRY AGAIN</string>
+    <string name="update_open_browser">OPEN IN BROWSER</string>
 </resources>

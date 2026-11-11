@@ -10,6 +10,8 @@ plugins {
     alias(libs.plugins.oss.licenses)
 }
 
+val qaUpdateFeed: String? = providers.gradleProperty("kupass.updateFeedUrl").orNull
+
 android {
     namespace = "com.nielcode.kupass"
 
@@ -32,6 +34,11 @@ android {
             }
         release?.let { versionCode = it.versionCode }
         buildConfigField("int", "BETA_NUMBER", "${release?.beta ?: 0}")
+        // In-app updates read this release list. -Pkupass.updateFeedUrl points a QA build at a
+        // local feed; see the qaFeed source set below.
+        val updateFeed =
+            qaUpdateFeed ?: "https://api.github.com/repos/kudanilll/kupass/releases?per_page=20"
+        buildConfigField("String", "UPDATE_FEED_URL", "\"$updateFeed\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -71,6 +78,15 @@ android {
                 keyAlias = debugSigning.keyAlias
                 keyPassword = debugSigning.keyPassword
             }
+        }
+    }
+
+    // Device QA of in-app updates only: plain HTTP to this device, for a local feed reached through
+    // adb reverse. Builds without -Pkupass.updateFeedUrl keep the platform's HTTPS-only default.
+    if (qaUpdateFeed != null) {
+        sourceSets.getByName("release") {
+            manifest.srcFile("src/qaFeed/AndroidManifest.xml")
+            res.directories.add("src/qaFeed/res")
         }
     }
 

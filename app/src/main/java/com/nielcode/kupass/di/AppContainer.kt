@@ -14,6 +14,12 @@ import com.nielcode.kupass.data.local.prefs.PreferenceManager
 import com.nielcode.kupass.data.repository.PasswordRepository
 import com.nielcode.kupass.data.siteicon.FavgetIconSource
 import com.nielcode.kupass.data.siteicon.SiteIconRepository
+import com.nielcode.kupass.update.AppVersion
+import com.nielcode.kupass.update.UpdateChecker
+import com.nielcode.kupass.update.UpdateDownloader
+import com.nielcode.kupass.update.UpdateInstaller
+import com.nielcode.kupass.update.UpdateManager
+import com.nielcode.kupass.update.fetchReleases
 import java.io.File
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -55,6 +61,26 @@ class AppContainer(
 
     val contentResolver: ContentResolver
         get() = appContext.contentResolver
+
+    /** In-app updates from the release feed. Debug builds never check. */
+    internal val updates: UpdateManager by lazy {
+        val installed =
+            if (BuildConfig.DEBUG) null
+            else AppVersion.installed(BuildConfig.VERSION_NAME, BuildConfig.BETA_NUMBER)
+        val checker =
+            UpdateChecker(
+                preferenceManager,
+                installed,
+                fetchReleases = { fetchReleases(BuildConfig.UPDATE_FEED_URL) },
+            )
+        UpdateManager(
+            offer = checker::updateToOffer,
+            skip = checker::skip,
+            download = UpdateDownloader(File(appContext.cacheDir, "updates"))::download,
+            installer = UpdateInstaller(appContext),
+            scope = applicationScope,
+        )
+    }
 }
 
 /** Resolves the [AppContainer] inside a `viewModelFactory { initializer { … } }` block. */
