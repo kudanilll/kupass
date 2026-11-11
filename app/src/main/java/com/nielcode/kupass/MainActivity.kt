@@ -20,9 +20,12 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.nielcode.kupass.security.EntryAuthenticationViewModel
 import com.nielcode.kupass.security.kupassAuthenticators
+import com.nielcode.kupass.ui.components.UpdateDialog
 import com.nielcode.kupass.ui.screens.MainAppScreen
 import com.nielcode.kupass.ui.theme.KupassTheme
+import com.nielcode.kupass.update.UpdateInstaller
 import com.nielcode.kupass.utils.AppConfig
+import com.nielcode.kupass.utils.openUrl
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
@@ -41,21 +44,35 @@ class MainActivity : AppCompatActivity() {
         // Reattach to the retained native session, without calling authenticate again on rotation.
         biometricPrompt = createPrompt(authentication.state.value.nativeRequest?.token)
         observeAuthentication()
+        updates.onAppOpen(restored = savedInstanceState != null)
 
         enableEdgeToEdge()
         setContent {
             val prefs = remember { (application as App).container.preferenceManager }
             val isDynamicEnabled = prefs.dynamicColor == AppConfig.DynamicColors.Code.ENABLE
             val authState by authentication.state.collectAsStateWithLifecycle()
+            val update by updates.state.collectAsStateWithLifecycle()
             KupassTheme(dynamicColor = isDynamicEnabled) {
                 MainAppScreen(
                     authentication = authentication,
                     authState = authState,
                     onOpenSecuritySettings = ::openSecuritySettings,
                 )
+                UpdateDialog(
+                    state = update,
+                    onDownload = updates::download,
+                    onLater = updates::later,
+                    onClose = updates::close,
+                    onCancel = updates::cancelDownload,
+                    onOpenSettings = ::openInstallPermission,
+                    onOpenPage = ::openReleasePage,
+                )
             }
         }
     }
+
+    private val updates
+        get() = (application as App).container.updates
 
     override fun onStart() {
         super.onStart()
@@ -76,6 +93,7 @@ class MainActivity : AppCompatActivity() {
         // A quick launcher round trip can resume without ever stopping or starting this activity.
         authentication.onForeground(getSystemService(KeyguardManager::class.java).isDeviceSecure)
         userLeaving = false
+        updates.onResume()
     }
 
     override fun onUserLeaveHint() {
@@ -147,6 +165,22 @@ class MainActivity : AppCompatActivity() {
             )
             .setAllowedAuthenticators(kupassAuthenticators())
             .build()
+    }
+
+    /** The unknown-apps setting; the update continues in onResume once it is allowed. */
+    private fun openInstallPermission() {
+        authentication.allowNextBackground()
+        try {
+            startActivity(UpdateInstaller.permissionIntent(this))
+        } catch (_: ActivityNotFoundException) {
+            updates.close()
+        }
+    }
+
+    private fun openReleasePage(url: String) {
+        authentication.allowNextBackground()
+        openUrl(this, url)
+        updates.close()
     }
 
     private fun openSecuritySettings() {

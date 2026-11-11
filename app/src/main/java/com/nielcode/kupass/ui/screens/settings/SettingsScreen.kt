@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.Gavel
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Password
+import androidx.compose.material.icons.filled.SystemUpdate
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -66,6 +67,7 @@ private enum class SettingsDialog {
     DynamicColor,
     ExcludeLookalike,
     OfferToSave,
+    CheckUpdates,
     Restart,
 }
 
@@ -117,6 +119,8 @@ fun SettingsScreen(
                 AboutSection(
                     dynamicColorEnabled =
                         settings.dynamicColor == AppConfig.DynamicColors.Code.ENABLE,
+                    checkForUpdates = settings.checkForUpdates,
+                    onCheckForUpdatesClick = { openDialog = SettingsDialog.CheckUpdates },
                     onOpen = { launch ->
                         // Use the launching activity's bounded allowance for external screens.
                         onAllowBackground()
@@ -203,6 +207,17 @@ internal class SettingsController(
         prefs.offerToSaveLogins = enabled
         offerToSaveLogins = enabled
     }
+
+    var checkForUpdates by mutableStateOf(prefs.checkForUpdates)
+        private set
+
+    /** Turning the check off also forgets a release it already found. */
+    fun selectCheckForUpdates(enabled: Boolean) {
+        if (enabled == checkForUpdates) return
+        prefs.checkForUpdates = enabled
+        if (!enabled) prefs.pendingUpdate = null
+        checkForUpdates = enabled
+    }
 }
 
 @Composable
@@ -286,6 +301,8 @@ private fun AppearanceSection(
 @Composable
 private fun AboutSection(
     dynamicColorEnabled: Boolean,
+    checkForUpdates: Boolean,
+    onCheckForUpdatesClick: () -> Unit,
     onOpen: ((Context) -> Unit) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -313,9 +330,19 @@ private fun AboutSection(
             },
         )
         SectionItem(
+            icon = Icons.Default.SystemUpdate,
+            title = stringResource(R.string.settings_check_updates),
+            subtitle =
+                stringResource(
+                    if (checkForUpdates) R.string.settings_check_updates_on
+                    else R.string.settings_check_updates_off
+                ),
+            onClick = onCheckForUpdatesClick,
+        )
+        SectionItem(
             icon = Icons.Default.Code,
             title = stringResource(R.string.app_name),
-            subtitle = "${BuildConfig.VERSION_NAME} - ${BuildConfig.BUILD_TYPE}",
+            subtitle = "${installedVersionLabel()} - ${BuildConfig.BUILD_TYPE}",
             onClick = { onOpen { openUrl(it, BuildConfig.GIT_URL) } },
         )
     }
@@ -374,30 +401,49 @@ private fun SettingsDialogHost(
                 },
             )
         SettingsDialog.ExcludeLookalike,
-        SettingsDialog.OfferToSave -> ToggleSettingDialog(dialog, settings, onDismiss)
+        SettingsDialog.OfferToSave,
+        SettingsDialog.CheckUpdates -> ToggleSettingDialog(dialog, settings, onDismiss)
         SettingsDialog.Restart -> RestartDialog()
     }
 }
 
-/** On/off settings that apply at once: lookalike exclusion and the autofill save offer. */
+/**
+ * On/off settings that apply at once: lookalike exclusion, the autofill save offer, and the update
+ * check.
+ */
 @Composable
 private fun ToggleSettingDialog(
     dialog: SettingsDialog,
     settings: SettingsController,
     onDismiss: () -> Unit,
 ) {
-    val lookalike = dialog == SettingsDialog.ExcludeLookalike
+    val (title, enabled, select) =
+        when (dialog) {
+            SettingsDialog.ExcludeLookalike ->
+                Triple(
+                    R.string.settings_exclude_lookalike_title,
+                    settings.excludeLookalike,
+                    settings::selectExcludeLookalike,
+                )
+            SettingsDialog.OfferToSave ->
+                Triple(
+                    R.string.settings_offer_save,
+                    settings.offerToSaveLogins,
+                    settings::selectOfferToSaveLogins,
+                )
+            else ->
+                Triple(
+                    R.string.settings_check_updates,
+                    settings.checkForUpdates,
+                    settings::selectCheckForUpdates,
+                )
+        }
     BinaryChoiceDialog(
-        title =
-            stringResource(
-                if (lookalike) R.string.settings_exclude_lookalike_title
-                else R.string.settings_offer_save
-            ),
-        enabled = if (lookalike) settings.excludeLookalike else settings.offerToSaveLogins,
+        title = stringResource(title),
+        enabled = enabled,
         onDismiss = onDismiss,
         onConfirm = {
-            if (lookalike) settings.selectExcludeLookalike(it)
-            else settings.selectOfferToSaveLogins(it)
+            select(it)
             onDismiss()
         },
     )
@@ -445,6 +491,11 @@ private fun RestartDialog(modifier: Modifier = Modifier) {
         },
     )
 }
+
+/** `3.1.0`, or `3.1.0-beta.2` for a beta build, so testers can tell builds apart. */
+private fun installedVersionLabel(): String =
+    if (BuildConfig.BETA_NUMBER > 0) "${BuildConfig.VERSION_NAME}-beta.${BuildConfig.BETA_NUMBER}"
+    else BuildConfig.VERSION_NAME
 
 @Composable
 @ReadOnlyComposable

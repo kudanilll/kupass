@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import com.nielcode.kupass.data.local.prefs.PreferenceManager
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -23,5 +24,21 @@ class SettingsControllerTest {
 
         assertFalse(settings.offerToSaveLogins)
         assertFalse(PreferenceManager(context).offerToSaveLogins)
+    }
+
+    @Test
+    fun `turning the update check off persists and forgets the update it found`() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val prefs = PreferenceManager(context)
+        prefs.pendingUpdate = "{}"
+        val settings = SettingsController(context, prefs)
+
+        assertTrue(settings.checkForUpdates)
+
+        settings.selectCheckForUpdates(false)
+
+        assertFalse(settings.checkForUpdates)
+        assertFalse(PreferenceManager(context).checkForUpdates)
+        assertNull(PreferenceManager(context).pendingUpdate)
     }
 }
