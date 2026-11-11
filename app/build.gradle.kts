@@ -1,3 +1,4 @@
+import com.nielcode.kupass.buildlogic.releaseVersion
 import java.util.Properties
 import org.gradle.api.tasks.compile.JavaCompile
 import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
@@ -23,6 +24,14 @@ android {
         targetSdk = 37
         versionCode = 5
         versionName = "3.1.0"
+        // The release workflow passes the pushed tag (-Pkupass.releaseTag=v3.1.0-beta.2), which
+        // sets versionCode and the beta number. Local builds keep versionCode 5 and beta 0.
+        val release =
+            providers.gradleProperty("kupass.releaseTag").orNull?.let {
+                releaseVersion(it, versionName.orEmpty())
+            }
+        release?.let { versionCode = it.versionCode }
+        buildConfigField("int", "BETA_NUMBER", "${release?.beta ?: 0}")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 

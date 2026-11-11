@@ -56,7 +56,7 @@ If a skill or MCP server fits the task, use it and name it in the end-of-turn re
 - Conventional-style messages, as already used in history: `feat(crypto): ...`, `fix: ...`, `refactor: ...`, `style: ...`, `docs: ...`, `test: ...`.
 - Never skip hooks or force-push without explicit instruction.
 - Add user-visible changes under `## [Unreleased]` in `CHANGELOG.md` (Keep a Changelog).
-- **Never change `versionName`/`versionCode`** (currently `3.1.0` / `5`). Only Danil decides versions. Releasing (Danil only): move `[Unreleased]` to `## [X.Y.Z] - date`, then push tag `vX.Y.Z` matching `versionName`. `.github/workflows/release.yml` builds, verifies, and publishes the signed APK. See the `github-release` skill.
+- **Never change `versionName`/`versionCode`** (currently `3.1.0` / `5`). Only Danil decides versions. Release builds take `versionCode` from the pushed tag (`-Pkupass.releaseTag`, `build-logic/convention/.../ReleaseVersion.kt`), so the `5` in `app/build.gradle.kts` applies to local builds only. Releasing (Danil only): move `[Unreleased]` to `## [X.Y.Z] - date`, then push tag `vX.Y.Z` matching `versionName`. A beta is tag `vX.Y.Z-beta.N` (N from 1 to 98) and needs no CHANGELOG move: its notes come from a `## [X.Y.Z-beta.N]` section if there is one, otherwise from `[Unreleased]`, and it is published as a prerelease. `.github/workflows/release.yml` builds, verifies, and publishes the signed APK. See the `github-release` skill.
 
 ## 5. Communication
 

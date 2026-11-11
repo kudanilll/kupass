@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Beta releases: pushing a tag such as `v3.1.0-beta.1` publishes the signed APK as a GitHub prerelease. Release builds take their versionCode from the tag, so each beta installs as an update over the previous one, and the stable release over every beta.
 - Autofill: Kupass fills saved sign-ins in apps and supported browsers after fingerprint/face or device-credential verification, and stays unlocked for your auto-lock time. Before verification it shows nothing but "Kupass".
 - On sign-up forms, Kupass suggests a strong password and saves it before filling it; the username is added when you confirm the save prompt. Kupass can also offer to save new sign-ins (Settings › Autofill, on by default).
 - Accidental password overwrite protection in the password editor: clicking the generator button when a password is already present displays a confirmation dialog before replacing it.

@@ -47,7 +47,7 @@ jobs:
         run: ./gradlew detektMain detektTest --console=plain
 
       - name: Build, unit test, lint
-        run: ./gradlew assembleDebug testDebugUnitTest lintDebug --console=plain
+        run: ./gradlew assembleDebug testDebugUnitTest :build-logic:convention:test lintDebug --console=plain
 
       - name: Upload reports
         if: failure()

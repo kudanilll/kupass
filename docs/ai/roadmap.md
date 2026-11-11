@@ -4,12 +4,12 @@
 >
 > Each item ID (e.g. `EN-06`) is meant to become one GitHub issue and one branch (`feat/…`, `fix/…`, `chore/…`). Update the checkboxes and IDs here as issues are created and merged.
 
-## 0. Progress (updated 2026-11-08)
+## 0. Progress (updated 2026-11-11)
 
 - **M3 Features in progress:** F-7.2 Autofill v1 merged to `master` in PR #34 (2026-11-08), on top of the core-module split from PR #32. S-7.1 Password Generator partly done (cryptographically secure generator, accidental overwrite protection, lookalike character exclusion setting; open: custom length slider modal & strength meter).
 - **M1 Trustworthy Vault: done**, merged to `master` in PR #2: EN-00, EN-01, EN-03, EN-06 (+EN-06b), F-2.1, EN-04, S-3.1, S-3.2, EN-07, EN-05, S-2.4, S-2.5, S-3.3, plus a security-review fix for the app lock.
 - **M0 Foundation: done.** EN-02 (Spotless/ktfmt + detekt with Compose rules, 0 findings, enforced in CI) is on `build/format-and-static-analysis`.
-- **Next:** M2 (Polish & Light). The independent review of `:feature:autofill` ran on 2026-11-10. All its findings are fixed; device QA (EN-7.2c) is the open E7 item.
+- **Next:** beta releases (EN-08). The release workflow is done; the in-app update check comes next, then M2 (Polish & Light) and Navigation 3. The independent review of `:feature:autofill` ran on 2026-11-10. All its findings are fixed; device QA (EN-7.2c) is the open E7 item.
 
 ## 1. Overview
 
@@ -80,14 +80,15 @@ Estimates use story points (1 < 4 h · 2 < 1 day · 3 = 1–2 days · 5 = 3–5 
 
 Enablers only. They make every later change safer and cheaper.
 
-| ID    | Type    | Title                                                                                                                                                                                  | Pts | Pri | Blocked by | Source                     |
-| ----- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- | --- | ---------- | -------------------------- |
-| EN-00 | Enabler | Enable Dependabot alerts, security updates, secret scanning + push protection (repo settings)                                                                                          | 1   | P1  | none       | CONCERNS, Dependabot check |
-| EN-01 | Enabler | CI workflow: `assembleDebug`, `testDebugUnitTest`, `lintDebug` on push/PR to `master`; hardened (pinned SHAs, `permissions: {}`); Gradle `dependency-submission` for Dependabot alerts | 3   | P0  | none       | QA-2                       |
-| EN-02 | Enabler | Formatter + static analysis: ktfmt (or ktlint) + detekt in Gradle, a one-time format commit, and a CI check                                                                            | 3   | P1  | EN-01      | QA-1                       |
-| EN-03 | Enabler | Room `exportSchema = true` + committed schema JSON + `MigrationTestHelper` harness (no schema change yet)                                                                              | 3   | P0  | EN-01      | REL-1, C-5                 |
-| EN-04 | Enabler | Lightweight DI: `AppContainer` in `App`, `ViewModelProvider.Factory`, repository injected. Enables ViewModel tests                                                                     | 3   | P1  | EN-01      | Tech debt                  |
-| EN-05 | Enabler | Typed one-shot events (`sealed interface` + `Channel`) replacing string keys. Render `SaveState.Error`/`DeleteState.Error`. Switch to `collectAsStateWithLifecycle`                    | 3   | P1  | EN-04      | C-8, C-9, tech debt        |
+| ID    | Type    | Title                                                                                                                                                                                                                                                                                                                      | Pts | Pri | Blocked by | Source                     |
+| ----- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- | --- | ---------- | -------------------------- |
+| EN-00 | Enabler | Enable Dependabot alerts, security updates, secret scanning + push protection (repo settings)                                                                                                                                                                                                                              | 1   | P1  | none       | CONCERNS, Dependabot check |
+| EN-01 | Enabler | CI workflow: `assembleDebug`, `testDebugUnitTest`, `lintDebug` on push/PR to `master`; hardened (pinned SHAs, `permissions: {}`); Gradle `dependency-submission` for Dependabot alerts                                                                                                                                     | 3   | P0  | none       | QA-2                       |
+| EN-02 | Enabler | Formatter + static analysis: ktfmt (or ktlint) + detekt in Gradle, a one-time format commit, and a CI check                                                                                                                                                                                                                | 3   | P1  | EN-01      | QA-1                       |
+| EN-03 | Enabler | Room `exportSchema = true` + committed schema JSON + `MigrationTestHelper` harness (no schema change yet)                                                                                                                                                                                                                  | 3   | P0  | EN-01      | REL-1, C-5                 |
+| EN-04 | Enabler | Lightweight DI: `AppContainer` in `App`, `ViewModelProvider.Factory`, repository injected. Enables ViewModel tests                                                                                                                                                                                                         | 3   | P1  | EN-01      | Tech debt                  |
+| EN-05 | Enabler | Typed one-shot events (`sealed interface` + `Channel`) replacing string keys. Render `SaveState.Error`/`DeleteState.Error`. Switch to `collectAsStateWithLifecycle`                                                                                                                                                        | 3   | P1  | EN-04      | C-8, C-9, tech debt        |
+| EN-08 | Enabler | Beta releases. ✅ Part 1 done 2026-11-11: a `vX.Y.Z-beta.N` tag publishes a GitHub prerelease, release builds take versionCode from the tag, and `BuildConfig.BETA_NUMBER` holds the beta number. Open: the in-app update check (once a day, on by default with a Settings switch, opens the download page in the browser) | 3   | P1  | EN-01      | Decision Log 2026-11-11    |
 
 **Acceptance:** CI blocks merges on failure. Formatter is enforced. The schema JSON exists in the repo. ViewModels have at least one unit test each.
 
@@ -199,7 +200,7 @@ graph LR
 2. **Q2 Backup KDF:** PBKDF2-HMAC-SHA256 (platform API). No Argon2 or native library.
 3. **Q3 Key binding:** app lock at the **UI level only** for now. The vault key is _not_ bound to user authentication.
 4. **Q4 Autofill:** an important Kupass feature. F-7.2 is P1 and is the first M3 item.
-5. **Q5 Versioning:** **the app version stays `3.1.0`.** Milestones are not tied to version numbers, and agents never bump `versionName`/`versionCode`.
+5. **Q5 Versioning:** **the app version stays `3.1.0`.** Milestones are not tied to version numbers, and agents never bump `versionName`/`versionCode`. Since 2026-11-11, release builds derive `versionCode` from the tag, so each beta updates the one before it.
 
 ## 6. Issue Creation Checklist
 
