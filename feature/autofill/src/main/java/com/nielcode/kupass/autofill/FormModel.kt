@@ -29,7 +29,13 @@ data class ParsedForm(
     val isSignUp: Boolean,
     val usernameValue: String?,
     val passwordValue: String?,
+    /** On a change-password form, the field(s) holding the existing password; never all of them. */
+    val currentPasswordFields: List<Int> = emptyList(),
 ) {
     val isEmpty: Boolean
         get() = usernameField == null && passwordFields.isEmpty()
+
+    /** Where a new password goes: every password field except a change-password form's current. */
+    val newPasswordFields: List<Int>
+        get() = passwordFields - currentPasswordFields.toSet()
 }

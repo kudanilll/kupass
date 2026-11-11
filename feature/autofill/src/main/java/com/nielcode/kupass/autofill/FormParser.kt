@@ -19,6 +19,7 @@ object FormParser {
             kinds.filterValues { it == Kind.Password || it == Kind.NewPassword }.keys.sorted()
         val usernameField = usernameField(kinds, passwords.firstOrNull())
         val byIndex = fields.associateBy { it.index }
+        val current = currentPasswords(kinds, passwords, byIndex)
         return ParsedForm(
             packageName = packageName,
             webDomain = fields.firstNotNullOfOrNull { it.webDomain },
@@ -33,9 +34,38 @@ object FormParser {
                         .filter { it.isFillable }
                         .any { field -> SIGN_UP_WORDS.any { it in labelText(field) } },
             usernameValue = usernameField?.let { byIndex[it]?.value },
-            passwordValue = passwords.firstOrNull()?.let { byIndex[it]?.value },
+            // The password the account has from now on: on a change-password form, the new one.
+            passwordValue = (passwords - current.toSet()).firstOrNull()?.let { byIndex[it]?.value },
+            currentPasswordFields = current,
         )
     }
+
+    /**
+     * The existing-password field(s) of a change-password form, in order of trust: marked as
+     * current, plain next to new-password fields, or the first of three. Never all password fields,
+     * so a lone `current-password` login field stays the login password.
+     */
+    private fun currentPasswords(
+        kinds: Map<Int, Kind>,
+        passwords: List<Int>,
+        byIndex: Map<Int, FormField>,
+    ): List<Int> {
+        if (passwords.size < 2) return emptyList()
+        val marked = passwords.filter { byIndex[it]?.let(::isMarkedCurrent) == true }
+        val current =
+            when {
+                marked.isNotEmpty() -> marked
+                Kind.NewPassword in kinds.values -> passwords.filter { kinds[it] == Kind.Password }
+                passwords.size >= CURRENT_NEW_CONFIRM -> passwords.take(1)
+                else -> emptyList()
+            }
+        return current.takeIf { it.size < passwords.size }.orEmpty()
+    }
+
+    private fun isMarkedCurrent(field: FormField): Boolean =
+        "current-password" in
+            field.htmlAttributes["autocomplete"].orEmpty().lowercase(Locale.ROOT) ||
+            CURRENT_PASSWORD_WORDS.any { it in labelText(field) }
 
     /** A hinted username, preferably the nearest one before the first password field. */
     private fun usernameField(kinds: Map<Int, Kind>, firstPassword: Int?): Int? {
@@ -118,6 +148,18 @@ object FormParser {
     private val PASSWORD_WORDS = listOf("password", "passwd", "pwd", "sandi")
     private val USERNAME_WORDS = listOf("user", "email", "e-mail", "login", "pengguna", "akun")
     private val SEARCH_WORDS = listOf("search", "cari")
+    // Whole phrases only: a bare "old" or "lama" also matches words like "holder" or "alamat".
+    private val CURRENT_PASSWORD_WORDS =
+        listOf(
+            "current",
+            "oldpass",
+            "old_pass",
+            "old-pass",
+            "old pass",
+            "sandi lama",
+            "password lama",
+            "saat ini",
+        )
     private val SIGN_UP_WORDS =
         listOf(
             "sign up",
@@ -134,6 +176,9 @@ object FormParser {
             "new_password",
             "newpassword",
         )
+
+    /** Unhinted change-password forms: current, new, and confirm. */
+    private const val CURRENT_NEW_CONFIRM = 3
 
     // android.text.InputType values, kept local so the parser stays plain Kotlin.
     private const val TYPE_MASK_CLASS = 0x0000000f

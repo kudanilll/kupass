@@ -96,6 +96,27 @@ class ResponsePlannerTest {
     }
 
     @Test
+    fun `generated password never fills the current password field`() {
+        val dataset = ResponsePlanner.generatedDataset(changePassword(), "Gen-1")
+        assertEquals(mapOf(2 to "Gen-1", 3 to "Gen-1"), dataset.values)
+    }
+
+    @Test
+    fun `generate row is not offered on the current password field`() {
+        val generate =
+            ResponsePlanner.locked(changePassword(), strings, attachSave = true).datasets.single {
+                it.auth == AuthKind.Generate
+            }
+        assertEquals(setOf(2, 3), generate.values.keys)
+    }
+
+    @Test
+    fun `account fills only the current password field of a change-password form`() {
+        val dataset = ResponsePlanner.entryDataset(changePassword(), vault[0], strings)
+        assertEquals(mapOf(0 to "kudanilll", 1 to "Gh-Secret-1"), dataset.values)
+    }
+
+    @Test
     fun `save fields follow attachSave`() {
         assertEquals(
             SaveFields(required = listOf(1), optional = listOf(0)),
@@ -123,6 +144,14 @@ class ResponsePlannerTest {
             usernameValue = null,
             passwordValue = null,
         )
+
+    private fun changePassword() =
+        login()
+            .copy(
+                passwordFields = listOf(1, 2, 3),
+                currentPasswordFields = listOf(1),
+                isSignUp = true,
+            )
 
     private fun entry(id: Long, site: String, username: String, password: String) =
         PasswordEntity(

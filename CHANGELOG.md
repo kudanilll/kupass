@@ -62,6 +62,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Saving a sign-in from autofill no longer renames another saved account that has the same password. Kupass only adds a username to an entry that has none; anything else becomes a new entry.
+- On change-password forms, autofill saves the new password instead of the current one and keeps the entry with the old password. A suggested password goes only into the new-password fields, and a saved account's password only into the current-password field.
 - Typing in the vault search no longer drops letters or puts new letters in front of the ones already typed.
 - Clearing a search that found nothing with the X button shows the vault list again instead of an empty screen.
 - The release workflow called a release unit-test task that AGP 9 no longer creates, so a tagged release would have failed before building. It now runs the unit tests of every module.
