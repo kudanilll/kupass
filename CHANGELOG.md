@@ -63,6 +63,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- On Android 13 and lower, tapping Settings › Autofill service did nothing while Kupass was the active service. The row now offers to turn autofill off, after a confirmation.
 - Saving a two-step sign-in from autofill (username on one screen, password on the next) keeps the username.
 - The autofill account search no longer shows the whole vault for a moment on each keystroke.
 - Autofill unlock with a PIN, pattern, or password works on Android 8.1 to 10, where the PIN screen is a separate screen. Kupass closed its unlock screen as soon as the PIN screen opened, so nothing was filled after entering the PIN.

@@ -143,7 +143,10 @@
     <string name="settings_exclude_lookalike_summary">Hindari karakter mirip seperti 0, O, 1, l, dan I pada kata sandi yang dibuat</string>
     <string name="settings_autofill">Isi otomatis</string>
     <string name="settings_autofill_service">Layanan isi otomatis</string>
-    <string name="settings_autofill_on">Kupass mengisi data masuk</string>
+    <string name="settings_autofill_on">Aktif. Ketuk untuk menonaktifkan</string>
+    <string name="settings_autofill_disable_title">Nonaktifkan isi otomatis?</string>
+    <string name="settings_autofill_disable_message">Kupass akan berhenti mengisi data masuk di aplikasi dan browser. Kata sandi yang tersimpan tetap ada di Brankas.</string>
+    <string name="settings_autofill_disable_confirm">NONAKTIFKAN</string>
     <string name="settings_autofill_off">Nonaktif. Ketuk untuk memilih Kupass</string>
     <string name="settings_offer_save">Tawarkan simpan login</string>
     <string name="settings_offer_save_desc">Tanya untuk menyimpan login yang belum ada di Kupass</string>
