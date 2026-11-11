@@ -170,6 +170,104 @@ class FormParserTest {
         assertFalse(form.isSignUp)
     }
 
+    @Test
+    fun `change-password form saves the new password, not the current one`() {
+        val form =
+            parse(
+                FormField(0, autofillHints = listOf("username"), value = "dan"),
+                FormField(
+                    1,
+                    htmlAttributes = mapOf("autocomplete" to "current-password"),
+                    value = "old",
+                ),
+                FormField(
+                    2,
+                    htmlAttributes = mapOf("autocomplete" to "new-password"),
+                    value = "new",
+                ),
+                FormField(
+                    3,
+                    htmlAttributes = mapOf("autocomplete" to "new-password"),
+                    value = "new",
+                ),
+            )
+        assertShape(
+            form,
+            username = 0,
+            passwords = listOf(1, 2, 3),
+            signUp = true,
+            current = listOf(1),
+        )
+        assertEquals("new", form.passwordValue)
+    }
+
+    @Test
+    fun `password hint next to newPassword hints is the current password`() {
+        val form =
+            parse(
+                FormField(0, autofillHints = listOf("password"), value = "old"),
+                FormField(1, autofillHints = listOf("newPassword"), value = "new"),
+            )
+        assertShape(
+            form,
+            username = null,
+            passwords = listOf(0, 1),
+            signUp = true,
+            current = listOf(0),
+        )
+        assertEquals("new", form.passwordValue)
+    }
+
+    @Test
+    fun `old-password label marks the current password`() {
+        val form =
+            parse(
+                FormField(0, inputType = PASSWORD_INPUT, idEntry = "old_password", value = "old"),
+                FormField(1, inputType = PASSWORD_INPUT, idEntry = "new_password", value = "new"),
+            )
+        assertShape(
+            form,
+            username = null,
+            passwords = listOf(0, 1),
+            signUp = true,
+            current = listOf(0),
+        )
+        assertEquals("new", form.passwordValue)
+    }
+
+    @Test
+    fun `first of three unhinted password fields is the current password`() {
+        val form =
+            parse(
+                FormField(0, inputType = PASSWORD_INPUT, value = "old"),
+                FormField(1, inputType = PASSWORD_INPUT, value = "new"),
+                FormField(2, inputType = PASSWORD_INPUT, value = "new"),
+            )
+        assertShape(
+            form,
+            username = null,
+            passwords = listOf(0, 1, 2),
+            signUp = true,
+            current = listOf(0),
+        )
+        assertEquals("new", form.passwordValue)
+    }
+
+    @Test
+    fun `a lone current-password field is a login`() {
+        val form =
+            parse(
+                FormField(0, htmlAttributes = mapOf("type" to "email")),
+                FormField(
+                    1,
+                    htmlAttributes = mapOf("autocomplete" to "current-password"),
+                    value = "pw",
+                ),
+            )
+        assertShape(form, username = 0, passwords = listOf(1), signUp = false)
+        assertEquals("pw", form.passwordValue)
+    }
+
     private fun parse(vararg fields: FormField) =
         FormParser.parse("com.example.app", fields.toList())
 
@@ -178,11 +276,13 @@ class FormParserTest {
         username: Int?,
         passwords: List<Int>,
         signUp: Boolean,
+        current: List<Int> = emptyList(),
     ) {
         if (username == null) assertNull(form.usernameField)
         else assertEquals(username, form.usernameField)
         assertEquals(passwords, form.passwordFields)
         assertEquals(signUp, form.isSignUp)
+        assertEquals(current, form.currentPasswordFields)
     }
 
     private companion object {

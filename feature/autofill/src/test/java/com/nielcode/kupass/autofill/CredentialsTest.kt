@@ -88,6 +88,42 @@ class CredentialsTest {
     }
 
     @Test
+    fun `same password under another saved username inserts instead of renaming`() {
+        val alice = entry(1, url = "https://github.com", username = "alice", password = "shared")
+        val decision = resolveSave(listOf(alice), github, "bob", "shared", null)
+        assertTrue(decision is SaveDecision.Insert)
+        assertEquals("bob", (decision as SaveDecision.Insert).entry.username)
+    }
+
+    @Test
+    fun `same password fills in the entry that has no username yet`() {
+        val alice =
+            entry(1, url = "https://github.com", username = "alice", password = "Gen-1")
+                .copy(updatedAt = 2)
+        val generated =
+            entry(2, url = "https://github.com", username = "", password = "Gen-1")
+                .copy(updatedAt = 1)
+        val decision = resolveSave(listOf(alice, generated), github, "bob", "Gen-1", null)
+        assertTrue(decision is SaveDecision.Update)
+        assertEquals(2L, (decision as SaveDecision.Update).entry.id)
+        assertEquals("bob", decision.entry.username)
+    }
+
+    @Test
+    fun `an account already saved under that username is left alone`() {
+        val alice =
+            entry(1, url = "https://github.com", username = "alice", password = "Gen-1")
+                .copy(updatedAt = 1)
+        val generated =
+            entry(2, url = "https://github.com", username = "", password = "Gen-1")
+                .copy(updatedAt = 2)
+        assertEquals(
+            SaveDecision.None,
+            resolveSave(listOf(alice, generated), github, "alice", "Gen-1", null),
+        )
+    }
+
+    @Test
     fun `unknown credentials insert`() {
         val known = entry(1, url = "https://github.com", username = "dan", password = "old")
         val decision = resolveSave(listOf(known), github, "dan", "new", null)

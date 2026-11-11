@@ -79,12 +79,14 @@ object ResponsePlanner {
         strings: AutofillStrings,
     ): DatasetPlan {
         val username = form.usernameField?.takeIf { entry.username.isNotBlank() }
+        // A saved password is the current one, so a change-password form gets it only there.
+        val passwordFields = form.currentPasswordFields.ifEmpty { form.passwordFields }
         return DatasetPlan(
             title = entry.username.ifBlank { strings.noUsername },
             subtitle = entry.siteName,
             values =
                 listOfNotNull(username?.let { it to entry.username }).toMap() +
-                    form.passwordFields.associateWith { entry.password },
+                    passwordFields.associateWith { entry.password },
             auth = null,
         )
     }
@@ -93,7 +95,7 @@ object ResponsePlanner {
         DatasetPlan(
             title = "",
             subtitle = null,
-            values = form.passwordFields.associateWith { password },
+            values = form.newPasswordFields.associateWith { password },
             auth = null,
         )
 
@@ -102,7 +104,7 @@ object ResponsePlanner {
             DatasetPlan(
                 title = strings.generateTitle,
                 subtitle = strings.generateSubtitle,
-                values = form.passwordFields.empty(),
+                values = form.newPasswordFields.empty(),
                 auth = AuthKind.Generate,
             )
         } else {

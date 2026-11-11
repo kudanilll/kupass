@@ -56,7 +56,7 @@ sealed interface SaveDecision {
 /**
  * What a confirmed save request does. An empty password never saves. The same password for the same
  * target only gains a username it lacked (a generated entry finished at submit); anything else is a
- * new entry. Existing passwords are never overwritten.
+ * new entry. Existing passwords and usernames are never overwritten.
  */
 fun resolveSave(
     entries: List<PasswordEntity>,
@@ -65,18 +65,17 @@ fun resolveSave(
     password: String,
     appLabel: String?,
 ): SaveDecision {
-    val existing =
-        CredentialMatcher.matches(entries, target)
-            .filter { it.password == password }
-            .maxByOrNull { it.updatedAt }
+    val samePassword = CredentialMatcher.matches(entries, target).filter { it.password == password }
+    val withoutUsername = samePassword.filter { it.username.isBlank() }.maxByOrNull { it.updatedAt }
     return when {
         password.isEmpty() -> SaveDecision.None
-        existing == null -> SaveDecision.Insert(newEntry(target, appLabel, username, password))
-        username.isBlank() || existing.username == username -> SaveDecision.None
-        else ->
+        samePassword.any { it.username == username } -> SaveDecision.None
+        samePassword.isNotEmpty() && username.isBlank() -> SaveDecision.None
+        withoutUsername != null ->
             SaveDecision.Update(
-                existing.copy(username = username, updatedAt = System.currentTimeMillis())
+                withoutUsername.copy(username = username, updatedAt = System.currentTimeMillis())
             )
+        else -> SaveDecision.Insert(newEntry(target, appLabel, username, password))
     }
 }
 
