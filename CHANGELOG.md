@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- In-app updates: when you open Kupass, it checks GitHub at most once a day for a newer release and offers to install it. Download fetches the APK inside the app, checks it against the SHA-256 published with the release, and installs it; Android asks once to allow Kupass to install apps, and on Android 12 and later the update then installs without another prompt. Beta builds are offered newer betas, stable builds only stable releases. Later skips that release, and Settings › Check for updates turns the check off. The request sends nothing about you or your vault.
+- Settings shows a beta build's version as, for example, `3.1.0-beta.2`.
 - Beta releases: pushing a tag such as `v3.1.0-beta.1` publishes the signed APK as a GitHub prerelease. Release builds take their versionCode from the tag, so each beta installs as an update over the previous one, and the stable release over every beta.
 - Autofill: Kupass fills saved sign-ins in apps and supported browsers after fingerprint/face or device-credential verification, and stays unlocked for your auto-lock time. Before verification it shows nothing but "Kupass".
 - On sign-up forms, Kupass suggests a strong password and saves it before filling it; the username is added when you confirm the save prompt. Kupass can also offer to save new sign-ins (Settings › Autofill, on by default).

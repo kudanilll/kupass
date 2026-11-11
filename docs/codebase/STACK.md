@@ -67,7 +67,7 @@ Bundled assets that affect APK size: `core/designsystem/src/main/res/font/google
 - `BuildConfig` fields (set in `defaultConfig`, same in debug and release): `GIT_URL`, `DEV_URL`, `DEV_NAME`, `FAVGET_API_URL`, and `FAVGET_API_KEY` (from `secrets.properties`, empty if absent; extractable from the APK by design, see INTEGRATIONS.md).
 - `DEV_URL` opens `https://achmaddaniel.nielcode.com` from the developer entry in Settings.
 - No environment variables are read. There is no `.env` template.
-- Runtime constraints: offline-first. `INTERNET` permission is declared but no network client exists yet (see `INTEGRATIONS.md`).
+- Runtime constraints: offline-first. `INTERNET` is used only for Favget site icons and for the in-app update check and download (see `INTEGRATIONS.md`).
 
 ## 6) Evidence
 

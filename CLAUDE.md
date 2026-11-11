@@ -33,6 +33,8 @@ Screen (Compose) -> ViewModel(Factory) -> PasswordRepository -> PasswordDao (Roo
 Backup: BackupCodec (PBKDF2-HMAC-SHA256 + AES-256-GCM, password-protected, portable)
 Autofill: KupassAutofillService → locked "Kupass" rows (no values) | unlock (BiometricPrompt) → memory-only AutofillSession
           (auto-lock timeout) → matching accounts; sign-up → AutofillGenerateActivity saves, then fills
+Updates:  MainActivity (app open) → UpdateManager → UpdateChecker (release builds, daily, GitHub release list)
+          → UpdateDialog → UpdateDownloader (size + SHA-256) → UpdateInstaller (PackageInstaller, Kupass only)
 
 Modules: :app → :core:data (Room, repository, caches, prefs) → :core:security (CryptoManager, PasswordGenerator, AppLock)
          :app → :core:designsystem (theme, fonts); :core:testing = shared test fakes (testImplementation only)
