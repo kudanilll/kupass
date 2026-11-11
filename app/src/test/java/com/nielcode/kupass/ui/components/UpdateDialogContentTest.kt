@@ -4,7 +4,6 @@ import com.nielcode.kupass.R
 import com.nielcode.kupass.ui.components.UpdateAction.Cancel
 import com.nielcode.kupass.ui.components.UpdateAction.Close
 import com.nielcode.kupass.ui.components.UpdateAction.Download
-import com.nielcode.kupass.ui.components.UpdateAction.Later
 import com.nielcode.kupass.ui.components.UpdateAction.OpenPage
 import com.nielcode.kupass.ui.components.UpdateAction.OpenSettings
 import com.nielcode.kupass.update.AppVersion
@@ -34,13 +33,13 @@ class UpdateDialogContentTest {
     }
 
     @Test
-    fun `an available update names the version and offers Download or Later`() {
+    fun `an available update names the version, and Later only closes it until the next open`() {
         assertEquals(
             UpdateDialogContent(
                 title = R.string.update_title,
                 text = R.string.update_available,
                 confirm = UpdateButton(R.string.update_download, Download),
-                dismiss = UpdateButton(R.string.update_later, Later),
+                dismiss = UpdateButton(R.string.update_later, Close),
                 onDismissRequest = Close,
             ),
             updateDialogContent(UpdateState.Available(update)),

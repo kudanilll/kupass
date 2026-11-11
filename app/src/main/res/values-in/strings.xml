@@ -197,7 +197,7 @@
     <string name="empty_search_title">Tidak ditemukan</string>
     <string name="empty_search_body">Tidak ada isi vault yang cocok dengan “%1$s”.</string>
     <string name="settings_check_updates">Periksa pembaruan</string>
-    <string name="settings_check_updates_on">Sekali sehari saat Kupass dibuka</string>
+    <string name="settings_check_updates_on">Setiap kali Kupass dibuka</string>
     <string name="settings_check_updates_off">Nonaktif</string>
     <string name="update_title">Pembaruan tersedia</string>
     <string name="update_available">Kupass %1$s siap dipasang. Isi Brankas tetap seperti sebelumnya.</string>

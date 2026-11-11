@@ -34,7 +34,6 @@ class UpdateManagerTest {
 
     private var offered: AvailableUpdate? = update
     private var offers = 0
-    private val skipped = mutableListOf<AvailableUpdate>()
     private var downloadGate = CompletableDeferred<File?>()
     private var reportProgress: ((Int) -> Unit)? = null
     private val installer =
@@ -58,7 +57,6 @@ class UpdateManagerTest {
                 offers++
                 offered
             },
-            skip = { skipped += it },
             download = { _, progress ->
                 reportProgress = progress
                 progress(40)
@@ -92,22 +90,11 @@ class UpdateManagerTest {
     }
 
     @Test
-    fun `Later hides it and skips this release`() = runTest {
-        val manager = offeredManager()
-
-        manager.later()
-
-        assertEquals(Idle, manager.state.value)
-        assertEquals(listOf(update), skipped)
-    }
-
-    @Test
-    fun `closing hides it until the app opens again`() = runTest {
+    fun `Later or back hides it until the app opens again`() = runTest {
         val manager = offeredManager()
 
         manager.close()
         assertEquals(Idle, manager.state.value)
-        assertEquals(emptyList<AvailableUpdate>(), skipped)
 
         manager.onAppOpen()
         advanceUntilIdle()

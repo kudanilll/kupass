@@ -1,13 +1,10 @@
 package com.nielcode.kupass.update
 
-import kotlinx.serialization.Serializable
-
 /**
  * A Kupass release: X.Y.Z plus the beta number N, which is 0 for a stable release. Versions sort in
  * release order, each stable release after its betas, the same order as the versionCodes the
  * release build derives from tags (build-logic `ReleaseVersion.kt`).
  */
-@Serializable
 data class AppVersion(val major: Int, val minor: Int, val patch: Int, val beta: Int = 0) :
     Comparable<AppVersion> {
 

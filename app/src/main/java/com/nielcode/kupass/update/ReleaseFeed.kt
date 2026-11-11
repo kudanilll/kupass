@@ -24,7 +24,6 @@ internal data class GitHubAsset(
 )
 
 /** A newer release this build can install. */
-@Serializable
 data class AvailableUpdate(
     val version: AppVersion,
     val tag: String,

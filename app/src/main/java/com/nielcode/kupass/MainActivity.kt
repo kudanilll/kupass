@@ -61,7 +61,6 @@ class MainActivity : AppCompatActivity() {
                 UpdateDialog(
                     state = update,
                     onDownload = updates::download,
-                    onLater = updates::later,
                     onClose = updates::close,
                     onCancel = updates::cancelDownload,
                     onOpenSettings = ::openInstallPermission,
