@@ -12,6 +12,7 @@ dependencies {
     // Provided at runtime by the root build's `apply false` plugin declarations.
     compileOnly(libs.android.gradlePlugin)
     compileOnly(libs.detekt.gradlePlugin)
+    testImplementation(libs.junit)
 }
 
 gradlePlugin {
