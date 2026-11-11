@@ -32,22 +32,24 @@ class AutofillSessionTest {
     }
 
     @Test
-    fun `touch extends while active`() {
+    fun `using the session never extends it`() {
         session.start()
-        now = 20_000
-        session.touch()
-        now = 49_999
-        assertTrue(session.isActive())
-        now = 50_000
+        for (time in listOf(10_000L, 20_000L, 29_999L)) {
+            now = time
+            assertTrue(session.isActive())
+        }
+        now = 30_000
         assertFalse(session.isActive())
     }
 
     @Test
-    fun `touch after expiry does not revive`() {
+    fun `a new verification starts a new window`() {
         session.start()
-        now = 30_000
-        session.touch()
-        now = 30_001
+        now = 20_000
+        session.start()
+        now = 49_999
+        assertTrue(session.isActive())
+        now = 50_000
         assertFalse(session.isActive())
     }
 

@@ -70,11 +70,9 @@ class KupassAutofillService : AutofillService() {
                 matches.isNotEmpty(),
                 core.preferenceManager.offerToSaveLogins,
             )
-        val session = AutofillGraph.session(this)
         val strings = autofillStrings()
         val plan =
-            if (session.isActive()) {
-                session.touch()
+            if (AutofillGraph.session(this).isActive()) {
                 ResponsePlanner.unlocked(form, matches, strings, attachSave)
             } else {
                 ResponsePlanner.locked(form, strings, attachSave)

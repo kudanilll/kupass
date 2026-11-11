@@ -164,7 +164,6 @@ class AutofillUnlockActivity : AppCompatActivity() {
             finishCanceled()
             return
         }
-        AutofillGraph.session(this).touch()
         setResult(
             RESULT_OK,
             Intent().putExtra(AutofillManager.EXTRA_AUTHENTICATION_RESULT, dataset),
