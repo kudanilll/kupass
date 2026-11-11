@@ -39,6 +39,12 @@ class AutofillUnlockActivity : AppCompatActivity() {
         val mode: String,
     )
 
+    /**
+     * BiometricPrompt is open. On API 27-29 its PIN screen is another activity, which stops this
+     * one.
+     */
+    private var verifying = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val request = request()
@@ -52,6 +58,12 @@ class AutofillUnlockActivity : AppCompatActivity() {
             }
             else -> authenticate(request)
         }
+    }
+
+    /** Leaving the picker ends the request, so it never waits behind the app with vault entries. */
+    override fun onStop() {
+        super.onStop()
+        if (!verifying && !isChangingConfigurations && !isFinishing) finishCanceled()
     }
 
     /** The target comes from the structure the system attached, not from our own extras. */
@@ -81,14 +93,17 @@ class AutofillUnlockActivity : AppCompatActivity() {
                 override fun onAuthenticationSucceeded(
                     result: BiometricPrompt.AuthenticationResult
                 ) {
+                    verifying = false
                     AutofillGraph.session(this@AutofillUnlockActivity).start()
                     open(request)
                 }
 
                 override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+                    verifying = false
                     finishCanceled()
                 }
             }
+        verifying = true
         BiometricPrompt(this, ContextCompat.getMainExecutor(this), callback)
             .authenticate(
                 BiometricPrompt.PromptInfo.Builder()

@@ -24,11 +24,11 @@
             android:taskAffinity=""
             android:theme="@style/Theme.Kupass.Autofill"
         />
+        <!-- No noHistory: it never delivers the PIN result on API 27-29. The activity finishes itself when stopped. -->
         <activity
             android:name="com.nielcode.kupass.autofill.AutofillUnlockActivity"
             android:excludeFromRecents="true"
             android:exported="false"
-            android:noHistory="true"
             android:taskAffinity=""
             android:theme="@style/Theme.Kupass.Autofill"
         />
