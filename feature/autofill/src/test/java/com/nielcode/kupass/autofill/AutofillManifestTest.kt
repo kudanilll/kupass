@@ -25,4 +25,13 @@ class AutofillManifestTest {
             info(AutofillUnlockActivity::class.java).flags and ActivityInfo.FLAG_NO_HISTORY,
         )
     }
+
+    @Test
+    fun `rotating keeps the unlock and generate activities`() {
+        val rotation = ActivityInfo.CONFIG_ORIENTATION or ActivityInfo.CONFIG_SCREEN_SIZE
+        for (activity in
+            listOf(AutofillUnlockActivity::class.java, AutofillGenerateActivity::class.java)) {
+            assertEquals(activity.simpleName, rotation, info(activity).configChanges and rotation)
+        }
+    }
 }
