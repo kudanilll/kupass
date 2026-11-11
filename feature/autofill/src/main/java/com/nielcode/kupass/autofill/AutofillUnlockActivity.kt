@@ -9,12 +9,6 @@ import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.biometric.BiometricPrompt
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
 import androidx.core.content.IntentCompat
 import androidx.lifecycle.lifecycleScope
@@ -138,14 +132,9 @@ class AutofillUnlockActivity : AppCompatActivity() {
             core.preferenceManager.dynamicColor == AppConfig.DynamicColors.Code.ENABLE
         setContent {
             KupassTheme(dynamicColor = dynamicColor) {
-                var query by rememberSaveable { mutableStateOf("") }
-                val results by
-                    remember(query) { core.passwordRepository.searchPasswords(query) }
-                        .collectAsState(initial = entries)
                 AutofillPicker(
-                    entries = if (search) results else entries,
-                    query = query.takeIf { search },
-                    onQueryChange = { query = it },
+                    entries = entries,
+                    searchable = search,
                     onPick = { fill(request, it) },
                     onDismiss = ::finishCanceled,
                 )
