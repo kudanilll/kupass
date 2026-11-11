@@ -1,5 +1,6 @@
 package com.nielcode.kupass.ui.components
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -16,6 +17,76 @@ import com.nielcode.kupass.R
 import com.nielcode.kupass.update.UpdateState
 
 private const val PERCENT = 100f
+
+/** What a button of the update dialog does. */
+internal enum class UpdateAction {
+    Download,
+    Later,
+    Close,
+    Cancel,
+    OpenSettings,
+    OpenPage,
+}
+
+internal data class UpdateButton(@param:StringRes val label: Int, val action: UpdateAction)
+
+/** What the update dialog shows for a state; plain data, so it is tested on the JVM. */
+internal data class UpdateDialogContent(
+    @param:StringRes val title: Int,
+    @param:StringRes val text: Int,
+    /** [text] takes the version, as in "Kupass 3.1.0-beta.2 is ready to install". */
+    val namesVersion: Boolean = true,
+    val confirm: UpdateButton? = null,
+    val dismiss: UpdateButton? = null,
+    /** Back, or a tap outside while nothing is in progress. */
+    val onDismissRequest: UpdateAction = UpdateAction.Close,
+    /** Download progress from 0 to 1; a tap outside doesn't close the dialog then. */
+    val progress: Float? = null,
+    /** An indeterminate progress bar. */
+    val busy: Boolean = false,
+)
+
+/** The dialog for [state]; null while idle. */
+internal fun updateDialogContent(state: UpdateState): UpdateDialogContent? =
+    when (state) {
+        UpdateState.Idle -> null
+        is UpdateState.Available ->
+            UpdateDialogContent(
+                title = R.string.update_title,
+                text = R.string.update_available,
+                confirm = UpdateButton(R.string.update_download, UpdateAction.Download),
+                dismiss = UpdateButton(R.string.update_later, UpdateAction.Later),
+            )
+        is UpdateState.Downloading ->
+            UpdateDialogContent(
+                title = R.string.update_title,
+                text = R.string.update_downloading,
+                confirm = UpdateButton(R.string.button_cancel, UpdateAction.Cancel),
+                onDismissRequest = UpdateAction.Cancel,
+                progress = state.percent / PERCENT,
+            )
+        is UpdateState.NeedsPermission ->
+            UpdateDialogContent(
+                title = R.string.update_title,
+                text = R.string.update_permission,
+                namesVersion = false,
+                confirm = UpdateButton(R.string.update_open_settings, UpdateAction.OpenSettings),
+                dismiss = UpdateButton(R.string.button_cancel, UpdateAction.Close),
+            )
+        is UpdateState.Installing ->
+            UpdateDialogContent(
+                title = R.string.update_title,
+                text = R.string.update_installing,
+                busy = true,
+            )
+        is UpdateState.Failed ->
+            UpdateDialogContent(
+                title = R.string.update_failed_title,
+                text = R.string.update_failed,
+                confirm = UpdateButton(R.string.update_retry, UpdateAction.Download),
+                dismiss = UpdateButton(R.string.update_open_browser, UpdateAction.OpenPage),
+            )
+    }
 
 /**
  * The in-app update dialog for every [UpdateState] except Idle.
@@ -35,94 +106,43 @@ fun UpdateDialog(
     onOpenPage: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    when (state) {
-        UpdateState.Idle -> Unit
-        is UpdateState.Available ->
-            UpdateAlert(
-                title = stringResource(R.string.update_title),
-                text = stringResource(R.string.update_available, state.update.version.toString()),
-                onDismissRequest = onClose,
-                confirmLabel = stringResource(R.string.update_download),
-                onConfirm = onDownload,
-                dismissLabel = stringResource(R.string.update_later),
-                onDismiss = onLater,
-                modifier = modifier,
-            )
-        is UpdateState.Downloading ->
-            UpdateAlert(
-                title = stringResource(R.string.update_title),
-                text = stringResource(R.string.update_downloading, state.update.version.toString()),
-                // Back cancels; a stray tap outside doesn't.
-                onDismissRequest = onCancel,
-                confirmLabel = stringResource(R.string.button_cancel),
-                onConfirm = onCancel,
-                modifier = modifier,
-                progress = state.percent / PERCENT,
-            )
-        is UpdateState.NeedsPermission ->
-            UpdateAlert(
-                title = stringResource(R.string.update_title),
-                text = stringResource(R.string.update_permission),
-                onDismissRequest = onClose,
-                confirmLabel = stringResource(R.string.update_open_settings),
-                onConfirm = onOpenSettings,
-                dismissLabel = stringResource(R.string.button_cancel),
-                onDismiss = onClose,
-                modifier = modifier,
-            )
-        is UpdateState.Installing ->
-            UpdateAlert(
-                title = stringResource(R.string.update_title),
-                text = stringResource(R.string.update_installing, state.update.version.toString()),
-                onDismissRequest = onClose,
-                modifier = modifier,
-                indeterminate = true,
-            )
-        is UpdateState.Failed ->
-            UpdateAlert(
-                title = stringResource(R.string.update_failed_title),
-                text = stringResource(R.string.update_failed, state.update.version.toString()),
-                onDismissRequest = onClose,
-                confirmLabel = stringResource(R.string.update_retry),
-                onConfirm = onDownload,
-                dismissLabel = stringResource(R.string.update_open_browser),
-                onDismiss = { onOpenPage(state.update.pageUrl) },
-                modifier = modifier,
-            )
+    val content = updateDialogContent(state) ?: return
+    val update = state.update ?: return
+    val run: (UpdateAction) -> Unit = { action ->
+        when (action) {
+            UpdateAction.Download -> onDownload()
+            UpdateAction.Later -> onLater()
+            UpdateAction.Close -> onClose()
+            UpdateAction.Cancel -> onCancel()
+            UpdateAction.OpenSettings -> onOpenSettings()
+            UpdateAction.OpenPage -> onOpenPage(update.pageUrl)
+        }
     }
-}
-
-@Composable
-private fun UpdateAlert(
-    title: String,
-    text: String,
-    onDismissRequest: () -> Unit,
-    modifier: Modifier = Modifier,
-    confirmLabel: String? = null,
-    onConfirm: () -> Unit = {},
-    dismissLabel: String? = null,
-    onDismiss: () -> Unit = {},
-    progress: Float? = null,
-    indeterminate: Boolean = false,
-) {
+    val text =
+        if (content.namesVersion) stringResource(content.text, update.version.toString())
+        else stringResource(content.text)
     AlertDialog(
-        onDismissRequest = onDismissRequest,
+        onDismissRequest = { run(content.onDismissRequest) },
         modifier = modifier,
-        properties = DialogProperties(dismissOnClickOutside = progress == null),
-        title = { Text(title) },
+        properties = DialogProperties(dismissOnClickOutside = content.progress == null),
+        title = { Text(stringResource(content.title)) },
         text = {
             Column {
                 Text(text)
                 val indicator = Modifier.fillMaxWidth().padding(top = 16.dp)
                 when {
-                    progress != null -> LinearProgressIndicator({ progress }, indicator)
-                    indeterminate -> LinearProgressIndicator(indicator)
+                    content.progress != null ->
+                        LinearProgressIndicator({ content.progress }, indicator)
+                    content.busy -> LinearProgressIndicator(indicator)
                 }
             }
         },
-        confirmButton = {
-            confirmLabel?.let { TextButton(onClick = onConfirm) { Text(it) } }
-        },
-        dismissButton = dismissLabel?.let { { TextButton(onClick = onDismiss) { Text(it) } } },
+        confirmButton = { content.confirm?.let { UpdateTextButton(it, run) } },
+        dismissButton = content.dismiss?.let { { UpdateTextButton(it, run) } },
     )
+}
+
+@Composable
+private fun UpdateTextButton(button: UpdateButton, run: (UpdateAction) -> Unit) {
+    TextButton(onClick = { run(button.action) }) { Text(stringResource(button.label)) }
 }

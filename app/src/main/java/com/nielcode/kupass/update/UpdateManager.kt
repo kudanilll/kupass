@@ -14,18 +14,23 @@ import kotlinx.coroutines.withContext
 
 /** What the update dialog shows. */
 sealed interface UpdateState {
-    data object Idle : UpdateState
+    /** The release in play; null while idle. */
+    val update: AvailableUpdate?
 
-    data class Available(val update: AvailableUpdate) : UpdateState
+    data object Idle : UpdateState {
+        override val update: AvailableUpdate? = null
+    }
 
-    data class Downloading(val update: AvailableUpdate, val percent: Int) : UpdateState
+    data class Available(override val update: AvailableUpdate) : UpdateState
+
+    data class Downloading(override val update: AvailableUpdate, val percent: Int) : UpdateState
 
     /** Downloaded and verified; Kupass may not install apps yet. */
-    data class NeedsPermission(val update: AvailableUpdate, val apk: File) : UpdateState
+    data class NeedsPermission(override val update: AvailableUpdate, val apk: File) : UpdateState
 
-    data class Installing(val update: AvailableUpdate) : UpdateState
+    data class Installing(override val update: AvailableUpdate) : UpdateState
 
-    data class Failed(val update: AvailableUpdate) : UpdateState
+    data class Failed(override val update: AvailableUpdate) : UpdateState
 }
 
 /**
