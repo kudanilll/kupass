@@ -13,6 +13,11 @@ object AutofillSettings {
     fun isKupassEnabled(context: Context): Boolean =
         context.getSystemService(AutofillManager::class.java)?.hasEnabledAutofillServices() == true
 
+    /** Turns autofill off for the user. Works only while Kupass is the active service. */
+    fun disable(context: Context) {
+        context.getSystemService(AutofillManager::class.java)?.disableAutofillServices()
+    }
+
     /** Opens the system picker with Kupass preselected. */
     fun enableIntent(context: Context): Intent =
         Intent(Settings.ACTION_REQUEST_SET_AUTOFILL_SERVICE)

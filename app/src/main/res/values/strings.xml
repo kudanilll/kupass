@@ -143,7 +143,10 @@
     <string name="settings_exclude_lookalike_summary">Avoid confusing characters such as 0, O, 1, l, and I in generated passwords</string>
     <string name="settings_autofill">Autofill</string>
     <string name="settings_autofill_service">Autofill service</string>
-    <string name="settings_autofill_on">Kupass fills sign-ins</string>
+    <string name="settings_autofill_on">On. Tap to turn off</string>
+    <string name="settings_autofill_disable_title">Turn off autofill?</string>
+    <string name="settings_autofill_disable_message">Kupass will stop filling sign-ins in apps and browsers. Your saved passwords stay in the vault.</string>
+    <string name="settings_autofill_disable_confirm">TURN OFF</string>
     <string name="settings_autofill_off">Off. Tap to choose Kupass</string>
     <string name="settings_offer_save">Offer to save logins</string>
     <string name="settings_offer_save_desc">Ask to save sign-ins Kupass doesn\'t know yet</string>

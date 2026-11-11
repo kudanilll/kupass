@@ -10,11 +10,7 @@ No open critical or high risks identified by the independent authentication revi
 
 The ten risks from the 2026-09-18 audit (`C-1`…`C-10`: device-bound fail-open backups, fail-open crypto, plaintext metadata at rest, no app lock, no Room migration strategy, OS backup/D2D copying the vault, non-atomic import without dedupe, untyped one-shot events, silent save/delete errors, and the `@RequiresApi(P)` clipboard workaround) are all fixed. See `CHANGELOG.md` and the roadmap milestones for what shipped.
 
-The independent review of `:feature:autofill` on 2026-11-10 found two save bugs that lost data, four unlock problems, and four more issues in frame matching, session length, two-step saves, and the picker. All of those are fixed (see `CHANGELOG.md`). The one finding left is below, tracked as roadmap EN-7.2d. "Unverified" means it comes from reading the code and still needs a device check.
-
-| Priority | Risk                                                                                                                                                                        | Evidence                     | Suggested fix                                            |
-| -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- | -------------------------------------------------------- |
-| P3       | The Settings "Autofill service" row probably does nothing once Kupass is the active service, because the system picker returns at once for the current service (unverified) | `AutofillSettingsSection.kt` | Offer a different action when Kupass is already selected |
+The independent review of `:feature:autofill` on 2026-11-10 found two save bugs that lost data, four unlock problems, and five more issues in frame matching, session length, two-step saves, the picker, and the Settings service row. All of them are fixed (see `CHANGELOG.md`). Device QA that hasn't been run yet is roadmap EN-7.2c.
 
 ## 2) Technical Debt
 
