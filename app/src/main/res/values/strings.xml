@@ -202,4 +202,7 @@
     <string name="empty_vault_body">Save your first password. Everything stays encrypted on this device.</string>
     <string name="empty_search_title">No results</string>
     <string name="empty_search_body">Nothing in your vault matches “%1$s”.</string>
+    <string name="settings_check_updates">Check for updates</string>
+    <string name="settings_check_updates_on">Once a day when Kupass opens</string>
+    <string name="settings_check_updates_off">Off</string>
 </resources>

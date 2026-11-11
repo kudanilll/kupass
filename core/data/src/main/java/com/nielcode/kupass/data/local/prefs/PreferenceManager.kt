@@ -43,6 +43,26 @@ class PreferenceManager(context: Context) {
         get() = sharedPreferences.getBoolean(KEY_AUTOFILL_OFFER_SAVE, true)
         set(value) = edit { putBoolean(KEY_AUTOFILL_OFFER_SAVE, value) }
 
+    /** Kupass looks for a newer release when it opens, at most once a day. */
+    var checkForUpdates: Boolean
+        get() = sharedPreferences.getBoolean(KEY_UPDATE_CHECK, true)
+        set(value) = edit { putBoolean(KEY_UPDATE_CHECK, value) }
+
+    /** When the release list was last requested (epoch millis), whether or not that worked. */
+    var lastUpdateCheckMillis: Long
+        get() = sharedPreferences.getLong(KEY_UPDATE_LAST_CHECK, 0L)
+        set(value) = edit { putLong(KEY_UPDATE_LAST_CHECK, value) }
+
+    /** The newer release the last check found, as JSON; null when there is none. */
+    var pendingUpdate: String?
+        get() = sharedPreferences.getString(KEY_UPDATE_PENDING, null)
+        set(value) = edit { putString(KEY_UPDATE_PENDING, value) }
+
+    /** The release tag the user postponed with "Later"; it isn't offered again. */
+    var skippedUpdateTag: String?
+        get() = sharedPreferences.getString(KEY_UPDATE_SKIPPED, null)
+        set(value) = edit { putString(KEY_UPDATE_SKIPPED, value) }
+
     companion object {
         private const val PREF_NAME = "kupass_preferences"
         private const val KEY_LANGUAGE = "language"
@@ -51,5 +71,9 @@ class PreferenceManager(context: Context) {
         private const val KEY_AUTO_LOCK_SECONDS = "auto_lock_seconds"
         private const val KEY_EXCLUDE_LOOKALIKE = "exclude_lookalike"
         private const val KEY_AUTOFILL_OFFER_SAVE = "autofill_offer_save"
+        private const val KEY_UPDATE_CHECK = "update_check"
+        private const val KEY_UPDATE_LAST_CHECK = "update_last_check"
+        private const val KEY_UPDATE_PENDING = "update_pending"
+        private const val KEY_UPDATE_SKIPPED = "update_skipped"
     }
 }
