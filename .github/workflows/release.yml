@@ -118,7 +118,8 @@ jobs:
           badging=$("${build_tools}aapt2" dump badging "$apk")
           echo "$badging" | grep "^package:"
           certs=$("${build_tools}apksigner" verify --print-certs "$apk")
-          echo "$certs" | grep -E "Signer #1 certificate (DN|SHA-256)"
+          # "Signer #1 certificate DN:" before build-tools 37, "V2 Signer: certificate DN:" since.
+          echo "$certs" | grep -E "certificate (DN|SHA-256 digest):"
           if echo "$certs" | grep -q "CN=Android Debug"; then
             echo "::error::APK is signed with the debug key"
             exit 1
