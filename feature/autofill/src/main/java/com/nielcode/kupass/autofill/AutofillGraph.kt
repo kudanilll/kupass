@@ -22,17 +22,20 @@ internal object AutofillGraph {
     fun core(context: Context): CoreContainer =
         (context.applicationContext as CoreContainerProvider).coreContainer
 
-    fun session(context: Context): AutofillSession =
-        session
+    fun session(context: Context): AutofillSession {
+        // The session lives as long as the process, so it must not keep the caller's activity.
+        val app = context.applicationContext
+        return session
             ?: synchronized(this) {
                 session
                     ?: AutofillSession(
                             timeoutMillis = {
-                                core(context).preferenceManager.autoLockSeconds * MILLIS_PER_SECOND
+                                core(app).preferenceManager.autoLockSeconds * MILLIS_PER_SECOND
                             }
                         )
                         .also { session = it }
             }
+    }
 
     private const val MILLIS_PER_SECOND = 1_000L
 }

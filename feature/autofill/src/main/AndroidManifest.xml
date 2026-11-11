@@ -15,20 +15,26 @@
             <meta-data android:name="android.autofill" android:resource="@xml/autofill_service" />
         </service>
 
-        <!-- Started only through Kupass's own PendingIntents. -->
+        <!--
+            Started only through Kupass's own PendingIntents. Compose handles rotation and resizing,
+            so neither activity is recreated: a recreated unlock would ask for verification again,
+            and a recreated generate would save a second entry.
+        -->
         <activity
             android:name="com.nielcode.kupass.autofill.AutofillGenerateActivity"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation|uiMode"
             android:excludeFromRecents="true"
             android:exported="false"
             android:noHistory="true"
             android:taskAffinity=""
             android:theme="@style/Theme.Kupass.Autofill"
         />
+        <!-- No noHistory: it never delivers the PIN result on API 27-29. The activity finishes itself when stopped. -->
         <activity
             android:name="com.nielcode.kupass.autofill.AutofillUnlockActivity"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation|uiMode"
             android:excludeFromRecents="true"
             android:exported="false"
-            android:noHistory="true"
             android:taskAffinity=""
             android:theme="@style/Theme.Kupass.Autofill"
         />

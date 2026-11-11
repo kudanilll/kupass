@@ -61,6 +61,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Autofill unlock with a PIN, pattern, or password works on Android 8.1 to 10, where the PIN screen is a separate screen. Kupass closed its unlock screen as soon as the PIN screen opened, so nothing was filled after entering the PIN.
+- Tapping Kupass in an autofill list works even after Android has shown a newer list for another field; a newer list no longer disables the rows of an older one.
+- Rotating the screen during autofill no longer asks for verification again, and no longer saves a suggested password twice.
 - Saving a sign-in from autofill no longer renames another saved account that has the same password. Kupass only adds a username to an entry that has none; anything else becomes a new entry.
 - On change-password forms, autofill saves the new password instead of the current one and keeps the entry with the old password. A suggested password goes only into the new-password fields, and a saved account's password only into the current-password field.
 - Typing in the vault search no longer drops letters or puts new letters in front of the ones already typed.

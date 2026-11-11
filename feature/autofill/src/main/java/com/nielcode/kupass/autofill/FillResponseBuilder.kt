@@ -15,6 +15,8 @@ import android.view.autofill.AutofillId
 import android.view.autofill.AutofillValue
 import android.widget.RemoteViews
 import com.nielcode.kupass.feature.autofill.R
+import java.util.concurrent.atomic.AtomicInteger
+import kotlin.random.Random
 
 /** Extra telling [AutofillUnlockActivity] whether it unlocks or searches. */
 internal const val EXTRA_MODE = "com.nielcode.kupass.autofill.MODE"
@@ -80,10 +82,20 @@ internal object FillResponseBuilder {
     }
 
     /**
-     * Explicit component, unique request code per row kind. Mutable on API 31+ because the platform
-     * adds EXTRA_ASSIST_STRUCTURE to the intent (the docs say not to make it immutable).
+     * A new request code per row, so a newer response never cancels rows an earlier one still
+     * shows. The random start keeps a restarted process from reusing the codes of rows still on
+     * screen.
      */
-    private fun authIntent(context: Context, kind: AuthKind): IntentSender {
+    private val requestCodes = AtomicInteger(Random.nextInt())
+
+    private fun authIntent(context: Context, kind: AuthKind): IntentSender =
+        authPendingIntent(context, kind).intentSender
+
+    /**
+     * Explicit component. Mutable on API 31+ because the platform adds EXTRA_ASSIST_STRUCTURE to
+     * the intent (the docs say not to make it immutable).
+     */
+    internal fun authPendingIntent(context: Context, kind: AuthKind): PendingIntent {
         val activity =
             if (kind == AuthKind.Generate) AutofillGenerateActivity::class.java
             else AutofillUnlockActivity::class.java
@@ -91,11 +103,10 @@ internal object FillResponseBuilder {
         val mutable =
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) PendingIntent.FLAG_MUTABLE else 0
         return PendingIntent.getActivity(
-                context,
-                kind.ordinal,
-                intent,
-                PendingIntent.FLAG_CANCEL_CURRENT or mutable,
-            )
-            .intentSender
+            context,
+            requestCodes.incrementAndGet(),
+            intent,
+            PendingIntent.FLAG_CANCEL_CURRENT or mutable,
+        )
     }
 }
