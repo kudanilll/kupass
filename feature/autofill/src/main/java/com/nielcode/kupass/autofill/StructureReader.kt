@@ -20,20 +20,30 @@ internal object StructureReader {
     private val HTML_KEYS = setOf("type", "autocomplete", "name", "id")
 
     fun read(structure: AssistStructure): ReadStructure {
-        val nodes = mutableListOf<ViewNode>()
+        val nodes = mutableListOf<Pair<ViewNode, String?>>()
         for (window in 0 until structure.windowNodeCount) {
-            collect(structure.getWindowNodeAt(window).rootViewNode, nodes)
+            collect(structure.getWindowNodeAt(window).rootViewNode, null, nodes)
         }
         return ReadStructure(
             packageName = structure.activityComponent.packageName,
-            fields = nodes.mapIndexed { index, node -> node.toField(index) },
-            ids = nodes.map { it.autofillId },
+            fields = nodes.mapIndexed { index, (node, domain) -> node.toField(index, domain) },
+            ids = nodes.map { (node, _) -> node.autofillId },
         )
     }
 
-    private fun collect(node: ViewNode, into: MutableList<ViewNode>) {
-        if (node.isFillable() || node.webDomain != null) into += node
-        for (child in 0 until node.childCount) collect(node.getChildAt(child), into)
+    /**
+     * Each node takes its own web domain or the nearest one above it. Chrome sets it on every field
+     * (an iframe's fields carry the iframe's domain); a browser that sets it only on a frame's root
+     * node gets the same result.
+     */
+    private fun collect(
+        node: ViewNode,
+        frame: String?,
+        into: MutableList<Pair<ViewNode, String?>>,
+    ) {
+        val domain = node.webDomain ?: frame
+        if (node.isFillable() || node.webDomain != null) into += node to domain
+        for (child in 0 until node.childCount) collect(node.getChildAt(child), domain, into)
     }
 
     private fun ViewNode.isFillable(): Boolean =
@@ -52,7 +62,7 @@ internal object StructureReader {
                     View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS,
                 )
 
-    private fun ViewNode.toField(index: Int): FormField {
+    private fun ViewNode.toField(index: Int, domain: String?): FormField {
         val fillable = isFillable()
         return FormField(
             index = index,
@@ -68,7 +78,7 @@ internal object StructureReader {
             hint = hint,
             contentDescription = contentDescription?.toString(),
             value = autofillValue?.takeIf { fillable && it.isText }?.textValue?.toString(),
-            webDomain = webDomain,
+            webDomain = domain,
             isFocused = isFocused,
             isFillable = fillable,
         )

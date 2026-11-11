@@ -14,7 +14,11 @@ object FormParser {
     }
 
     fun parse(packageName: String, fields: List<FormField>): ParsedForm {
-        val kinds = fields.filter { it.isFillable }.associate { it.index to kindOf(it) }
+        val domain = frameDomain(fields)
+        // Only the frame the credentials are in: a third-party frame never gets the page's
+        // accounts, and its fields never join the page's form.
+        val fillable = fields.filter { it.isFillable && it.webDomain == domain }
+        val kinds = fillable.associate { it.index to kindOf(it) }
         val passwords =
             kinds.filterValues { it == Kind.Password || it == Kind.NewPassword }.keys.sorted()
         val usernameField = usernameField(kinds, passwords.firstOrNull())
@@ -22,7 +26,7 @@ object FormParser {
         val current = currentPasswords(kinds, passwords, byIndex)
         return ParsedForm(
             packageName = packageName,
-            webDomain = fields.firstNotNullOfOrNull { it.webDomain },
+            webDomain = domain,
             usernameField = usernameField,
             passwordFields = passwords,
             isSignUp =
@@ -30,9 +34,7 @@ object FormParser {
                     passwords.size >= 2 ||
                     // Only the credential fields themselves: page links ("Sign up", "Daftar")
                     // sit on most login screens too.
-                    fields
-                        .filter { it.isFillable }
-                        .any { field -> SIGN_UP_WORDS.any { it in labelText(field) } },
+                    fillable.any { field -> SIGN_UP_WORDS.any { it in labelText(field) } },
             usernameValue = usernameField?.let { byIndex[it]?.value },
             // The password the account has from now on: on a change-password form, the new one.
             passwordValue = (passwords - current.toSet()).firstOrNull()?.let { byIndex[it]?.value },
@@ -66,6 +68,21 @@ object FormParser {
         "current-password" in
             field.htmlAttributes["autocomplete"].orEmpty().lowercase(Locale.ROOT) ||
             CURRENT_PASSWORD_WORDS.any { it in labelText(field) }
+
+    /**
+     * The web domain of the frame holding the credentials: the focused field's, else the first
+     * password field's, else the first fillable field's. `null` for an app's own fields.
+     */
+    private fun frameDomain(fields: List<FormField>): String? {
+        val fillable = fields.filter { it.isFillable }
+        val anchor =
+            fillable.firstOrNull { it.isFocused }
+                ?: fillable.firstOrNull { kindOf(it) in PASSWORD_KINDS }
+                ?: fillable.firstOrNull()
+        return anchor?.webDomain
+    }
+
+    private val PASSWORD_KINDS = setOf(Kind.Password, Kind.NewPassword)
 
     /** A hinted username, preferably the nearest one before the first password field. */
     private fun usernameField(kinds: Map<Int, Kind>, firstPassword: Int?): Int? {

@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+- Autofill matches a login form inside a frame from another site (an iframe) against that frame's site, never against the page around it, so an embedded third-party frame can't receive the page's accounts.
 - The autofill unlock lasts for the auto-lock time from the last verification. Using autofill no longer extends it.
 - Account access and background exemptions are isolated per activity instance. Starting or authenticating another Kupass activity cannot revive an account whose background timeout has expired.
 - Copied passwords are cleared from the clipboard after 45 seconds on every Android version, including when Kupass is in the background.
