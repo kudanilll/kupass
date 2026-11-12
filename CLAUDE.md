@@ -90,7 +90,7 @@ Confirmed product decisions (app lock, portable backups, font, CI, etc.) are in 
 ./gradlew lintDebug                 # Android lint, every module
 ./gradlew :core:data:connectedDebugAndroidTest :core:security:connectedDebugAndroidTest   # DB migration + Keystore device tests (emulator)
 ./gradlew :app:connectedDebugAndroidTest   # app device tests; uninstalls Kupass afterwards (emulator only)
-./gradlew :app:testDebugUnitTest -Pkupass.snapshots --tests "*UiSnapshotTest"  # UI PNGs in app/build/ui-snapshots/
+./gradlew :app:testDebugUnitTest --tests "*UiSnapshotTest"  # UI PNGs in app/build/ui-snapshots/ (also part of the full run)
 ./gradlew spotlessApply            # format all Kotlin/Gradle files with ktfmt (spotlessCheck verifies)
 ./gradlew detektMain detektTest  # static analysis, every module, incl. Compose rules (must report 0 issues)
 ```

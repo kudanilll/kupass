@@ -48,8 +48,8 @@ import org.robolectric.annotation.GraphicsMode
  * (device screenshots are blank because of FLAG_SECURE). Doubles as a smoke test that each screen
  * composes without crashing.
  *
- * Opt-in, in its own run: `./gradlew :app:testDebugUnitTest -Pkupass.snapshots --tests
- * "*UiSnapshotTest"`
+ * Runs with the other unit tests. To refresh only the PNGs: `./gradlew :app:testDebugUnitTest
+ * --tests "*UiSnapshotTest"`
  */
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)

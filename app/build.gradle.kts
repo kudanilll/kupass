@@ -103,14 +103,6 @@ android {
         }
     }
 
-    testOptions {
-        unitTests.all {
-            // UiSnapshotTest uses Robolectric native graphics, which can't share a JVM with the
-            // other sandboxes. Run it on its own: -Pkupass.snapshots --tests "*UiSnapshotTest".
-            if (!project.hasProperty("kupass.snapshots")) it.exclude("**/UiSnapshotTest*")
-        }
-    }
-
     buildFeatures { buildConfig = true }
 }
 
