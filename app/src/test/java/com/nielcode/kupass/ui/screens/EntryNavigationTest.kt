@@ -1,45 +1,37 @@
 package com.nielcode.kupass.ui.screens
 
-import androidx.lifecycle.ViewModelStore
-import androidx.navigation.NavController
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.ComposeNavigator
-import androidx.navigation.compose.composable
-import androidx.navigation.createGraph
-import androidx.navigation.toRoute
+import androidx.navigation3.runtime.NavBackStack
+import androidx.savedstate.serialization.decodeFromSavedState
+import androidx.savedstate.serialization.encodeToSavedState
 import com.nielcode.kupass.security.EntryAuthenticationViewModel
 import com.nielcode.kupass.security.EntryAuthenticationViewModel.Action
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.RuntimeEnvironment
 
 @RunWith(RobolectricTestRunner::class)
 class EntryNavigationTest {
     private val auth = EntryAuthenticationViewModel({ 30_000L }, { 1_000L })
 
     @Test
-    fun `actual navigation binds grants to new entry ids and preserves detail editor back`() {
-        val nav = controller(auth)
-        val home = requireNotNull(nav.currentBackStackEntry).id
+    fun `navigation binds grants to new entry ids and preserves detail editor back`() {
+        val nav = navigator(auth)
         auth.onForeground(true)
-        val first = openAccount(nav, home)
+        val first = openAccount(nav, HomeBase.entryId)
         assertTrue(auth.canRead(first, ACCOUNT))
-        auth.openEditor(first, ACCOUNT) {
-            nav.navigate(PasswordEditor(ACCOUNT))
-            nav.currentBackStackEntry?.id
-        }
-        val editor = requireNotNull(nav.currentBackStackEntry).id
+        auth.openEditor(first, ACCOUNT) { nav.navigate(PasswordEditor(ACCOUNT, newEntryId())) }
+        val editor = nav.current.entryId
         assertTrue(auth.canRead(editor, ACCOUNT))
-        nav.popBackStack()
+        nav.goBack()
         assertTrue(auth.canRead(first, ACCOUNT))
-        nav.popBackStack()
+        nav.goBack()
         assertFalse(auth.canRead(first, ACCOUNT))
-        val second = openAccount(nav, home)
+        val second = openAccount(nav, HomeBase.entryId)
         assertNotEquals(first, second)
         assertTrue(auth.canRead(second, ACCOUNT))
         assertFalse(auth.canRead(first, ACCOUNT))
@@ -47,82 +39,79 @@ class EntryNavigationTest {
 
     @Test
     fun `group page is public and opening its child still needs a fresh bound grant`() {
-        val nav = controller(auth)
+        val nav = navigator(auth)
         auth.onForeground(true)
-        nav.navigate(PasswordGroup(ACCOUNT))
-        val group = requireNotNull(nav.currentBackStackEntry)
-        assertEquals(ACCOUNT, group.toRoute<PasswordGroup>().groupId)
-        assertTrue(group.protectedAccountId() == null)
-        assertFalse(auth.canRead(group.id, ACCOUNT))
-        val detail = openAccount(nav, group.id)
+        nav.navigate(PasswordGroup(ACCOUNT, newEntryId()))
+        val group = nav.current
+        assertNull(group.protectedAccountId())
+        assertFalse(auth.canRead(group.entryId, ACCOUNT))
+        val detail = openAccount(nav, group.entryId)
         assertTrue(auth.canRead(detail, ACCOUNT))
-        nav.popBackStack()
+        nav.goBack()
         assertFalse(auth.canRead(detail, ACCOUNT))
-        assertFalse(auth.canRead(group.id, ACCOUNT))
-        val second = openAccount(nav, group.id)
+        assertFalse(auth.canRead(group.entryId, ACCOUNT))
+        val second = openAccount(nav, group.entryId)
         assertNotEquals(detail, second)
         assertTrue(auth.canRead(second, ACCOUNT))
     }
 
     @Test
-    fun `restored detail and editor routes have no grant and public create remains public`() {
-        val nav = controller(auth)
+    fun `rotation keeps entry ids and so the grant of the open account`() {
+        val stack = NavBackStack<Route>(HomeBase)
+        val nav = AppNavigator(stack, auth).apply { reportDestination() }
         auth.onForeground(true)
-        val home = requireNotNull(nav.currentBackStackEntry).id
-        openAccount(nav, home)
-        nav.navigate(PasswordEditor(ACCOUNT)) // A direct navigation is deliberately unauthorized.
-        val saved = nav.saveState()
-        val fresh = EntryAuthenticationViewModel({ 30_000L }, { 1_000L })
-        val restored = newController()
-        restored.restoreState(saved)
-        installGraph(restored, fresh)
-        fresh.onForeground(true)
-        val editor = requireNotNull(restored.currentBackStackEntry)
-        assertFalse(fresh.canRead(editor.id, ACCOUNT))
-        restored.popBackStack()
-        val detail = requireNotNull(restored.currentBackStackEntry)
-        assertFalse(fresh.canRead(detail.id, ACCOUNT))
-        restored.popBackStack()
-        restored.navigate(PasswordEditor())
-        assertTrue(restored.currentBackStackEntry?.protectedAccountId() == null)
+        val detail = openAccount(nav, HomeBase.entryId)
+        val restored =
+            decodeFromSavedState(
+                BackStackSerializer,
+                encodeToSavedState(BackStackSerializer, stack),
+            )
+        assertEquals(stack.toList(), restored.toList())
+        AppNavigator(restored, auth).reportDestination()
+        assertTrue(auth.canRead(detail, ACCOUNT))
     }
 
-    private fun openAccount(nav: NavHostController, home: String): String {
-        auth.request(Action.OpenAccount, home, ACCOUNT)
+    @Test
+    fun `restored detail and editor routes have no grant and public create remains public`() {
+        val stack = NavBackStack<Route>(HomeBase)
+        val nav = AppNavigator(stack, auth).apply { reportDestination() }
+        auth.onForeground(true)
+        openAccount(nav, HomeBase.entryId)
+        // A direct navigation is deliberately unauthorized.
+        nav.navigate(PasswordEditor(ACCOUNT, newEntryId()))
+        assertFalse(auth.canRead(nav.current.entryId, ACCOUNT))
+        val saved = encodeToSavedState(BackStackSerializer, stack)
+        // Process death: the activity-retained controller is new, the back stack is restored.
+        val fresh = EntryAuthenticationViewModel({ 30_000L }, { 1_000L })
+        val restored = AppNavigator(decodeFromSavedState(BackStackSerializer, saved), fresh)
+        restored.reportDestination()
+        fresh.onForeground(true)
+        assertFalse(fresh.canRead(restored.current.entryId, ACCOUNT))
+        restored.goBack()
+        assertFalse(fresh.canRead(restored.current.entryId, ACCOUNT))
+        restored.goBack()
+        assertEquals(HomeBase, restored.current)
+        restored.navigate(PasswordEditor(-1L, newEntryId()))
+        assertNull(restored.current.protectedAccountId())
+    }
+
+    @Test
+    fun `back on the start destination keeps it`() {
+        val nav = navigator(auth)
+        nav.goBack()
+        assertEquals(HomeBase, nav.current)
+    }
+
+    private fun openAccount(nav: AppNavigator, from: String): String {
+        auth.request(Action.OpenAccount, from, ACCOUNT)
         auth.beginNativePrompt()?.let { auth.nativeResult(it.token, true) }
         val request = requireNotNull(auth.state.value.approvedOpen)
-        auth.openApprovedAccount(request.token) {
-            nav.navigate(PasswordDetail(it))
-            nav.currentBackStackEntry?.id
-        }
-        return requireNotNull(nav.currentBackStackEntry).id
+        auth.openApprovedAccount(request.token) { nav.navigate(PasswordDetail(it, newEntryId())) }
+        return nav.current.entryId
     }
 
-    private fun controller(owner: EntryAuthenticationViewModel): NavHostController =
-        newController().also { installGraph(it, owner) }
-
-    private fun newController(): NavHostController =
-        NavHostController(RuntimeEnvironment.getApplication()).apply {
-            navigatorProvider.addNavigator(ComposeNavigator())
-            setViewModelStore(ViewModelStore())
-        }
-
-    private fun installGraph(nav: NavHostController, owner: EntryAuthenticationViewModel) {
-        nav.addOnDestinationChangedListener(
-            NavController.OnDestinationChangedListener { controller, _, _ ->
-                controller.currentBackStackEntry?.let { entry ->
-                    owner.setDestination(entry.id, entry.protectedAccountId())
-                }
-            }
-        )
-        nav.graph =
-            nav.createGraph(startDestination = HomeBase) {
-                composable<HomeBase> {}
-                composable<PasswordDetail> {}
-                composable<PasswordEditor> {}
-                composable<PasswordGroup> {}
-            }
-    }
+    private fun navigator(owner: EntryAuthenticationViewModel): AppNavigator =
+        AppNavigator(NavBackStack<Route>(HomeBase), owner).apply { reportDestination() }
 
     private companion object {
         const val ACCOUNT = 42L
