@@ -6,9 +6,6 @@ import android.content.Intent
 import android.provider.Settings
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Key
-import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -28,6 +25,7 @@ import com.nielcode.kupass.R
 import com.nielcode.kupass.autofill.AutofillSettings
 import com.nielcode.kupass.ui.components.SectionHeader
 import com.nielcode.kupass.ui.components.SectionItem
+import com.nielcode.kupass.ui.icons.KupassIcons
 
 /** Autofill service status (picker or turn off), the save offer, and Chrome's switch. */
 @Composable
@@ -60,7 +58,7 @@ internal fun AutofillSection(
             },
         )
         SectionItem(
-            icon = Icons.Default.Save,
+            icon = KupassIcons.Save,
             title = stringResource(R.string.settings_offer_save),
             subtitle = stringResource(R.string.settings_offer_save_desc),
             onClick = onOfferToSaveClick,
@@ -87,7 +85,7 @@ internal fun AutofillServiceItem(
 ) {
     var confirmOff by rememberSaveable { mutableStateOf(false) }
     SectionItem(
-        icon = Icons.Default.Key,
+        icon = KupassIcons.Key,
         title = stringResource(R.string.settings_autofill_service),
         subtitle =
             stringResource(

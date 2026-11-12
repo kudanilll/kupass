@@ -4,9 +4,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.FileDownload
-import androidx.compose.material.icons.filled.FileUpload
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -17,6 +14,7 @@ import com.nielcode.kupass.R
 import com.nielcode.kupass.ui.components.SectionHeader
 import com.nielcode.kupass.ui.components.SectionItem
 import com.nielcode.kupass.ui.components.pageVerticalScroll
+import com.nielcode.kupass.ui.icons.KupassIcons
 import com.nielcode.kupass.ui.screens.pagerPageInsets
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -38,14 +36,14 @@ fun DataScreen(
         ) {
             SectionHeader(title = stringResource(R.string.data_export_import_title))
             SectionItem(
-                icon = Icons.Default.FileUpload,
+                icon = KupassIcons.FileUpload,
                 title = stringResource(R.string.nav_export),
                 subtitle = stringResource(R.string.data_export_subtitle),
                 onClick = onExportClick,
             )
 
             SectionItem(
-                icon = Icons.Default.FileDownload,
+                icon = KupassIcons.FileDownload,
                 title = stringResource(R.string.nav_import),
                 subtitle = stringResource(R.string.data_import_subtitle),
                 onClick = onImportClick,

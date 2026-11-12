@@ -51,7 +51,7 @@ Engineering guidelines for Kupass. When an API detail matters, confirm it agains
 - Measure before optimizing: use the `android-profiler` skill for startup, jank, and memory.
 - Consider a Baseline Profile for startup (proposed).
 - Avoid decrypting every password just to render the list. Only the detail/copy path needs plaintext (see `docs/codebase/CONCERNS.md` §4).
-- Keep dependencies minimal. `material-icons-extended` is large, although R8 strips unused icons. Check with the `r8-analyzer` skill when size matters.
+- Keep dependencies minimal. Icons live in `ui/icons/KupassIcons.kt` (Material icon path data, no icon library): add a new one there instead of pulling `material-icons-extended` back in. Check size with the `r8-analyzer` skill when it matters.
 - Keep release `isMinifyEnabled = true` and `isShrinkResources = true`, and add keep rules only when needed.
 
 ## Testing

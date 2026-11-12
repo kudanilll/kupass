@@ -7,16 +7,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.Code
-import androidx.compose.material.icons.filled.ColorLens
-import androidx.compose.material.icons.filled.Contrast
-import androidx.compose.material.icons.filled.Gavel
-import androidx.compose.material.icons.filled.Language
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Password
-import androidx.compose.material.icons.filled.SystemUpdate
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -50,6 +40,7 @@ import com.nielcode.kupass.ui.components.SectionHeader
 import com.nielcode.kupass.ui.components.SectionItem
 import com.nielcode.kupass.ui.components.SingleChoiceDialog
 import com.nielcode.kupass.ui.components.pageVerticalScroll
+import com.nielcode.kupass.ui.icons.KupassIcons
 import com.nielcode.kupass.ui.screens.pagerPageInsets
 import com.nielcode.kupass.ui.theme.AppearanceSettings
 import com.nielcode.kupass.ui.theme.Typography
@@ -228,7 +219,7 @@ private fun GeneralSection(
     Column(modifier = modifier) {
         SectionHeader(title = stringResource(R.string.settings))
         SectionItem(
-            icon = Icons.Default.Language,
+            icon = KupassIcons.Language,
             title = stringResource(R.string.settings_language_title),
             subtitle = languages.getOrNull(languageIndex) ?: stringResource(R.string.lang_en),
             onClick = onLanguageClick,
@@ -247,13 +238,13 @@ private fun SecuritySection(
     Column(modifier = modifier) {
         SectionHeader(title = stringResource(R.string.settings_category_security))
         SectionItem(
-            icon = Icons.Default.Lock,
+            icon = KupassIcons.Lock,
             title = stringResource(R.string.settings_auto_lock_title),
             subtitle = autoLockLabel(autoLockSeconds),
             onClick = onAutoLockClick,
         )
         SectionItem(
-            icon = Icons.Default.Password,
+            icon = KupassIcons.Password,
             title = stringResource(R.string.settings_exclude_lookalike_title),
             subtitle = lookalikeSummary,
             onClick = onExcludeLookalikeClick,
@@ -274,13 +265,13 @@ private fun AppearanceSection(
     Column(modifier = modifier) {
         SectionHeader(title = stringResource(R.string.settings_category_appearance))
         SectionItem(
-            icon = Icons.Default.Contrast,
+            icon = KupassIcons.Contrast,
             title = stringResource(R.string.settings_theme_title),
             subtitle = themes.getOrNull(themeIndex) ?: stringResource(R.string.theme_default),
             onClick = onThemeClick,
         )
         SectionItem(
-            icon = Icons.Default.ColorLens,
+            icon = KupassIcons.ColorLens,
             title = stringResource(R.string.settings_dynamic_colors_title),
             subtitle =
                 stringResource(
@@ -307,13 +298,13 @@ private fun AboutSection(
     Column(modifier = modifier) {
         SectionHeader(title = stringResource(R.string.settings_category_developer))
         SectionItem(
-            icon = Icons.Default.AccountCircle,
+            icon = KupassIcons.AccountCircle,
             title = stringResource(R.string.settings_about_title),
             subtitle = BuildConfig.DEV_NAME,
             onClick = { onOpen { openUrl(it, BuildConfig.DEV_URL) } },
         )
         SectionItem(
-            icon = Icons.Default.Gavel,
+            icon = KupassIcons.Gavel,
             title = stringResource(R.string.settings_license_title),
             subtitle = stringResource(R.string.settings_license_summary),
             onClick = {
@@ -328,7 +319,7 @@ private fun AboutSection(
             },
         )
         SectionItem(
-            icon = Icons.Default.SystemUpdate,
+            icon = KupassIcons.SystemUpdate,
             title = stringResource(R.string.settings_check_updates),
             subtitle =
                 stringResource(
@@ -338,7 +329,7 @@ private fun AboutSection(
             onClick = onCheckForUpdatesClick,
         )
         SectionItem(
-            icon = Icons.Default.Code,
+            icon = KupassIcons.Code,
             title = stringResource(R.string.app_name),
             subtitle = "${installedVersionLabel()} - ${BuildConfig.BUILD_TYPE}",
             onClick = { onOpen { openUrl(it, BuildConfig.GIT_URL) } },

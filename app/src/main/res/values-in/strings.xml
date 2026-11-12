@@ -6,20 +6,16 @@
     <string name="enable">Aktif</string>
     <string name="disable">Nonaktif</string>
     <string name="not_supported">Tidak didukung pada perangkat ini</string>
-    <string name="github">Github</string>
     <string name="create_new_password">Tambah sandi baru</string>
     <string name="edit_password">Edit kata sandi</string>
     <string name="password_detail">Detail kata sandi</string>
     <string name="show_password">Tampilkan kata sandi</string>
     <string name="copied">Disalin ke papan klip</string>
-    <string name="copy">Salin</string>
 
     <!-- Data Screen -->
     <string name="data_export_import_title">Ekspor &amp; Impor</string>
     <string name="data_export_subtitle">Cadangan .kupass yang dilindungi kata sandi</string>
     <string name="data_import_subtitle">Cadangan Kupass atau CSV Google Password Manager</string>
-    <string name="data_export_title">Ekspor Data</string>
-    <string name="data_import_title">Impor Data</string>
 
     <string name="url_label">URL</string>
     <string name="notes_label">Catatan</string>
@@ -28,11 +24,8 @@
 
     <!-- FAB -->
     <string name="fab_open">Tambah</string>
-    <string name="fab_close">Tutup</string>
 
     <!-- Shortcut -->
-    <string name="shortcut_feature_disabled">Fitur pintasan dinonaktifkan</string>
-    <string name="shortcut_label">Tambah sandi baru</string>
 
     <!-- Language -->
     <string name="lang_en">Inggris</string>
@@ -60,7 +53,6 @@
     <string name="settings_about_title">Pengembang</string>
     <string name="settings_license_title">Sumber Terbuka</string>
     <string name="settings_license_summary">Lisensi pihak ketiga</string>
-    <string name="settings_version_title">Versi Kupass</string>
 
     <!-- Toast -->
     <string name="backup_export_dialog_title">Lindungi cadangan kamu</string>
@@ -74,18 +66,16 @@
     <string name="backup_working">Mohon tunggu…</string>
     <string name="backup_import_working">Mengimpor kata sandi</string>
     <string name="backup_export_working">Mengekspor cadangan kamu</string>
-    <string name="backup_progress_format">%1$d/%2$d kata sandi</string>
-    <string name="backup_working_message">Mohon tunggu saat kata sandi kamu diproses.</string>
+    <plurals name="backup_progress">
+        <item quantity="other">%1$d/%2$d kata sandi</item>
+    </plurals>
     <string name="toast_backup_foreign_device">Cadangan lama ini dibuat di perangkat lain dan tidak dapat dipulihkan di sini. Ekspor cadangan baru dari perangkat asalnya.</string>
     <string name="toast_backup_unsupported">File cadangan tidak didukung</string>
     <string name="toast_import_too_large">File melebihi 32 MiB atau 10.000 entri</string>
     <string name="toast_vault_read_failed">Beberapa entri vault tidak dapat didekripsi</string>
     <string name="toast_no_data">Tidak ada kata sandi untuk disimpan</string>
-    <string name="toast_success">Kata sandi berhasil dibuat</string>
     <string name="toast_success_delete">Sukses menghapus</string>
-    <string name="toast_success_update">Sukses memperbarui</string>
     <string name="toast_success_export">Sukses ekspor</string>
-    <string name="toast_success_import">Berhasil impor dari file</string>
     <string name="toast_failed_export">Gagal ekspor</string>
     <string name="toast_failed_import">File gagal dibaca. Pilih cadangan Kupass atau CSV Google Password Manager.</string>
     <string name="toast_import_read_failed">File yang dipilih gagal dibuka. Unduh ke perangkat ini lalu pilih kembali.</string>
@@ -93,18 +83,11 @@
     <string name="toast_failed_csv_import">CSV gagal diimpor. Kolom name, url, username, atau password wajib ada.</string>
 
     <!-- Error -->
-    <string name="error_required">Kolom ini wajib diisi</string>
-    <string name="error_min_password">Minimal 8 karakter</string>
-    <string name="error_invalid_email">Format email tidak valid</string>
 
     <!-- Dialog -->
-    <string name="dialog_title_export">Ekspor kata sandi sebagai</string>
-    <string name="dialog_title_import">Impor kata sandi dari</string>
     <string name="dialog_title_delete">Hapus kata sandi</string>
-    <string name="dialog_title_permission">Izin aplikasi</string>
     <string name="dialog_message_language">Kita butuh memulai ulang aplikasi untuk mengganti bahasa</string>
     <string name="dialog_message_delete">Apakah Anda yakin ingin menghapus</string>
-    <string name="dialog_message_permission">Kita memerlukan akses untuk menulis files</string>
     <string name="dialog_replace_password_title">Ganti kata sandi?</string>
     <string name="dialog_replace_password_message">Membuat kata sandi baru akan menggantikan kata sandi saat ini. Lanjutkan?</string>
 
@@ -117,10 +100,7 @@
     <string name="button_import">IMPOR</string>
     <string name="button_restart">MULAI ULANG</string>
     <string name="button_save">SIMPAN</string>
-    <string name="button_request">MINTA</string>
-    <string name="button_generate">GENERATE</string>
     <string name="generate_password">Buat kata sandi acak</string>
-    <string name="button_edit">EDIT</string>
 
     <!-- Hint -->
     <string name="search_hint">Cari kata sandi</string>
@@ -130,9 +110,6 @@
     <string name="note_hint">Catatan (opsional)</string>
 
     <!-- Permission -->
-    <string name="permission_granted">Izin diberikan</string>
-    <string name="permission_denied">Izin ditolak</string>
-    <string name="biometric_unavailable">Fitur biometrik tidak tersedia di perangkat ini</string>
 
     <!-- Misc -->
     <string name="toast_url_failed">Tidak ada aplikasi yang dapat membuka tautan ini</string>

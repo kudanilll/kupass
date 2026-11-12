@@ -47,7 +47,13 @@ jobs:
         run: ./gradlew detektMain detektTest --console=plain
 
       - name: Build, unit test, lint
-        run: ./gradlew assembleDebug testDebugUnitTest :build-logic:convention:test lintDebug --console=plain
+        run: ./gradlew assembleDebug :app:assembleRelease testDebugUnitTest :build-logic:convention:test lintDebug --console=plain
+
+      - name: Record APK size
+        # R8-minified release build. Without secrets it is debug-signed, which barely changes the size.
+        run: |
+          bytes=$(stat -c %s app/build/outputs/apk/release/app-release.apk)
+          printf '### Release APK size\n\n%s bytes (%s KiB)\n' "$bytes" "$((bytes / 1024))" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload reports
         if: failure()

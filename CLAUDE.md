@@ -11,7 +11,7 @@ Kupass is an open-source (GPL-3.0) offline password manager for Android by **nie
 - Package: `com.nielcode.kupass`
 - Branch: `master` (main/default). Never code directly on `master`: every feature or fix gets its own branch
 - Version: `3.1.0` (versionCode `5`; release builds take versionCode from the tag), minSdk 27, compile/target SDK 37
-- Stack: Kotlin 2.4.21, AGP 9.5.1, Gradle 9.8.2, Compose BOM 2026.09, Material 3, Navigation Compose (typed routes), Lifecycle ViewModel, Room 2.8 + KSP, Kotlinx Serialization, Android Keystore (AES-GCM)
+- Stack: Kotlin 2.4.21, AGP 9.5.1, Gradle 9.9.1, Compose BOM 2026.09, Material 3, Navigation Compose (typed routes), Lifecycle ViewModel, Room 2.8 + KSP, Kotlinx Serialization, Android Keystore (AES-GCM)
 - People: Danil (founder, lead software engineer at nielcode) owns product decisions.
 
 ## Architecture In One Glance
@@ -90,7 +90,7 @@ Confirmed product decisions (app lock, portable backups, font, CI, etc.) are in 
 ./gradlew lintDebug                 # Android lint, every module
 ./gradlew :core:data:connectedDebugAndroidTest :core:security:connectedDebugAndroidTest   # DB migration + Keystore device tests (emulator)
 ./gradlew :app:connectedDebugAndroidTest   # app device tests; uninstalls Kupass afterwards (emulator only)
-./gradlew :app:testDebugUnitTest -Pkupass.snapshots --tests "*UiSnapshotTest"  # UI PNGs in app/build/ui-snapshots/
+./gradlew :app:testDebugUnitTest --tests "*UiSnapshotTest"  # UI PNGs in app/build/ui-snapshots/ (also part of the full run)
 ./gradlew spotlessApply            # format all Kotlin/Gradle files with ktfmt (spotlessCheck verifies)
 ./gradlew detektMain detektTest  # static analysis, every module, incl. Compose rules (must report 0 issues)
 ```

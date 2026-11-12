@@ -5,9 +5,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
@@ -26,6 +23,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.nielcode.kupass.R
 import com.nielcode.kupass.ui.components.stretchWhenContentFits
+import com.nielcode.kupass.ui.icons.KupassIcons
 
 /**
  * Shown only instead of a protected destination. No entry data is composed here.
@@ -60,7 +58,7 @@ fun LockScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Icon(
-                imageVector = Icons.Default.Lock,
+                imageVector = KupassIcons.Lock,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(64.dp),
@@ -86,7 +84,7 @@ fun LockScreen(
             if (deviceSecure) {
                 Button(onClick = onUnlock) {
                     Icon(
-                        Icons.Default.LockOpen,
+                        KupassIcons.LockOpen,
                         contentDescription = null,
                         modifier = Modifier.padding(end = 8.dp),
                     )

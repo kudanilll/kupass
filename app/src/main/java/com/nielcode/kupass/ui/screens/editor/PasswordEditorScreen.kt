@@ -13,10 +13,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -56,6 +52,7 @@ import com.nielcode.kupass.ui.components.SecretKeyboardOptions
 import com.nielcode.kupass.ui.components.VaultFieldShape
 import com.nielcode.kupass.ui.components.VaultTextField
 import com.nielcode.kupass.ui.components.pageVerticalScroll
+import com.nielcode.kupass.ui.icons.KupassIcons
 
 private const val URL_PLACEHOLDER = "https://..."
 
@@ -218,7 +215,7 @@ private fun EditorTopBar(
         },
         navigationIcon = {
             FilledTonalIconButton(onClick = onBack, modifier = Modifier.padding(start = 8.dp)) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                Icon(KupassIcons.ArrowBack, contentDescription = null)
             }
         },
         actions = {
@@ -227,7 +224,7 @@ private fun EditorTopBar(
                 enabled = saveEnabled,
                 modifier = Modifier.padding(end = 8.dp),
             ) {
-                Icon(Icons.Default.Check, contentDescription = stringResource(R.string.button_save))
+                Icon(KupassIcons.Check, contentDescription = stringResource(R.string.button_save))
             }
         },
     )
@@ -320,7 +317,7 @@ private fun PasswordFieldRow(
             shape = VaultFieldShape,
         ) {
             Icon(
-                imageVector = Icons.Default.Shuffle,
+                imageVector = KupassIcons.Shuffle,
                 contentDescription = stringResource(R.string.generate_password),
             )
         }

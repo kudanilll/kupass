@@ -54,8 +54,6 @@ class FakePasswordDao : PasswordDao {
         rows.value = rows.value.map { byId[it.id] ?: it }
     }
 
-    override suspend fun delete(password: PasswordEntity) = deleteById(password.id)
-
     override suspend fun deleteById(id: Long) {
         rows.value = rows.value.filterNot { it.id == id }
     }

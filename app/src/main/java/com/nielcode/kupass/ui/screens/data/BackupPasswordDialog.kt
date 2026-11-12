@@ -17,8 +17,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Key
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.CircularProgressIndicator
@@ -54,6 +52,7 @@ import com.nielcode.kupass.data.backup.BackupCodec
 import com.nielcode.kupass.ui.components.PasswordVisibilityToggle
 import com.nielcode.kupass.ui.components.SecretKeyboardOptions
 import com.nielcode.kupass.ui.components.VaultTextField
+import com.nielcode.kupass.ui.icons.KupassIcons
 
 /**
  * Asks for a new backup password before export. [onConfirm] receives a fresh [CharArray]; the
@@ -217,8 +216,9 @@ private fun BackupProgressContent(
         )
         Text(
             text =
-                stringResource(
-                    R.string.backup_progress_format,
+                pluralStringResource(
+                    R.plurals.backup_progress,
+                    progress.total,
                     progress.current,
                     progress.total,
                 ),
@@ -263,7 +263,7 @@ private fun ModernLoadingSpinner(modifier: Modifier = Modifier) {
             strokeCap = StrokeCap.Round,
         )
         Icon(
-            Icons.Default.Key,
+            KupassIcons.Key,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.primary,
             modifier =

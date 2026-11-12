@@ -3,7 +3,7 @@ package com.nielcode.kupass.ui.screens.home
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.junit4.StateRestorationTester
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -14,6 +14,7 @@ import com.nielcode.kupass.security.CryptoManager
 import com.nielcode.kupass.testing.FakePasswordDao
 import com.nielcode.kupass.ui.theme.KupassTheme
 import javax.crypto.KeyGenerator
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Rule
@@ -77,7 +78,11 @@ class PasswordGroupScreenTest {
         compose.onNodeWithText("other").assertDoesNotExist()
         compose.onNode(hasSetTextAction()).assertDoesNotExist()
         compose.onNodeWithText("not shown on the public page").assertDoesNotExist()
-        runBlocking { repository.deletePasswordById(ids.first()) }
+        runBlocking {
+            repository.deletePassword(
+                requireNotNull(repository.getPasswordById(ids.first()).first())
+            )
+        }
         compose.waitUntil(5_000) {
             compose.onAllNodesWithText("alice").fetchSemanticsNodes().isEmpty()
         }

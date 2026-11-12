@@ -22,8 +22,6 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
@@ -46,6 +44,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import com.nielcode.kupass.R
+import com.nielcode.kupass.ui.icons.KupassIcons
 import com.nielcode.kupass.ui.theme.KupassTheme
 
 /** Spring used by every bottom navigation animation, so they feel consistent and interruptible. */
@@ -103,7 +102,7 @@ fun BottomNav(
                         hoveredElevation = 0.dp,
                     ),
             ) {
-                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.fab_open))
+                Icon(KupassIcons.Add, contentDescription = stringResource(R.string.fab_open))
             }
         }
     }

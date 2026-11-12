@@ -10,7 +10,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.biometric.BiometricPrompt
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.Lifecycle
@@ -46,10 +45,12 @@ class MainActivity : AppCompatActivity() {
         observeAuthentication()
         updates.onAppOpen(restored = savedInstanceState != null)
 
+        // Read once: changing dynamic color asks for a restart.
+        val isDynamicEnabled =
+            (application as App).container.preferenceManager.dynamicColor ==
+                AppConfig.DynamicColors.Code.ENABLE
         enableEdgeToEdge()
         setContent {
-            val prefs = remember { (application as App).container.preferenceManager }
-            val isDynamicEnabled = prefs.dynamicColor == AppConfig.DynamicColors.Code.ENABLE
             val authState by authentication.state.collectAsStateWithLifecycle()
             val update by updates.state.collectAsStateWithLifecycle()
             KupassTheme(dynamicColor = isDynamicEnabled) {
