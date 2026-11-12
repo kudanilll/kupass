@@ -46,10 +46,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Site icons are always enabled when an entry has a public domain and the build has a Favget API key; the Settings toggle was removed. When the URL is empty, a single-word site name such as `GitHub` tries `github.com`.
 - Dynamic colors now default to enabled on supported devices, and the open-source licenses screen follows Kupass's selected color scheme.
 - Tightened the spacing between the bottom navigation and add button, added a subtle navigation shadow, and removed the duplicate add button from the empty-vault state.
-- Updated the build toolchain to the latest stable releases: Android Gradle Plugin 9.5.1, Gradle 9.8.2 (checksum-verified wrapper), Kotlin 2.4.21 (Compose compiler and serialization plugin), and KSP 2.3.13.
+- Updated the build toolchain to the latest stable releases: Android Gradle Plugin 9.5.1, Gradle 9.9.1 (checksum-verified wrapper), Kotlin 2.4.21 (Compose compiler and serialization plugin), and KSP 2.3.13.
 - Updated development tooling: Spotless 8.11.0, Compose detekt rules 0.6.8, and the SHA-pinned upload-artifact action 7.0.2.
 - The developer entry in Settings now opens `https://achmaddaniel.nielcode.com`.
-- Updated libraries: Compose BOM 2026.09.00, Navigation 2.10.1, Room 2.8.5, OSS Licenses 17.5.2 (plugin 0.13.0), kotlinx.coroutines 1.11.0, AndroidX Annotation 1.11.0, and Robolectric 4.17 (adds Android 17 / API 37 support for tests).
+- Updated libraries: Compose BOM 2026.09.00, Room 2.8.5, OSS Licenses 17.5.2 (plugin 0.13.0), kotlinx.coroutines 1.11.0, AndroidX Annotation 1.11.0, and Robolectric 4.18-beta-1 (Android 17 / API 37 support for tests).
+- Navigation now uses Jetpack Navigation 3 (1.2.1). Account details and the editor slide up when they open and slide back down when they close or when you use the back gesture. Home and the account list of a site cross-fade.
+- Kupass draws its own set of the 30 icons it uses instead of including the whole Material icons library, so the release APK is smaller (about 3.7 MB).
 - AppCompat 1.8.0 and Material Components 1.14.0 are now declared explicitly instead of arriving transitively.
 - Redesigned bottom navigation: smoother spring animations, Material 3 tonal colors, and shadows on the navigation bar and the add button.
 - The password detail screen puts Edit and Delete in one overflow menu.
@@ -89,7 +91,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Importing is now all-or-nothing, skips entries that already exist (or appear twice in the file), and reports how many were imported and skipped.
 - Importing an old backup made on another device no longer imports encrypted text as passwords. The import is refused with an explanation.
 - Encryption failures no longer fall back to storing plaintext, and unreadable entries are no longer shown as ciphertext.
-
+- The English backup progress line says "1/1 password" instead of "1/1 passwords".
 - Copied passwords are now cleared from the clipboard without crashing on Android 8.1 (API 27), where `clearPrimaryClip()` is unavailable.
 
 ## [2.0.0] - 2024-02-11
