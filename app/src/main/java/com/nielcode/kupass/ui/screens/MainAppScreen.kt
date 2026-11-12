@@ -24,13 +24,13 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSerializable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -45,11 +45,13 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import androidx.navigation.toRoute
+import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
+import androidx.navigation3.runtime.EntryProviderScope
+import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.runtime.NavKey
+import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
+import androidx.navigation3.ui.NavDisplay
 import com.nielcode.kupass.App
 import com.nielcode.kupass.data.local.db.PasswordEntity
 import com.nielcode.kupass.data.siteicon.SiteIcons
@@ -77,13 +79,29 @@ import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 
-@Serializable object HomeBase
+/** Back stack keys. Only IDs are saved: never names, URLs, or credentials. */
+@Serializable
+sealed interface Route : NavKey {
+    /**
+     * Unique per navigation (see [newEntryId]) and saved with the back stack, so a grant binds to
+     * one visit and survives rotation. Process death still starts without grants.
+     */
+    val entryId: String
+}
 
-@Serializable data class PasswordEditor(val passwordId: Long = -1L)
+@Serializable
+data object HomeBase : Route {
+    override val entryId: String
+        get() = "home"
+}
 
-@Serializable data class PasswordDetail(val passwordId: Long)
+/** Creates an entry when [passwordId] is `<= 0`. */
+@Serializable data class PasswordEditor(val passwordId: Long, override val entryId: String) : Route
 
-@Serializable data class PasswordGroup(val groupId: Long)
+@Serializable data class PasswordDetail(val passwordId: Long, override val entryId: String) : Route
+
+/** [groupId] is the ID of any account in the site's group. */
+@Serializable data class PasswordGroup(val groupId: Long, override val entryId: String) : Route
 
 private const val BACKUP_MIME_TYPE = "application/octet-stream"
 private const val BACKUP_FILE_NAME = "kupass-backup.kupass"
@@ -99,21 +117,15 @@ fun MainAppScreen(
     modifier: Modifier = Modifier,
     homeViewModel: HomeViewModel = viewModel(factory = HomeViewModel.Factory),
 ) {
-    val navController = rememberNavController()
-    DisposableEffect(navController, authentication) {
-        val listener = NavController.OnDestinationChangedListener { controller, _, _ ->
-            controller.currentBackStackEntry?.let { entry ->
-                authentication.setDestination(entry.id, entry.protectedAccountId())
-            }
-        }
-        navController.addOnDestinationChangedListener(listener)
-        onDispose { navController.removeOnDestinationChangedListener(listener) }
-    }
+    val backStack =
+        rememberSerializable(serializer = BackStackSerializer) { NavBackStack<Route>(HomeBase) }
+    val navigator = remember(backStack, authentication) { AppNavigator(backStack, authentication) }
+    // A restored back stack has no navigation event, so report its top entry once.
+    SideEffect(navigator) { navigator.reportDestination() }
     SideEffect(authState.approvedOpen) {
         authState.approvedOpen?.let { request ->
             authentication.openApprovedAccount(request.token) { id ->
-                navController.navigate(PasswordDetail(id))
-                navController.currentBackStackEntry?.id
+                navigator.navigate(PasswordDetail(id, newEntryId()))
             }
         }
     }
@@ -125,31 +137,55 @@ fun MainAppScreen(
         onOpenSecuritySettings = onOpenSecuritySettings,
         onDismiss = authentication::cancelPending,
     )
-    NavHost(navController = navController, startDestination = HomeBase, modifier = modifier) {
-        composable<HomeBase> { entry ->
-            MainPagerScreen(
-                entryId = entry.id,
-                authentication = authentication,
-                onNavigateToEditor = { navController.navigate(PasswordEditor()) },
-                onNavigateToDetail = { id ->
-                    authentication.request(Action.OpenAccount, entry.id, id)
-                },
-                onNavigateToGroup = { id -> navController.navigate(PasswordGroup(id)) },
-                homeViewModel = homeViewModel,
-            )
-        }
-        composable<PasswordGroup> { entry ->
-            PasswordGroupScreen(
-                groupId = entry.toRoute<PasswordGroup>().groupId,
-                onNavigateBack = { navController.popBackStack() },
-                onNavigateToDetail = { id ->
-                    authentication.request(Action.OpenAccount, entry.id, id)
-                },
-                siteIcons = rememberSiteIcons(),
-                viewModel = homeViewModel,
-            )
-        }
-        accountRoutes(navController, authentication, onOpenSecuritySettings)
+    NavDisplay(
+        backStack = backStack,
+        onBack = navigator::goBack,
+        modifier = modifier,
+        // Each entry gets its own saved state and ViewModels, cleared when it is popped.
+        entryDecorators =
+            listOf(
+                rememberSaveableStateHolderNavEntryDecorator(),
+                rememberViewModelStoreNavEntryDecorator(),
+            ),
+        transitionSpec = { crossFade() },
+        popTransitionSpec = { crossFade() },
+        predictivePopTransitionSpec = { crossFade() },
+        entryProvider =
+            entryProvider {
+                publicEntries(navigator, authentication, homeViewModel)
+                accountEntries(navigator, authentication, onOpenSecuritySettings)
+            },
+    )
+}
+
+/** Home and the account list of a site. Opening an account goes through [authentication]. */
+private fun EntryProviderScope<Route>.publicEntries(
+    navigator: AppNavigator,
+    authentication: EntryAuthenticationViewModel,
+    homeViewModel: HomeViewModel,
+) {
+    entry<HomeBase>(clazzContentKey = { it.entryId }) { route ->
+        MainPagerScreen(
+            entryId = route.entryId,
+            authentication = authentication,
+            onNavigateToEditor = { navigator.navigate(PasswordEditor(-1L, newEntryId())) },
+            onNavigateToDetail = { id ->
+                authentication.request(Action.OpenAccount, route.entryId, id)
+            },
+            onNavigateToGroup = { id -> navigator.navigate(PasswordGroup(id, newEntryId())) },
+            homeViewModel = homeViewModel,
+        )
+    }
+    entry<PasswordGroup>(clazzContentKey = { it.entryId }) { route ->
+        PasswordGroupScreen(
+            groupId = route.groupId,
+            onNavigateBack = navigator::goBack,
+            onNavigateToDetail = { id ->
+                authentication.request(Action.OpenAccount, route.entryId, id)
+            },
+            siteIcons = rememberSiteIcons(),
+            viewModel = homeViewModel,
+        )
     }
 }
 

@@ -30,7 +30,7 @@
 
 - Process entry: `App.kt` (`android:name=".App"`). It blocks screenshots on every Activity (`FLAG_SECURE`) and applies the saved locale, night mode, and dynamic colors.
 - UI entry: `MainActivity.kt`, the only exported launcher Activity. It installs splash/edge-to-edge, reattaches `BiometricPrompt` to the activity-retained authentication request, and always hosts public `MainAppScreen`. Sensitive destinations show `LockScreen` until their entry/account-bound grant permits screen/ViewModel creation. There is no global launch gate.
-- Navigation root: `ui/screens/MainAppScreen.kt` (`NavHost`, start destination `HomeBase`).
+- Navigation root: `ui/screens/MainAppScreen.kt` (Navigation 3 `NavDisplay` over a saved `NavBackStack<Route>`, start destination `HomeBase`). `AppNavigator` in `EntryNavigation.kt` is the only code that changes the back stack.
 - Secondary entry points: `KupassAutofillService` (bound only by the system through `BIND_AUTOFILL_SERVICE`) and the non-exported `AutofillUnlockActivity` / `AutofillGenerateActivity`, all in `:feature:autofill`. No receivers, providers, or workers.
 
 ## 3) Source Map
@@ -68,7 +68,7 @@ com/nielcode/kupass/
 │   ├── components/                BottomNav (+ navSpring, BottomNavHeight), MainTab, EmptyState, SectionHeader, SectionItem, VaultTextField (+ PasswordVisibilityToggle), DeletePasswordDialog, SingleChoiceDialog
 │   ├── screens/
 │   │   ├── MainAppScreen.kt       routes, state-hoisting MainPagerScreen + stateless MainPagerContent, hide-on-scroll BottomNav, auth-bound backup dialogs + SAF launchers, event toasts
-│   │   ├── EntryNavigation.kt     protected detail/editor route registration and pre-ViewModel authorization gate
+│   │   ├── EntryNavigation.kt     `AppNavigator`, protected detail/editor entries, the screen transitions, and the pre-ViewModel authorization gate
 │   │   ├── FlowDefaults.kt        `WhileUiSubscribed`, `recoverable {}` (I/O, SecurityException, crypto, SQL)
 │   │   ├── VaultEvent.kt          one-shot UI events (toasts) shared by Home and Backup
 │   │   ├── PageInsets.kt          `pagerPageInsets()`: pager pages take top/side insets, bottom comes from the floating nav
@@ -88,12 +88,14 @@ com/nielcode/kupass/
 
 ### Navigation routes (`MainAppScreen.kt`)
 
-| Route            | Args                                          | Screen                                                                                                               |
-| ---------------- | --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `HomeBase`       | none                                          | `MainPagerScreen`: `HorizontalPager` pages 0 Home, 1 Data, 2 Settings                                                |
-| `PasswordDetail` | `passwordId: Long`                            | `PasswordDetailScreen`                                                                                               |
-| `PasswordGroup`  | `groupId: Long` (representative row ID)       | Public `PasswordGroupScreen`; only IDs are saved, and child account navigation uses the existing authentication gate |
-| `PasswordEditor` | `passwordId: Long = -1L` (create when `<= 0`) | `PasswordEditorScreen`                                                                                               |
+Every route is a `Route` (`NavKey`). `entryId` is a random UUID made for each navigation and saved with the back stack, so an account grant binds to one visit and survives rotation. Only IDs are saved.
+
+| Route            | Args                                               | Screen                                                                                                               |
+| ---------------- | -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `HomeBase`       | none (`entryId` is `"home"`)                       | `MainPagerScreen`: `HorizontalPager` pages 0 Home, 1 Data, 2 Settings                                                |
+| `PasswordDetail` | `passwordId: Long`, `entryId`                      | `PasswordDetailScreen`                                                                                               |
+| `PasswordGroup`  | `groupId: Long` (representative row ID), `entryId` | Public `PasswordGroupScreen`; only IDs are saved, and child account navigation uses the existing authentication gate |
+| `PasswordEditor` | `passwordId: Long` (create when `<= 0`), `entryId` | `PasswordEditorScreen`                                                                                               |
 
 `home/PasswordGroupScreen.kt` reuses the existing vault list and Home ViewModel cache. Multi-account Home rows use `PasswordListItem.accountCount`; the CSV reader normalizes header variants while preserving credential fields and supports UTF-8/BOM-marked UTF-16.
 
