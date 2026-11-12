@@ -6,20 +6,16 @@
     <string name="enable">Enable</string>
     <string name="disable">Disable</string>
     <string name="not_supported">Not supported on this device</string>
-    <string name="github">Github</string>
     <string name="create_new_password">Create new password</string>
     <string name="edit_password">Edit password</string>
     <string name="password_detail">Password detail</string>
     <string name="show_password">Show password</string>
     <string name="copied">Copied to clipboard</string>
-    <string name="copy">Copy</string>
     
     <!-- Data Screen -->
     <string name="data_export_import_title">Export &amp; Import</string>
     <string name="data_export_subtitle">Password-protected .kupass backup</string>
     <string name="data_import_subtitle">Kupass backup or Google Password Manager CSV</string>
-    <string name="data_export_title">Export Data</string>
-    <string name="data_import_title">Import Data</string>
 
     <string name="url_label">URL</string>
     <string name="notes_label">Notes</string>
@@ -28,11 +24,8 @@
 
     <!-- FAB -->
     <string name="fab_open">Create</string>
-    <string name="fab_close">Close</string>
 
     <!-- Shortcut -->
-    <string name="shortcut_feature_disabled">Shortcut feature disabled</string>
-    <string name="shortcut_label">Add new password</string>
 
     <!-- Language -->
     <string name="lang_en">English</string>
@@ -60,7 +53,6 @@
     <string name="settings_about_title">Developer</string>
     <string name="settings_license_title">Open Source</string>
     <string name="settings_license_summary">Third-party app licenses</string>
-    <string name="settings_version_title">Kupass Version</string>
 
     <!-- Toast -->
     <string name="backup_export_dialog_title">Protect your backup</string>
@@ -75,17 +67,13 @@
     <string name="backup_import_working">Importing passwords</string>
     <string name="backup_export_working">Exporting your backup</string>
     <string name="backup_progress_format">%1$d/%2$d passwords</string>
-    <string name="backup_working_message">Please wait while your passwords are processed.</string>
     <string name="toast_backup_foreign_device">This older backup was made on another device and cannot be restored here. Export a new backup from the original device.</string>
     <string name="toast_backup_unsupported">Unsupported backup file</string>
     <string name="toast_import_too_large">The file exceeds 32 MiB or 10,000 entries</string>
     <string name="toast_vault_read_failed">Some vault entries could not be decrypted</string>
     <string name="toast_no_data">There is no password to save</string>
-    <string name="toast_success">Password created</string>
     <string name="toast_success_delete">Success delete</string>
-    <string name="toast_success_update">Success update</string>
     <string name="toast_success_export">Success export</string>
-    <string name="toast_success_import">Success import</string>
     <string name="toast_failed_export">Failed export</string>
     <string name="toast_failed_import">Could not read this file. Choose a Kupass backup or a Google Password Manager CSV.</string>
     <string name="toast_import_read_failed">Could not open the selected file. Download it to this device and select it again.</string>
@@ -93,18 +81,11 @@
     <string name="toast_failed_csv_import">Could not import this CSV. It needs at least a name, url, username, or password column.</string>
 
     <!-- Error -->
-    <string name="error_required">This field is required</string>
-    <string name="error_min_password">Minimum 8 characters</string>
-    <string name="error_invalid_email">Invalid email format</string>
 
     <!-- Dialog -->
-    <string name="dialog_title_export">Export password as</string>
-    <string name="dialog_title_import">Import password from</string>
     <string name="dialog_title_delete">Delete password</string>
-    <string name="dialog_title_permission">Permission</string>
     <string name="dialog_message_language">We need to restart app for change language</string>
     <string name="dialog_message_delete">Are you sure you want to delete</string>
-    <string name="dialog_message_permission">We need permission to access write files</string>
     <string name="dialog_replace_password_title">Replace password?</string>
     <string name="dialog_replace_password_message">Generating a new password will replace your current password. Continue?</string>
 
@@ -117,10 +98,7 @@
     <string name="button_import">IMPORT</string>
     <string name="button_restart">RESTART</string>
     <string name="button_save">SAVE</string>
-    <string name="button_request">REQUEST</string>
-    <string name="button_generate">GENERATE</string>
     <string name="generate_password">Generate strong password</string>
-    <string name="button_edit">EDIT</string>
 
     <!-- Hint -->
     <string name="search_hint">Search password</string>
@@ -130,9 +108,6 @@
     <string name="note_hint">Notes (optional)</string>
 
     <!-- Permission -->
-    <string name="permission_granted">Permission granted</string>
-    <string name="permission_denied">Permission denied</string>
-    <string name="biometric_unavailable">Biometric feature is not available on this device</string>
     
     <!-- Misc -->
     <string name="toast_url_failed">No application found to handle this link</string>

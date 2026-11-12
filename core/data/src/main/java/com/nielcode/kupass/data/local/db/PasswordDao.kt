@@ -1,7 +1,6 @@
 package com.nielcode.kupass.data.local.db
 
 import androidx.room.Dao
-import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -33,8 +32,6 @@ interface PasswordDao {
 
     /** Updates all rows in one transaction. */
     @Update suspend fun updateAll(passwords: List<PasswordEntity>)
-
-    @Delete suspend fun delete(password: PasswordEntity)
 
     @Query("DELETE FROM passwords WHERE id = :id") suspend fun deleteById(id: Long)
 }

@@ -65,7 +65,7 @@ class VaultCacheTest {
 
         // Not collected, so the snapshot still describes the old rows.
         first.updatePassword(entry("Alpha", password = "new").copy(id = alpha))
-        first.deletePasswordById(beta)
+        first.deletePassword(entry("Beta").copy(id = beta))
 
         val vault = repository(withSnapshot = true).getAllPasswords().first()
         assertEquals(listOf("Alpha" to "new"), vault.map { it.siteName to it.password })

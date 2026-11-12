@@ -97,8 +97,6 @@ class PasswordRepository(
 
     suspend fun deletePassword(password: PasswordEntity) = passwordDao.deleteById(password.id)
 
-    suspend fun deletePasswordById(id: Long) = passwordDao.deleteById(id)
-
     /**
      * Re-encrypts rows still stored in a legacy format (plaintext fields from before full-field
      * encryption, or v1 ciphertext) into the current format. Idempotent and cheap when nothing is
