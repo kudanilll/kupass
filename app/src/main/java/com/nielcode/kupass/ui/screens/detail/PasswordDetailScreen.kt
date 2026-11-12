@@ -12,12 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -54,6 +48,7 @@ import com.nielcode.kupass.ui.components.DeletePasswordDialog
 import com.nielcode.kupass.ui.components.PasswordVisibilityToggle
 import com.nielcode.kupass.ui.components.VaultFieldShape
 import com.nielcode.kupass.ui.components.pageVerticalScroll
+import com.nielcode.kupass.ui.icons.KupassIcons
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -136,7 +131,7 @@ private fun DetailTopBar(
         title = { Text(stringResource(R.string.password_detail), fontWeight = FontWeight.Bold) },
         navigationIcon = {
             FilledTonalIconButton(onClick = onBack, modifier = Modifier.padding(start = 8.dp)) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                Icon(KupassIcons.ArrowBack, contentDescription = null)
             }
         },
         actions = { DetailOverflowMenu(onEdit = onEdit, onDelete = onDelete) },
@@ -153,7 +148,7 @@ private fun DetailOverflowMenu(
     var expanded by remember { mutableStateOf(false) }
     Box(modifier = modifier.padding(end = 8.dp)) {
         IconButton(onClick = { expanded = true }) {
-            Icon(Icons.Default.MoreVert, contentDescription = stringResource(R.string.more_options))
+            Icon(KupassIcons.MoreVert, contentDescription = stringResource(R.string.more_options))
         }
         DropdownMenu(
             expanded = expanded,
@@ -162,7 +157,7 @@ private fun DetailOverflowMenu(
         ) {
             DropdownMenuItem(
                 text = { Text(stringResource(R.string.menu_edit)) },
-                leadingIcon = { Icon(Icons.Default.Edit, contentDescription = null) },
+                leadingIcon = { Icon(KupassIcons.Edit, contentDescription = null) },
                 onClick = {
                     expanded = false
                     onEdit()
@@ -177,7 +172,7 @@ private fun DetailOverflowMenu(
                 },
                 leadingIcon = {
                     Icon(
-                        Icons.Default.Delete,
+                        KupassIcons.Delete,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.error,
                     )
@@ -312,7 +307,7 @@ private fun DetailField(
                 trailingAction?.invoke()
                 IconButton(onClick = onCopy) {
                     Icon(
-                        Icons.Default.ContentCopy,
+                        KupassIcons.ContentCopy,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     )

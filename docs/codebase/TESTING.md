@@ -94,7 +94,7 @@ Final grouped/auth/backup integration verification in the grouped worktree on 20
 
 - Coverage tool/threshold: [TODO] none.
 - Current coverage: [TODO] unmeasured. By inspection, only `CryptoManager` and `BackupCodec` are exercised.
-- CI: `.github/workflows/ci.yml` runs `assembleDebug`, `testDebugUnitTest`, and `lintDebug` on every push/PR to `master`. Reports are uploaded as an artifact on failure.
+- CI: `.github/workflows/ci.yml` runs `assembleDebug`, `:app:assembleRelease`, `testDebugUnitTest`, and `lintDebug` on every push/PR to `master`, and writes the release APK size to the job summary. Reports are uploaded as an artifact on failure.
 - Gaps to prioritize: instrumented Keystore crypto test, Room DAO + migration tests, ViewModel tests (after introducing a factory/DI), and a regression test for C-1 (a backup from a different key must not import ciphertext as a password).
 
 ## 6) Evidence

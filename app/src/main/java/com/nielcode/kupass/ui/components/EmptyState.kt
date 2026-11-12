@@ -9,8 +9,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Key
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -22,6 +20,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.nielcode.kupass.ui.icons.KupassIcons
 import com.nielcode.kupass.ui.theme.KupassTheme
 
 /**
@@ -72,7 +71,7 @@ fun EmptyState(
 private fun EmptyStatePreview() {
     KupassTheme(dynamicColor = false) {
         EmptyState(
-            icon = Icons.Default.Key,
+            icon = KupassIcons.Key,
             title = "Your vault is empty",
             body = "Save your first password. Everything stays encrypted on this device.",
         )

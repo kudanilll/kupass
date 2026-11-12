@@ -2,8 +2,6 @@ package com.nielcode.kupass.ui.screens.home
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalIconButton
@@ -28,6 +26,7 @@ import com.nielcode.kupass.R
 import com.nielcode.kupass.data.local.db.PasswordEntity
 import com.nielcode.kupass.data.siteicon.SiteIcons
 import com.nielcode.kupass.ui.components.DeletePasswordDialog
+import com.nielcode.kupass.ui.icons.KupassIcons
 import com.nielcode.kupass.ui.screens.VaultEventToasts
 import com.nielcode.kupass.ui.screens.home.components.VaultList
 import com.nielcode.kupass.ui.screens.home.components.VaultListSkeleton
@@ -107,7 +106,7 @@ private fun GroupTopBar(title: String?, onBack: () -> Unit, modifier: Modifier =
         },
         navigationIcon = {
             FilledTonalIconButton(onClick = onBack, modifier = Modifier.padding(start = 8.dp)) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.navigate_back))
+                Icon(KupassIcons.ArrowBack, stringResource(R.string.navigate_back))
             }
         },
     )

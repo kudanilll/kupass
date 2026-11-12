@@ -22,12 +22,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.clearText
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Key
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.SearchOff
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -67,6 +61,7 @@ import com.nielcode.kupass.data.siteicon.siteDomainOf
 import com.nielcode.kupass.ui.components.BottomFade
 import com.nielcode.kupass.ui.components.EmptyState
 import com.nielcode.kupass.ui.components.stretchWhenContentFits
+import com.nielcode.kupass.ui.icons.KupassIcons
 import com.nielcode.kupass.ui.screens.home.VaultGroup
 import com.nielcode.kupass.ui.screens.home.groupVault
 
@@ -271,7 +266,7 @@ private fun VaultSearchInput(
                 unfocusedIndicatorColor = Color.Transparent,
             ),
         placeholder = { Text(stringResource(R.string.search_hint)) },
-        leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+        leadingIcon = { Icon(KupassIcons.Search, contentDescription = null) },
         trailingIcon = {
             if (active || state.text.isNotEmpty()) {
                 VaultSearchAction(state = state, onClose = closeSearch)
@@ -298,7 +293,7 @@ private fun VaultSearchAction(
         modifier = modifier,
     ) {
         Icon(
-            Icons.Default.Close,
+            KupassIcons.Close,
             contentDescription =
                 stringResource(if (hasText) R.string.search_clear else R.string.search_close),
         )
@@ -315,7 +310,7 @@ private fun VaultEmptyState(
     Box(modifier = modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
         if (query.isBlank()) {
             EmptyState(
-                icon = Icons.Default.Key,
+                icon = KupassIcons.Key,
                 title =
                     stringResource(
                         if (accountList) R.string.empty_group_title else R.string.empty_vault_title
@@ -327,7 +322,7 @@ private fun VaultEmptyState(
             )
         } else {
             EmptyState(
-                icon = Icons.Default.SearchOff,
+                icon = KupassIcons.SearchOff,
                 title = stringResource(R.string.empty_search_title),
                 body = stringResource(R.string.empty_search_body, query.trim()),
             )
@@ -367,7 +362,7 @@ private fun SwipeToDeleteRow(
                 contentAlignment = AbsoluteAlignment.CenterLeft,
             ) {
                 Icon(
-                    Icons.Default.Delete,
+                    KupassIcons.Delete,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onErrorContainer,
                     modifier = Modifier.padding(horizontal = 24.dp),
