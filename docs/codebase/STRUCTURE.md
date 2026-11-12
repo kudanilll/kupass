@@ -121,7 +121,7 @@ com/nielcode/kupass/
 | `data/local/*`          | Room, JSON, and SharedPreferences details              | UI or navigation          |
 | `utils/`                | Stateless helpers and constants                        | Business state            |
 
-Current violations: `SettingsScreen` uses `PreferenceManager` directly (no ViewModel), and `MainActivity` reads `PreferenceManager` inside `setContent`.
+Settings state lives in `SettingsController`, a state holder over the `AppContainer` prefs. `MainActivity` reads the dynamic-color setting once in `onCreate`, before `setContent`.
 
 ## 5) Naming and Organization Rules
 

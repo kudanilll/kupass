@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">Kupass</string>
     <string name="headline">Keep Safe Your Account</string>
 
@@ -66,7 +66,10 @@
     <string name="backup_working">Please wait…</string>
     <string name="backup_import_working">Importing passwords</string>
     <string name="backup_export_working">Exporting your backup</string>
-    <string name="backup_progress_format">%1$d/%2$d passwords</string>
+    <plurals name="backup_progress">
+        <item quantity="one">%1$d/%2$d password</item>
+        <item quantity="other">%1$d/%2$d passwords</item>
+    </plurals>
     <string name="toast_backup_foreign_device">This older backup was made on another device and cannot be restored here. Export a new backup from the original device.</string>
     <string name="toast_backup_unsupported">Unsupported backup file</string>
     <string name="toast_import_too_large">The file exceeds 32 MiB or 10,000 entries</string>
@@ -90,7 +93,8 @@
     <string name="dialog_replace_password_message">Generating a new password will replace your current password. Continue?</string>
 
     <!-- Button -->
-    <string name="button_cancel">CANCEL</string>
+    <!-- Every button label is upper case; lint only flags the words Android itself spells "Cancel". -->
+    <string name="button_cancel" tools:ignore="ButtonCase">CANCEL</string>
     <string name="button_replace">REPLACE</string>
     <string name="button_apply">APPLY</string>
     <string name="button_delete">DELETE</string>

@@ -63,6 +63,10 @@ class App : Application(), CoreContainerProvider {
         applyDynamicColors(prefs)
     }
 
+    /**
+     * Colors the activity windows (what shows before and around Compose). The Compose UI gets its
+     * dynamic scheme separately, from `KupassTheme(dynamicColor = …)`; both read the same setting.
+     */
     private fun applyDynamicColors(prefs: PreferenceManager) {
         if (DynamicColors.isDynamicColorAvailable()) {
             // Apply dynamic colors only if it's enabled by the user.

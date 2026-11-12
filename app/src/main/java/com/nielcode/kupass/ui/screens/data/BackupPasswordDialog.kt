@@ -217,8 +217,9 @@ private fun BackupProgressContent(
         )
         Text(
             text =
-                stringResource(
-                    R.string.backup_progress_format,
+                pluralStringResource(
+                    R.plurals.backup_progress,
+                    progress.total,
                     progress.current,
                     progress.total,
                 ),
