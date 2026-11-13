@@ -1,5 +1,6 @@
 package com.nielcode.kupass.ui.theme
 
+import android.os.Build
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.font.Font
@@ -8,34 +9,31 @@ import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
 import com.nielcode.kupass.core.designsystem.R
 
+/**
+ * One weight of a variable font, from a font-family XML that sets 'wght' when Android 9+ builds the
+ * typeface. Compose's own variationSettings go through Paint, and MIUI 14 then draws its system
+ * font instead; Android 8.1 ignores the XML attribute, so only there Compose sets the weight.
+ */
 @OptIn(ExperimentalTextApi::class)
-val googleSansFlexFontFamily: FontFamily =
-    FontFamily(
-        Font(
-            resId = R.font.googlesansflex,
-            weight = FontWeight.Normal,
-            variationSettings = FontVariation.Settings(FontVariation.weight(400)),
-        ),
-        Font(
-            resId = R.font.googlesansflex,
-            weight = FontWeight.Bold,
-            variationSettings = FontVariation.Settings(FontVariation.weight(700)),
-        ),
+private fun variableFont(resId: Int, weight: FontWeight): Font =
+    Font(
+        resId,
+        weight,
+        variationSettings =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) FontVariation.Settings()
+            else FontVariation.Settings(FontVariation.weight(weight.weight)),
     )
 
-@OptIn(ExperimentalTextApi::class)
+val googleSansFlexFontFamily: FontFamily =
+    FontFamily(
+        variableFont(R.font.googlesansflex_400, FontWeight.Normal),
+        variableFont(R.font.googlesansflex_700, FontWeight.Bold),
+    )
+
 val hemingFontFamily: FontFamily =
     FontFamily(
-        Font(
-            resId = R.font.heming,
-            weight = FontWeight.Normal,
-            variationSettings = FontVariation.Settings(FontVariation.weight(400)),
-        ),
-        Font(
-            resId = R.font.heming,
-            weight = FontWeight.Bold,
-            variationSettings = FontVariation.Settings(FontVariation.weight(700)),
-        ),
+        variableFont(R.font.heming_400, FontWeight.Normal),
+        variableFont(R.font.heming_700, FontWeight.Bold),
     )
 
 // Default Material 3 typography values

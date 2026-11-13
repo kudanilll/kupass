@@ -3,6 +3,7 @@ package com.nielcode.kupass
 import android.app.KeyguardManager
 import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import androidx.activity.compose.setContent
@@ -50,6 +51,10 @@ class MainActivity : AppCompatActivity() {
             (application as App).container.preferenceManager.dynamicColor ==
                 AppConfig.DynamicColors.Code.ENABLE
         enableEdgeToEdge()
+        // MIUI draws this contrast scrim even with gesture navigation; our pages fade out instead.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            window.isNavigationBarContrastEnforced = false
+        }
         setContent {
             val authState by authentication.state.collectAsStateWithLifecycle()
             val update by updates.state.collectAsStateWithLifecycle()

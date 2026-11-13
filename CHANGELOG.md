@@ -68,6 +68,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- On the Data page, swiping to Vault or Settings stopped working after one drag up or down, and the page never stretched at its edges.
+- On Xiaomi phones with MIUI, a light bar covered the gesture navigation area in the light theme.
+- On Xiaomi phones with MIUI 14, Kupass showed the phone's system font instead of its own fonts.
 - On Android 13 and lower, tapping Settings › Autofill service did nothing while Kupass was the active service. The row now offers to turn autofill off, after a confirmation.
 - Saving a two-step sign-in from autofill (username on one screen, password on the next) keeps the username.
 - The autofill account search no longer shows the whole vault for a moment on each keystroke.

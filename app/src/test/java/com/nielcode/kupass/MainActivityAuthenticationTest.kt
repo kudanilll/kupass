@@ -73,6 +73,11 @@ class MainActivityAuthenticationTest {
     }
 
     @Test
+    fun `the navigation bar has no contrast scrim`() {
+        assertFalse(launch().get().window.isNavigationBarContrastEnforced)
+    }
+
+    @Test
     fun `activity B starting and cancelling native auth cannot revive expired activity A grants`() {
         assertIndependentAbsenceTimers(succeededInB = false)
     }
