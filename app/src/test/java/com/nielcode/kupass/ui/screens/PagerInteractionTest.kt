@@ -1,7 +1,14 @@
 package com.nielcode.kupass.ui.screens
 
+import androidx.compose.foundation.LocalOverscrollFactory
+import androidx.compose.foundation.OverscrollEffect
+import androidx.compose.foundation.OverscrollFactory
 import androidx.compose.material3.Text
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.node.DelegatableNode
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createComposeRule
@@ -12,11 +19,13 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeDown
 import androidx.compose.ui.test.swipeUp
+import androidx.compose.ui.unit.Velocity
 import androidx.test.platform.app.InstrumentationRegistry
 import com.nielcode.kupass.ui.components.MainTab
 import com.nielcode.kupass.ui.screens.data.DataScreen
 import com.nielcode.kupass.ui.theme.KupassTheme
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.ExternalResource
@@ -62,5 +71,67 @@ class PagerInteractionTest {
         compose.onNodeWithContentDescription("Vault").assertIsDisplayed()
         compose.onNodeWithText("Import Password").assertIsDisplayed().performClick()
         assertEquals(1, imports)
+    }
+
+    @Test
+    fun `Data draws the stretch that its drags pull`() {
+        val effects = mutableListOf<RecordingStretch>()
+        val factory = RecordingFactory(effects)
+        compose.setContent {
+            // A short page switches from scrolling to stretching after its first layout. On a
+            // Redmi Note 10 Pro, a stretch moved across that switch was never drawn, never settled,
+            // and then took every later touch away from the pager.
+            CompositionLocalProvider(LocalOverscrollFactory provides factory) {
+                KupassTheme(dynamicColor = false) {
+                    DataScreen(
+                        onExportClick = {},
+                        onImportClick = {},
+                        modifier = Modifier.testTag("data-page"),
+                    )
+                }
+            }
+        }
+        compose.onNodeWithTag("data-page").performTouchInput { swipeDown() }
+        compose.waitForIdle()
+        // A detached effect node is never drawn (confirmed with screenshots on that phone).
+        assertTrue(effects.single { it.pulled }.attachedWhenPulled)
+    }
+
+    private class RecordingFactory(private val effects: MutableList<RecordingStretch>) :
+        OverscrollFactory {
+        override fun createOverscrollEffect(): OverscrollEffect =
+            RecordingStretch().also(effects::add)
+
+        override fun equals(other: Any?): Boolean = other === this
+
+        override fun hashCode(): Int = System.identityHashCode(this)
+    }
+
+    private class RecordingStretch : OverscrollEffect {
+        var pulled = false
+        var attachedWhenPulled = false
+
+        override val node: DelegatableNode = object : Modifier.Node() {}
+
+        override val isInProgress = false
+
+        override fun applyToScroll(
+            delta: Offset,
+            source: NestedScrollSource,
+            performScroll: (Offset) -> Offset,
+        ): Offset {
+            if (!pulled) {
+                pulled = true
+                attachedWhenPulled = node.node.isAttached
+            }
+            return performScroll(delta)
+        }
+
+        override suspend fun applyToFling(
+            velocity: Velocity,
+            performFling: suspend (Velocity) -> Velocity,
+        ) {
+            performFling(velocity)
+        }
     }
 }
