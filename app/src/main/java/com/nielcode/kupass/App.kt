@@ -69,9 +69,9 @@ class App : Application(), CoreContainerProvider {
      */
     private fun applyDynamicColors(prefs: PreferenceManager) {
         if (DynamicColors.isDynamicColorAvailable()) {
-            // Apply dynamic colors only if it's enabled by the user.
-            if (prefs.dynamicColor == AppConfig.DynamicColors.Code.ENABLE) {
-                DynamicColors.applyToActivitiesIfAvailable(this)
+            // Asked for each new activity, so a change in Settings reaches the next one.
+            DynamicColors.applyToActivitiesIfAvailable(this) { _, _ ->
+                prefs.dynamicColor == AppConfig.DynamicColors.Code.ENABLE
             }
         } else {
             // If the device does not support it, ensure the preference reflects this.

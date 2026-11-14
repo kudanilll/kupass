@@ -24,7 +24,6 @@ import com.nielcode.kupass.ui.components.UpdateDialog
 import com.nielcode.kupass.ui.screens.MainAppScreen
 import com.nielcode.kupass.ui.theme.KupassTheme
 import com.nielcode.kupass.update.UpdateInstaller
-import com.nielcode.kupass.utils.AppConfig
 import com.nielcode.kupass.utils.openUrl
 import kotlinx.coroutines.launch
 
@@ -46,10 +45,6 @@ class MainActivity : AppCompatActivity() {
         observeAuthentication()
         updates.onAppOpen(restored = savedInstanceState != null)
 
-        // Read once: changing dynamic color asks for a restart.
-        val isDynamicEnabled =
-            (application as App).container.preferenceManager.dynamicColor ==
-                AppConfig.DynamicColors.Code.ENABLE
         enableEdgeToEdge()
         // MIUI draws this contrast scrim even with gesture navigation; our pages fade out instead.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -58,7 +53,9 @@ class MainActivity : AppCompatActivity() {
         setContent {
             val authState by authentication.state.collectAsStateWithLifecycle()
             val update by updates.state.collectAsStateWithLifecycle()
-            KupassTheme(dynamicColor = isDynamicEnabled) {
+            // Settings switches it, and the open screens recolor without a restart.
+            val dynamicColor by (application as App).container.dynamicColor
+            KupassTheme(dynamicColor = dynamicColor) {
                 MainAppScreen(
                     authentication = authentication,
                     authState = authState,

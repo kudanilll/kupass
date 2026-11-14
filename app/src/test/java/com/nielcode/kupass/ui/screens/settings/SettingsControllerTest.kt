@@ -1,12 +1,14 @@
 package com.nielcode.kupass.ui.screens.settings
 
 import android.content.Context
+import androidx.compose.runtime.mutableStateOf
 import androidx.test.core.app.ApplicationProvider
 import com.nielcode.kupass.R
 import com.nielcode.kupass.data.local.prefs.PreferenceManager
 import com.nielcode.kupass.update.AppVersion
 import com.nielcode.kupass.update.AvailableUpdate
 import com.nielcode.kupass.update.CheckResult
+import com.nielcode.kupass.utils.AppConfig
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
@@ -26,8 +28,24 @@ class SettingsControllerTest {
 
     private val context = ApplicationProvider.getApplicationContext<Context>()
 
+    private val appDynamicColor = mutableStateOf(true)
+
     private fun settings(checkNow: suspend () -> CheckResult = { CheckResult.UpToDate }) =
-        SettingsController(context, PreferenceManager(context), checkNow)
+        SettingsController(context, PreferenceManager(context), appDynamicColor, checkNow)
+
+    @Test
+    fun `dynamic colors switch the open app at once and persist`() {
+        val settings = settings()
+
+        settings.selectDynamicColor(false)
+
+        assertFalse(settings.dynamicColor)
+        assertFalse(appDynamicColor.value)
+        assertEquals(
+            AppConfig.DynamicColors.Code.DISABLE,
+            PreferenceManager(context).dynamicColor,
+        )
+    }
 
     @Test
     fun `offer to save toggle defaults to on and persists`() {

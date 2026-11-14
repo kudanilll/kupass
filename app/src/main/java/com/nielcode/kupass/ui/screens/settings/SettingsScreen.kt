@@ -8,11 +8,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
@@ -28,12 +26,10 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.DialogProperties
 import com.google.android.gms.oss.licenses.v2.OssLicensesMenuActivity
 import com.google.android.material.color.DynamicColors
 import com.nielcode.kupass.App
 import com.nielcode.kupass.BuildConfig
-import com.nielcode.kupass.MainActivity
 import com.nielcode.kupass.R
 import com.nielcode.kupass.data.local.prefs.PreferenceManager
 import com.nielcode.kupass.security.AppLock
@@ -62,7 +58,6 @@ private enum class SettingsDialog {
     DynamicColor,
     ExcludeLookalike,
     OfferToSave,
-    Restart,
 }
 
 /** App settings: language, auto-lock, theme, dynamic color, and about links. */
@@ -73,11 +68,7 @@ fun SettingsScreen(
     onAllowBackground: () -> Unit = {},
 ) {
     val context = LocalContext.current
-    val container = remember(context) { (context.applicationContext as App).container }
-    val settings =
-        remember(container) {
-            SettingsController(context, container.preferenceManager, container.updates::checkNow)
-        }
+    val settings = rememberSettingsController(context)
     var openDialog by remember { mutableStateOf<SettingsDialog?>(null) }
 
     Scaffold(modifier = modifier.fillMaxSize(), contentWindowInsets = pagerPageInsets()) {
@@ -131,7 +122,19 @@ fun SettingsScreen(
             dialog = dialog,
             settings = settings,
             onDismiss = { openDialog = null },
-            onRestartRequest = { openDialog = SettingsDialog.Restart },
+        )
+    }
+}
+
+@Composable
+private fun rememberSettingsController(context: Context): SettingsController {
+    val container = remember(context) { (context.applicationContext as App).container }
+    return remember(container) {
+        SettingsController(
+            context,
+            container.preferenceManager,
+            container.dynamicColor,
+            container.updates::checkNow,
         )
     }
 }
@@ -141,6 +144,7 @@ fun SettingsScreen(
 internal class SettingsController(
     private val context: Context,
     private val prefs: PreferenceManager,
+    private val appDynamicColor: MutableState<Boolean>,
     private val checkNow: suspend () -> CheckResult,
 ) {
     var language by mutableIntStateOf(prefs.language)
@@ -149,8 +153,9 @@ internal class SettingsController(
     var theme by mutableIntStateOf(prefs.theme)
         private set
 
-    var dynamicColor by mutableIntStateOf(prefs.dynamicColor)
-        private set
+    /** Read by the app theme too, so a change recolors the open screens at once. */
+    val dynamicColor: Boolean
+        get() = appDynamicColor.value
 
     var autoLockSeconds by mutableIntStateOf(prefs.autoLockSeconds)
         private set
@@ -175,15 +180,12 @@ internal class SettingsController(
         AppearanceSettings.applyTheme(code)
     }
 
-    /** @return true if the change needs an app restart to take effect. */
-    fun selectDynamicColor(enabled: Boolean): Boolean {
-        val code =
+    fun selectDynamicColor(enabled: Boolean) {
+        if (enabled == dynamicColor) return
+        prefs.dynamicColor =
             if (enabled) AppConfig.DynamicColors.Code.ENABLE
             else AppConfig.DynamicColors.Code.DISABLE
-        if (code == dynamicColor) return false
-        prefs.dynamicColor = code
-        dynamicColor = code
-        return true
+        appDynamicColor.value = enabled
     }
 
     fun selectAutoLockSeconds(seconds: Int) {
@@ -273,7 +275,7 @@ private fun SecuritySection(
 @Composable
 private fun AppearanceSection(
     themeIndex: Int,
-    dynamicColor: Int,
+    dynamicColor: Boolean,
     onThemeClick: () -> Unit,
     onDynamicColorClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -295,7 +297,7 @@ private fun AppearanceSection(
                 stringResource(
                     when {
                         !dynamicColorSupported -> R.string.not_supported
-                        dynamicColor == AppConfig.DynamicColors.Code.ENABLE -> R.string.enable
+                        dynamicColor -> R.string.enable
                         else -> R.string.disable
                     }
                 ),
@@ -322,14 +324,8 @@ private fun AboutSection(
             onClick = {
                 onOpen {
                     OssLicensesMenuActivity.setTheme(
-                        kupassLightColorScheme(
-                            it,
-                            settings.dynamicColor == AppConfig.DynamicColors.Code.ENABLE,
-                        ),
-                        kupassDarkColorScheme(
-                            it,
-                            settings.dynamicColor == AppConfig.DynamicColors.Code.ENABLE,
-                        ),
+                        kupassLightColorScheme(it, settings.dynamicColor),
+                        kupassDarkColorScheme(it, settings.dynamicColor),
                         Typography,
                     )
                     it.startActivity(Intent(it, OssLicensesMenuActivity::class.java))
@@ -366,7 +362,6 @@ private fun SettingsDialogHost(
     dialog: SettingsDialog,
     settings: SettingsController,
     onDismiss: () -> Unit,
-    onRestartRequest: () -> Unit,
 ) {
     when (dialog) {
         SettingsDialog.Language ->
@@ -407,15 +402,15 @@ private fun SettingsDialogHost(
         SettingsDialog.DynamicColor ->
             BinaryChoiceDialog(
                 title = stringResource(R.string.settings_dynamic_colors_title),
-                enabled = settings.dynamicColor == AppConfig.DynamicColors.Code.ENABLE,
+                enabled = settings.dynamicColor,
                 onDismiss = onDismiss,
                 onConfirm = {
-                    if (settings.selectDynamicColor(it)) onRestartRequest() else onDismiss()
+                    settings.selectDynamicColor(it)
+                    onDismiss()
                 },
             )
         SettingsDialog.ExcludeLookalike,
         SettingsDialog.OfferToSave -> ToggleSettingDialog(dialog, settings, onDismiss)
-        SettingsDialog.Restart -> RestartDialog()
     }
 }
 
@@ -467,31 +462,6 @@ private fun BinaryChoiceDialog(
         onDismiss = onDismiss,
         onConfirm = { onConfirm(it == 0) },
         modifier = modifier,
-    )
-}
-
-/** Dynamic colors only apply after a restart; this dialog can't be dismissed without one. */
-@Composable
-private fun RestartDialog(modifier: Modifier = Modifier) {
-    val context = LocalContext.current
-    AlertDialog(
-        onDismissRequest = {},
-        modifier = modifier,
-        properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false),
-        text = { Text(stringResource(R.string.dialog_message_language)) },
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    context.startActivity(
-                        Intent(context, MainActivity::class.java).apply {
-                            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
-                        }
-                    )
-                }
-            ) {
-                Text(stringResource(R.string.button_restart))
-            }
-        },
     )
 }
 

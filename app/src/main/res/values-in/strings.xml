@@ -85,7 +85,6 @@
 
     <!-- Dialog -->
     <string name="dialog_title_delete">Hapus kata sandi</string>
-    <string name="dialog_message_language">Kita butuh memulai ulang aplikasi untuk mengganti bahasa</string>
     <string name="dialog_message_delete">Apakah Anda yakin ingin menghapus</string>
     <string name="dialog_replace_password_title">Ganti kata sandi?</string>
     <string name="dialog_replace_password_message">Membuat kata sandi baru akan menggantikan kata sandi saat ini. Lanjutkan?</string>
@@ -97,7 +96,6 @@
     <string name="button_delete">HAPUS</string>
     <string name="button_export">EKSPOR</string>
     <string name="button_import">IMPOR</string>
-    <string name="button_restart">MULAI ULANG</string>
     <string name="button_save">SIMPAN</string>
     <string name="generate_password">Buat kata sandi acak</string>
 

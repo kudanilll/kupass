@@ -2,6 +2,8 @@ package com.nielcode.kupass.di
 
 import android.content.ContentResolver
 import android.content.Context
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.nielcode.kupass.App
@@ -20,6 +22,7 @@ import com.nielcode.kupass.update.UpdateDownloader
 import com.nielcode.kupass.update.UpdateInstaller
 import com.nielcode.kupass.update.UpdateManager
 import com.nielcode.kupass.update.fetchReleases
+import com.nielcode.kupass.utils.AppConfig
 import java.io.File
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -61,6 +64,14 @@ class AppContainer(
 
     val contentResolver: ContentResolver
         get() = appContext.contentResolver
+
+    /**
+     * Dynamic colors on or off for the running app. Settings changes it, and the theme reads it, so
+     * the open screens recolor at once.
+     */
+    val dynamicColor: MutableState<Boolean> by lazy {
+        mutableStateOf(preferenceManager.dynamicColor == AppConfig.DynamicColors.Code.ENABLE)
+    }
 
     /** In-app updates from the release feed. Debug builds never check. */
     internal val updates: UpdateManager by lazy {
