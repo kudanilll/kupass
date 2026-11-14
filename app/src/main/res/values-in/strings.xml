@@ -3,8 +3,6 @@
     <string name="headline">Jaga Keamanan Akun Anda</string>
 
     <!-- General -->
-    <string name="enable">Aktif</string>
-    <string name="disable">Nonaktif</string>
     <string name="not_supported">Tidak didukung pada perangkat ini</string>
     <string name="create_new_password">Tambah sandi baru</string>
     <string name="edit_password">Edit kata sandi</string>
@@ -50,6 +48,7 @@
     <string name="settings_language_title">Bahasa</string>
     <string name="settings_theme_title">Tema</string>
     <string name="settings_dynamic_colors_title">Warna dinamis</string>
+    <string name="settings_dynamic_colors_summary">Pakai warna dari wallpaper</string>
     <string name="settings_license_title">Sumber Terbuka</string>
     <string name="settings_license_summary">Lisensi pihak ketiga</string>
 

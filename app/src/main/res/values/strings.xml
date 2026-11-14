@@ -3,8 +3,6 @@
     <string name="headline">Keep Safe Your Account</string>
 
     <!-- General -->
-    <string name="enable">Enable</string>
-    <string name="disable">Disable</string>
     <string name="not_supported">Not supported on this device</string>
     <string name="create_new_password">Create new password</string>
     <string name="edit_password">Edit password</string>
@@ -50,6 +48,7 @@
     <string name="settings_language_title">Language</string>
     <string name="settings_theme_title">Theme</string>
     <string name="settings_dynamic_colors_title">Dynamic Colors</string>
+    <string name="settings_dynamic_colors_summary">Use colors from your wallpaper</string>
     <string name="settings_license_title">Open Source</string>
     <string name="settings_license_summary">Third-party app licenses</string>
 

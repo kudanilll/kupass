@@ -37,6 +37,7 @@ import com.nielcode.kupass.ui.components.BottomFade
 import com.nielcode.kupass.ui.components.SectionHeader
 import com.nielcode.kupass.ui.components.SectionItem
 import com.nielcode.kupass.ui.components.SingleChoiceDialog
+import com.nielcode.kupass.ui.components.SwitchSectionItem
 import com.nielcode.kupass.ui.components.pageVerticalScroll
 import com.nielcode.kupass.ui.icons.KupassIcons
 import com.nielcode.kupass.ui.screens.pagerPageInsets
@@ -55,12 +56,9 @@ private enum class SettingsDialog {
     Language,
     AutoLock,
     Theme,
-    DynamicColor,
-    ExcludeLookalike,
-    OfferToSave,
 }
 
-/** App settings: language, auto-lock, theme, dynamic color, and about links. */
+/** App settings: language, security, autofill, appearance, and about. */
 @Composable
 fun SettingsScreen(
     modifier: Modifier = Modifier,
@@ -92,17 +90,19 @@ fun SettingsScreen(
                 SecuritySection(
                     autoLockSeconds = settings.autoLockSeconds,
                     onAutoLockClick = { openDialog = SettingsDialog.AutoLock },
-                    onExcludeLookalikeClick = { openDialog = SettingsDialog.ExcludeLookalike },
+                    excludeLookalike = settings.excludeLookalike,
+                    onExcludeLookalikeChange = settings::selectExcludeLookalike,
                 )
                 AutofillSection(
                     onAllowBackground = onAllowBackground,
-                    onOfferToSaveClick = { openDialog = SettingsDialog.OfferToSave },
+                    offerToSave = settings.offerToSaveLogins,
+                    onOfferToSaveChange = settings::selectOfferToSaveLogins,
                 )
                 AppearanceSection(
                     themeIndex = settings.theme,
                     dynamicColor = settings.dynamicColor,
                     onThemeClick = { openDialog = SettingsDialog.Theme },
-                    onDynamicColorClick = { openDialog = SettingsDialog.DynamicColor },
+                    onDynamicColorChange = settings::selectDynamicColor,
                 )
                 AboutSection(
                     settings = settings,
@@ -251,10 +251,10 @@ private fun GeneralSection(
 private fun SecuritySection(
     autoLockSeconds: Int,
     onAutoLockClick: () -> Unit,
-    onExcludeLookalikeClick: () -> Unit,
+    excludeLookalike: Boolean,
+    onExcludeLookalikeChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val lookalikeSummary = stringResource(R.string.settings_exclude_lookalike_summary)
     Column(modifier = modifier) {
         SectionHeader(title = stringResource(R.string.settings_category_security))
         SectionItem(
@@ -263,11 +263,12 @@ private fun SecuritySection(
             subtitle = autoLockLabel(autoLockSeconds),
             onClick = onAutoLockClick,
         )
-        SectionItem(
+        SwitchSectionItem(
             icon = KupassIcons.Password,
             title = stringResource(R.string.settings_exclude_lookalike_title),
-            subtitle = lookalikeSummary,
-            onClick = onExcludeLookalikeClick,
+            subtitle = stringResource(R.string.settings_exclude_lookalike_summary),
+            checked = excludeLookalike,
+            onCheckedChange = onExcludeLookalikeChange,
         )
     }
 }
@@ -277,7 +278,7 @@ private fun AppearanceSection(
     themeIndex: Int,
     dynamicColor: Boolean,
     onThemeClick: () -> Unit,
-    onDynamicColorClick: () -> Unit,
+    onDynamicColorChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val themes = stringArrayResource(R.array.theme_list)
@@ -290,18 +291,17 @@ private fun AppearanceSection(
             subtitle = themes.getOrNull(themeIndex) ?: stringResource(R.string.theme_default),
             onClick = onThemeClick,
         )
-        SectionItem(
+        SwitchSectionItem(
             icon = KupassIcons.ColorLens,
             title = stringResource(R.string.settings_dynamic_colors_title),
             subtitle =
                 stringResource(
-                    when {
-                        !dynamicColorSupported -> R.string.not_supported
-                        dynamicColor -> R.string.enable
-                        else -> R.string.disable
-                    }
+                    if (dynamicColorSupported) R.string.settings_dynamic_colors_summary
+                    else R.string.not_supported
                 ),
-            onClick = { if (dynamicColorSupported) onDynamicColorClick() },
+            checked = dynamicColorSupported && dynamicColor,
+            onCheckedChange = onDynamicColorChange,
+            enabled = dynamicColorSupported,
         )
     }
 }
@@ -399,70 +399,7 @@ private fun SettingsDialogHost(
                     onDismiss()
                 },
             )
-        SettingsDialog.DynamicColor ->
-            BinaryChoiceDialog(
-                title = stringResource(R.string.settings_dynamic_colors_title),
-                enabled = settings.dynamicColor,
-                onDismiss = onDismiss,
-                onConfirm = {
-                    settings.selectDynamicColor(it)
-                    onDismiss()
-                },
-            )
-        SettingsDialog.ExcludeLookalike,
-        SettingsDialog.OfferToSave -> ToggleSettingDialog(dialog, settings, onDismiss)
     }
-}
-
-/** On/off settings that apply at once: lookalike exclusion and the autofill save offer. */
-@Composable
-private fun ToggleSettingDialog(
-    dialog: SettingsDialog,
-    settings: SettingsController,
-    onDismiss: () -> Unit,
-) {
-    val (title, enabled, select) =
-        when (dialog) {
-            SettingsDialog.ExcludeLookalike ->
-                Triple(
-                    R.string.settings_exclude_lookalike_title,
-                    settings.excludeLookalike,
-                    settings::selectExcludeLookalike,
-                )
-            else ->
-                Triple(
-                    R.string.settings_offer_save,
-                    settings.offerToSaveLogins,
-                    settings::selectOfferToSaveLogins,
-                )
-        }
-    BinaryChoiceDialog(
-        title = stringResource(title),
-        enabled = enabled,
-        onDismiss = onDismiss,
-        onConfirm = {
-            select(it)
-            onDismiss()
-        },
-    )
-}
-
-@Composable
-private fun BinaryChoiceDialog(
-    title: String,
-    enabled: Boolean,
-    onDismiss: () -> Unit,
-    onConfirm: (Boolean) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    SingleChoiceDialog(
-        title = title,
-        options = listOf(stringResource(R.string.enable), stringResource(R.string.disable)),
-        selectedIndex = if (enabled) 0 else 1,
-        onDismiss = onDismiss,
-        onConfirm = { onConfirm(it == 0) },
-        modifier = modifier,
-    )
 }
 
 /** `3.1.0`, or `3.1.0-beta.2` for a beta build, so testers can tell builds apart. */
