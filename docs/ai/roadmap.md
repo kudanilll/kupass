@@ -4,7 +4,7 @@
 >
 > Each item ID (e.g. `EN-06`) is meant to become one GitHub issue and one branch (`feat/…`, `fix/…`, `chore/…`). Update the checkboxes and IDs here as issues are created and merged.
 
-## 0. Progress (updated 2026-11-14)
+## 0. Progress (updated 2026-11-15)
 
 - **M3 Features in progress:** F-7.2 Autofill v1 merged to `master` in PR #34 (2026-11-08), on top of the core-module split from PR #32. S-7.1 Password Generator partly done (cryptographically secure generator, accidental overwrite protection, lookalike character exclusion setting; open: custom length slider modal & strength meter).
 - **M1 Trustworthy Vault: done**, merged to `master` in PR #2: EN-00, EN-01, EN-03, EN-06 (+EN-06b), F-2.1, EN-04, S-3.1, S-3.2, EN-07, EN-05, S-2.4, S-2.5, S-3.3, plus a security-review fix for the app lock.
@@ -141,7 +141,7 @@ Danil will send reference images for the redesign items, and the list may grow.
 | UX-02 | MIUI: a light bar behind gesture navigation in the light theme                                   | ✅ Done 2026-11-13 (PR #55)                  |
 | UX-03 | MIUI 14: the system font instead of Kupass's fonts                                               | ✅ Done 2026-11-13 (PR #55)                  |
 | UX-04 | Settings: remove the Developer entry                                                             | ✅ Done 2026-11-14 on `feat/settings-polish` |
-| UX-05 | Settings: the Kupass entry opens the official website instead of GitHub                          | Waiting for the website address              |
+| UX-05 | Settings: the Kupass entry opens the official website instead of GitHub                          | ✅ Done 2026-11-15 on `feat/settings-polish` |
 | UX-06 | Settings: Check for updates checks on tap; the automatic check always runs, at most once an hour | ✅ Done 2026-11-14 on `feat/settings-polish` |
 | UX-07 | Settings: on/off settings are switches                                                           | ✅ Done 2026-11-14 on `feat/settings-polish` |
 | UX-08 | Settings: dynamic colors apply without a restart                                                 | ✅ Done 2026-11-14 on `feat/settings-polish` |

@@ -64,7 +64,7 @@ Bundled assets that affect APK size: `core/designsystem/src/main/res/font/google
 ## 5) Environment and Config
 
 - Config sources: `local.properties` (SDK path, gitignored), `secrets.properties` (gitignored; keys `RELEASE_STORE_PASSWORD`, `RELEASE_KEY_ALIAS`, `RELEASE_KEY_PASSWORD`), `release-key.jks` (gitignored).
-- `BuildConfig` fields (set in `defaultConfig`, same in debug and release): `GIT_URL`, `FAVGET_API_URL`, and `FAVGET_API_KEY` (from `secrets.properties`, empty if absent; extractable from the APK by design, see INTEGRATIONS.md).
+- `BuildConfig` fields (set in `defaultConfig`, same in debug and release): `WEBSITE_URL` (the Kupass website, opened by Settings › Kupass), `FAVGET_API_URL`, and `FAVGET_API_KEY` (from `secrets.properties`, empty if absent; extractable from the APK by design, see INTEGRATIONS.md).
 - No environment variables are read. There is no `.env` template.
 - Runtime constraints: offline-first. `INTERNET` is used only for Favget site icons and for the in-app update check and download (see `INTEGRATIONS.md`).
 

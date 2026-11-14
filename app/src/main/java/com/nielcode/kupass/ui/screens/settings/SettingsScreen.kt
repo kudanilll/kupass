@@ -352,7 +352,7 @@ private fun AboutSection(
             icon = KupassIcons.Code,
             title = stringResource(R.string.app_name),
             subtitle = "${installedVersionLabel()} - ${BuildConfig.BUILD_TYPE}",
-            onClick = { onOpen { openUrl(it, BuildConfig.GIT_URL) } },
+            onClick = { onOpen { openUrl(it, BuildConfig.WEBSITE_URL) } },
         )
     }
 }

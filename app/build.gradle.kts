@@ -42,7 +42,7 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        buildConfigField("String", "GIT_URL", "\"https://github.com/kudanilll/kupass\"")
+        buildConfigField("String", "WEBSITE_URL", "\"https://kupass.nielcode.com\"")
 
         // Favget site icons. Without a key, entries keep their letter fallback.
         buildConfigField("String", "FAVGET_API_URL", "\"https://favget.nielcode.web.id\"")

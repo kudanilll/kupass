@@ -66,6 +66,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Swipe an individual account physically left-to-right to request its existing delete confirmation; leftward swipes on Home reach Data, and vertical swipes still scroll. Site/app items never perform bulk deletion; accessibility delete uses the same confirmation.
 - Lookalike characters, Offer to save logins, and Dynamic colors in Settings are switches you flip in place instead of Enable/Disable dialogs.
 - Turning dynamic colors on or off recolors Kupass at once, without a restart.
+- Settings › Kupass opens the Kupass website, kupass.nielcode.com, instead of the GitHub repository.
 
 ### Removed
 
