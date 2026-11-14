@@ -3,8 +3,6 @@
     <string name="headline">Keep Safe Your Account</string>
 
     <!-- General -->
-    <string name="enable">Enable</string>
-    <string name="disable">Disable</string>
     <string name="not_supported">Not supported on this device</string>
     <string name="create_new_password">Create new password</string>
     <string name="edit_password">Edit password</string>
@@ -50,7 +48,7 @@
     <string name="settings_language_title">Language</string>
     <string name="settings_theme_title">Theme</string>
     <string name="settings_dynamic_colors_title">Dynamic Colors</string>
-    <string name="settings_about_title">Developer</string>
+    <string name="settings_dynamic_colors_summary">Use colors from your wallpaper</string>
     <string name="settings_license_title">Open Source</string>
     <string name="settings_license_summary">Third-party app licenses</string>
 
@@ -87,7 +85,6 @@
 
     <!-- Dialog -->
     <string name="dialog_title_delete">Delete password</string>
-    <string name="dialog_message_language">We need to restart app for change language</string>
     <string name="dialog_message_delete">Are you sure you want to delete</string>
     <string name="dialog_replace_password_title">Replace password?</string>
     <string name="dialog_replace_password_message">Generating a new password will replace your current password. Continue?</string>
@@ -100,7 +97,6 @@
     <string name="button_delete">DELETE</string>
     <string name="button_export">EXPORT</string>
     <string name="button_import">IMPORT</string>
-    <string name="button_restart">RESTART</string>
     <string name="button_save">SAVE</string>
     <string name="generate_password">Generate strong password</string>
 
@@ -182,8 +178,11 @@
     <string name="empty_search_title">No results</string>
     <string name="empty_search_body">Nothing in your vault matches “%1$s”.</string>
     <string name="settings_check_updates">Check for updates</string>
-    <string name="settings_check_updates_on">Each time Kupass opens</string>
-    <string name="settings_check_updates_off">Off</string>
+    <string name="settings_check_updates_summary">Checked automatically. Tap to check now</string>
+    <string name="settings_check_updates_checking">Checking…</string>
+    <string name="update_check_latest">Kupass is up to date</string>
+    <string name="update_check_failed">Couldn\'t check for updates. Check your internet connection.</string>
+    <string name="update_check_release_only">Debug builds don\'t check for updates</string>
     <string name="update_title">Update available</string>
     <string name="update_available">Kupass %1$s is ready to install. Your vault stays as it is.</string>
     <string name="update_downloading">Downloading Kupass %1$s…</string>

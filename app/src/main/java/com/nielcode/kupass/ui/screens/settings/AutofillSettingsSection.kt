@@ -25,13 +25,15 @@ import com.nielcode.kupass.R
 import com.nielcode.kupass.autofill.AutofillSettings
 import com.nielcode.kupass.ui.components.SectionHeader
 import com.nielcode.kupass.ui.components.SectionItem
+import com.nielcode.kupass.ui.components.SwitchSectionItem
 import com.nielcode.kupass.ui.icons.KupassIcons
 
 /** Autofill service status (picker or turn off), the save offer, and Chrome's switch. */
 @Composable
 internal fun AutofillSection(
     onAllowBackground: () -> Unit,
-    onOfferToSaveClick: () -> Unit,
+    offerToSave: Boolean,
+    onOfferToSaveChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
@@ -57,11 +59,12 @@ internal fun AutofillSection(
                 serviceEnabled = false
             },
         )
-        SectionItem(
+        SwitchSectionItem(
             icon = KupassIcons.Save,
             title = stringResource(R.string.settings_offer_save),
             subtitle = stringResource(R.string.settings_offer_save_desc),
-            onClick = onOfferToSaveClick,
+            checked = offerToSave,
+            onCheckedChange = onOfferToSaveChange,
         )
         Text(
             text = stringResource(R.string.settings_autofill_chrome_hint),

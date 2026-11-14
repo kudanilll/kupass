@@ -63,9 +63,9 @@ com/nielcode/kupass/
 │   ├── local/cache/               SealedFile (encrypted file), VaultSnapshotStore (vault-cache), SiteIconStore (site-icons), all in noBackupFilesDir
 │   └── repository/PasswordRepository.kt encrypt/decrypt all text fields, in-memory sort+search, legacy format upgrade
 │       └── repository/VaultEntityMapping.kt  field encrypt/decrypt, identity, search match, sort
-├── update/                       in-app updates: AppVersion (tag order), ReleaseFeed (GitHub list + newest eligible release), ReleaseSource (feed request), UpdateChecker (every app open), UpdateDownloader (APK + SHA-256), UpdateInstaller + UpdateInstallReceiver (PackageInstaller self-update), UpdateManager (dialog state). Device-QA builds (`-Pkupass.updateFeedUrl`) also merge `app/src/qaFeed/`: plain HTTP to loopback only
+├── update/                       in-app updates: AppVersion (tag order), ReleaseFeed (GitHub list + newest eligible release), ReleaseSource (feed request), UpdateChecker (GitHub at most hourly, newer releases remembered), UpdateDownloader (APK + SHA-256), UpdateInstaller + UpdateInstallReceiver (PackageInstaller self-update), UpdateManager (dialog state). Device-QA builds (`-Pkupass.updateFeedUrl`) also merge `app/src/qaFeed/`: plain HTTP to loopback only
 ├── ui/
-│   ├── components/                BottomNav (+ navSpring, BottomNavHeight), MainTab, EmptyState, SectionHeader, SectionItem, VaultTextField (+ PasswordVisibilityToggle), DeletePasswordDialog, SingleChoiceDialog
+│   ├── components/                BottomNav (+ navSpring, BottomNavHeight), MainTab, EmptyState, SectionHeader, SectionItem (+ SwitchSectionItem), VaultTextField (+ PasswordVisibilityToggle), DeletePasswordDialog, SingleChoiceDialog
 │   ├── screens/
 │   │   ├── MainAppScreen.kt       routes, state-hoisting MainPagerScreen + stateless MainPagerContent, hide-on-scroll BottomNav, auth-bound backup dialogs + SAF launchers, event toasts
 │   │   ├── EntryNavigation.kt     `AppNavigator`, protected detail/editor entries, the screen transitions, and the pre-ViewModel authorization gate
@@ -79,7 +79,7 @@ com/nielcode/kupass/
 │   │   ├── lock/LockScreen.kt     locked state / "set up a screen lock" guidance
 │   │   ├── detail/                PasswordDetailScreen (+ copyToClipboard), PasswordDetailViewModel
 │   │   ├── editor/                PasswordEditorScreen (EditorFormState, top bar, form), PasswordEditorViewModel
-│   │   └── settings/SettingsScreen.kt   language/auto-lock/theme/dynamic color dialogs, about links, SingleChoiceDialog
+│   │   └── settings/SettingsScreen.kt   language/auto-lock/theme dialogs, on/off switches, Check for updates, about links
 │   └── theme/                     Color.kt, Theme.kt (KupassTheme), Type.kt (Heming display, Google Sans Flex body) + AppearanceSettings.kt (apply language/night mode)
 └── utils/
     ├── AppConfig.kt               int codes for language/theme/dynamic color

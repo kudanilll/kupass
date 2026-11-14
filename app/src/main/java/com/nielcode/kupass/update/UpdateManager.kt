@@ -34,11 +34,14 @@ sealed interface UpdateState {
 }
 
 /**
- * The in-app update flow, app-wide so a download survives rotation: offer at app open, download,
- * verify, ask for the install permission when needed, install.
+ * The in-app update flow, app-wide so a download survives rotation: offer at app open or after
+ * Check now, download, verify, ask for the install permission when needed, install.
+ *
+ * @param checkForUpdate looks for a newer release; blocking. `true` asks GitHub even within the
+ *   hour.
  */
 internal class UpdateManager(
-    private val offer: () -> AvailableUpdate?,
+    private val checkForUpdate: (force: Boolean) -> CheckResult,
     private val download: suspend (AvailableUpdate, (Int) -> Unit) -> File?,
     private val installer: PackageUpdater,
     private val scope: CoroutineScope,
@@ -63,9 +66,15 @@ internal class UpdateManager(
         if (restored && opened) return
         opened = true
         if (_state.value != UpdateState.Idle || job?.isActive == true) return
-        job = scope.launch {
-            val update = withContext(io) { offer() } ?: return@launch
-            _state.compareAndSet(UpdateState.Idle, UpdateState.Available(update))
+        job = scope.launch { offer(withContext(io) { checkForUpdate(false) }) }
+    }
+
+    /** "Check for updates" in Settings: asks GitHub now; a release it finds opens the dialog. */
+    suspend fun checkNow(): CheckResult = withContext(io) { checkForUpdate(true) }.also(::offer)
+
+    private fun offer(result: CheckResult) {
+        if (result is CheckResult.Found) {
+            _state.compareAndSet(UpdateState.Idle, UpdateState.Available(result.update))
         }
     }
 

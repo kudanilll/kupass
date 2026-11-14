@@ -4,13 +4,13 @@
 >
 > Each item ID (e.g. `EN-06`) is meant to become one GitHub issue and one branch (`feat/…`, `fix/…`, `chore/…`). Update the checkboxes and IDs here as issues are created and merged.
 
-## 0. Progress (updated 2026-11-11)
+## 0. Progress (updated 2026-11-15)
 
 - **M3 Features in progress:** F-7.2 Autofill v1 merged to `master` in PR #34 (2026-11-08), on top of the core-module split from PR #32. S-7.1 Password Generator partly done (cryptographically secure generator, accidental overwrite protection, lookalike character exclusion setting; open: custom length slider modal & strength meter).
 - **M1 Trustworthy Vault: done**, merged to `master` in PR #2: EN-00, EN-01, EN-03, EN-06 (+EN-06b), F-2.1, EN-04, S-3.1, S-3.2, EN-07, EN-05, S-2.4, S-2.5, S-3.3, plus a security-review fix for the app lock.
 - **M0 Foundation: done.** EN-02 (Spotless/ktfmt + detekt with Compose rules, 0 findings, enforced in CI) is on `build/format-and-static-analysis`.
-- **Released:** `v3.1.0-beta.1` (2026-11-11), the first prerelease built and signed by CI with the release key.
-- **Next (Danil, 2026-11-12):** `3.1.0-beta.2` ships now. The tech debt (PR #52) and Navigation 3 (EN-7.6) are done, and the autofill code is the same as in `beta.1`, so the autofill device QA (EN-7.2c) runs during the beta and must pass before the stable release. Then UI polish and the stable `3.1.0`; before its release notes, decide how `v2.0.0` users move over (CONCERNS §1). The independent review of `:feature:autofill` ran on 2026-11-10 and all its findings are fixed.
+- **Released:** `v3.1.0-beta.1` (2026-11-11), the first prerelease built and signed by CI with the release key, and `v3.1.0-beta.2` (2026-11-12).
+- **Next (Danil, 2026-11-13):** UI/UX polish (the list under Epic E4), then the stable `3.1.0`, ideally without a `beta.3`. The autofill device QA (EN-7.2c) must pass before it, and before its release notes Danil decides how `v2.0.0` users move over (CONCERNS §1). Room 3 waits until after `3.1.0`. The independent review of `:feature:autofill` ran on 2026-11-10 and all its findings are fixed.
 
 ## 1. Overview
 
@@ -130,6 +130,32 @@ Confirmed decision, revised 2026-10-11: public launch/list/search/tabs/create; f
 | EN-4.3 | Enabler | ✅ Done 2026-11-12. `SettingsController` (tested by `SettingsControllerTest`) already holds the settings, reads them once from the `AppContainer` prefs and writes with `apply()`, so a ViewModel would add code without changing that. The two dynamic-color paths are not duplicates: `App` colors the activity windows, `KupassTheme` the Compose UI                      | 3   | P2  | EN-04      | Tech debt |
 | EN-4.4 | Enabler | ✅ Done 2026-11-12, except the duplicated nav transitions, which move to EN-7.6. Removed the unused `AppConfig` constants, `PasswordDao.delete`, the test-only `deletePasswordById`, and the 34 resources lint reported unused. The `TextField.kt` package mismatch and the placeholder tests were already gone                                                              | 2   | P2  | EN-02      | Tech debt |
 | EN-4.5 | Enabler | ✅ Done 2026-11-12. Robolectric 4.17 could throw `FileSystemAlreadyExistsException` when a second sandbox loaded the native runtime in the same JVM; 4.18-beta-1 reuses the open filesystem. With `UiSnapshotTest` in the run, 4.17 failed 1 of 2 full app runs and 4.18-beta-1 passed all 4. `UiSnapshotTest` now runs with the other tests. Move to 4.18 once it is stable | 2   | P2  | none       | CONCERNS  |
+
+#### UI/UX polish for 3.1.0 (Danil, 2026-11-13)
+
+Danil will send reference images for the redesign items, and the list may grow.
+
+| ID    | Item                                                                                             | Status                                       |
+| ----- | ------------------------------------------------------------------------------------------------ | -------------------------------------------- |
+| UX-01 | Data page: swiping stopped working after a vertical drag, and the page did not stretch           | ✅ Done 2026-11-13 (PR #55)                  |
+| UX-02 | MIUI: a light bar behind gesture navigation in the light theme                                   | ✅ Done 2026-11-13 (PR #55)                  |
+| UX-03 | MIUI 14: the system font instead of Kupass's fonts                                               | ✅ Done 2026-11-13 (PR #55)                  |
+| UX-04 | Settings: remove the Developer entry                                                             | ✅ Done 2026-11-14 on `feat/settings-polish` |
+| UX-05 | Settings: the Kupass entry opens the official website instead of GitHub                          | ✅ Done 2026-11-15 on `feat/settings-polish` |
+| UX-06 | Settings: Check for updates checks on tap; the automatic check always runs, at most once an hour | ✅ Done 2026-11-14 on `feat/settings-polish` |
+| UX-07 | Settings: on/off settings are switches                                                           | ✅ Done 2026-11-14 on `feat/settings-polish` |
+| UX-08 | Settings: dynamic colors apply without a restart                                                 | ✅ Done 2026-11-14 on `feat/settings-polish` |
+| UX-09 | App icon like the splash icon                                                                    | Open                                         |
+| UX-10 | Animated splash icon                                                                             | Open                                         |
+| UX-11 | Splash background follows the app background, with or without dynamic colors                     | Open                                         |
+| UX-12 | Top and bottom content gradient with blur (blur on Android 12 and later only)                    | Open                                         |
+| UX-13 | Undo snackbar after deleting a password (S-4.1)                                                  | Open                                         |
+| UX-14 | Bottom navigation: a thin but wide shadow                                                        | Open                                         |
+| UX-15 | A smoother show/hide animation for the add button                                                | Open                                         |
+| UX-16 | Grouping: subdomains such as `member.domain.com` and `admin.domain.com` join `domain.com`        | Open                                         |
+| UX-17 | Grouping: group and ungroup accounts by long-press (needs a Room migration and a design)         | Open                                         |
+| UX-18 | Redesign: text fields, the editor app bar, dialogs, and empty and other states                   | Waiting for reference images                 |
+| UX-19 | Autofill: the account picker as a dialog, and a redesigned Kupass button                         | Waiting for reference images                 |
 
 ### Epic E5: Lightweight & Fast (M2, size S)
 

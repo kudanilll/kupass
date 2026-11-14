@@ -3,8 +3,6 @@
     <string name="headline">Jaga Keamanan Akun Anda</string>
 
     <!-- General -->
-    <string name="enable">Aktif</string>
-    <string name="disable">Nonaktif</string>
     <string name="not_supported">Tidak didukung pada perangkat ini</string>
     <string name="create_new_password">Tambah sandi baru</string>
     <string name="edit_password">Edit kata sandi</string>
@@ -50,7 +48,7 @@
     <string name="settings_language_title">Bahasa</string>
     <string name="settings_theme_title">Tema</string>
     <string name="settings_dynamic_colors_title">Warna dinamis</string>
-    <string name="settings_about_title">Pengembang</string>
+    <string name="settings_dynamic_colors_summary">Pakai warna dari wallpaper</string>
     <string name="settings_license_title">Sumber Terbuka</string>
     <string name="settings_license_summary">Lisensi pihak ketiga</string>
 
@@ -86,7 +84,6 @@
 
     <!-- Dialog -->
     <string name="dialog_title_delete">Hapus kata sandi</string>
-    <string name="dialog_message_language">Kita butuh memulai ulang aplikasi untuk mengganti bahasa</string>
     <string name="dialog_message_delete">Apakah Anda yakin ingin menghapus</string>
     <string name="dialog_replace_password_title">Ganti kata sandi?</string>
     <string name="dialog_replace_password_message">Membuat kata sandi baru akan menggantikan kata sandi saat ini. Lanjutkan?</string>
@@ -98,7 +95,6 @@
     <string name="button_delete">HAPUS</string>
     <string name="button_export">EKSPOR</string>
     <string name="button_import">IMPOR</string>
-    <string name="button_restart">MULAI ULANG</string>
     <string name="button_save">SIMPAN</string>
     <string name="generate_password">Buat kata sandi acak</string>
 
@@ -174,8 +170,11 @@
     <string name="empty_search_title">Tidak ditemukan</string>
     <string name="empty_search_body">Tidak ada isi vault yang cocok dengan “%1$s”.</string>
     <string name="settings_check_updates">Periksa pembaruan</string>
-    <string name="settings_check_updates_on">Setiap kali Kupass dibuka</string>
-    <string name="settings_check_updates_off">Nonaktif</string>
+    <string name="settings_check_updates_summary">Diperiksa otomatis. Ketuk untuk memeriksa sekarang</string>
+    <string name="settings_check_updates_checking">Memeriksa…</string>
+    <string name="update_check_latest">Kupass sudah versi terbaru</string>
+    <string name="update_check_failed">Tidak bisa memeriksa pembaruan. Periksa koneksi internet.</string>
+    <string name="update_check_release_only">Build debug tidak memeriksa pembaruan</string>
     <string name="update_title">Pembaruan tersedia</string>
     <string name="update_available">Kupass %1$s siap dipasang. Isi Brankas tetap seperti sebelumnya.</string>
     <string name="update_downloading">Mengunduh Kupass %1$s…</string>

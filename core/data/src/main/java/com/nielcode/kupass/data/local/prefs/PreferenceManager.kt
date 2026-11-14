@@ -43,10 +43,15 @@ class PreferenceManager(context: Context) {
         get() = sharedPreferences.getBoolean(KEY_AUTOFILL_OFFER_SAVE, true)
         set(value) = edit { putBoolean(KEY_AUTOFILL_OFFER_SAVE, value) }
 
-    /** Kupass looks for a newer release each time it opens. */
-    var checkForUpdates: Boolean
-        get() = sharedPreferences.getBoolean(KEY_UPDATE_CHECK, true)
-        set(value) = edit { putBoolean(KEY_UPDATE_CHECK, value) }
+    /** When Kupass last received the release list, in milliseconds since the epoch; 0 = never. */
+    var updateCheckedAt: Long
+        get() = sharedPreferences.getLong(KEY_UPDATE_CHECKED_AT, 0L)
+        set(value) = edit { putLong(KEY_UPDATE_CHECKED_AT, value) }
+
+    /** The releases from that list that are newer than this build, as release-list JSON. */
+    var updateReleases: String?
+        get() = sharedPreferences.getString(KEY_UPDATE_RELEASES, null)
+        set(value) = edit { putString(KEY_UPDATE_RELEASES, value) }
 
     companion object {
         private const val PREF_NAME = "kupass_preferences"
@@ -56,6 +61,7 @@ class PreferenceManager(context: Context) {
         private const val KEY_AUTO_LOCK_SECONDS = "auto_lock_seconds"
         private const val KEY_EXCLUDE_LOOKALIKE = "exclude_lookalike"
         private const val KEY_AUTOFILL_OFFER_SAVE = "autofill_offer_save"
-        private const val KEY_UPDATE_CHECK = "update_check"
+        private const val KEY_UPDATE_CHECKED_AT = "update_checked_at"
+        private const val KEY_UPDATE_RELEASES = "update_releases"
     }
 }
