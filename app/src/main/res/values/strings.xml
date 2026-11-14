@@ -50,7 +50,6 @@
     <string name="settings_language_title">Language</string>
     <string name="settings_theme_title">Theme</string>
     <string name="settings_dynamic_colors_title">Dynamic Colors</string>
-    <string name="settings_about_title">Developer</string>
     <string name="settings_license_title">Open Source</string>
     <string name="settings_license_summary">Third-party app licenses</string>
 

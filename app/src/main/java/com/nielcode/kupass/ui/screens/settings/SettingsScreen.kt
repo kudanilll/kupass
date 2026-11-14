@@ -298,12 +298,6 @@ private fun AboutSection(
     Column(modifier = modifier) {
         SectionHeader(title = stringResource(R.string.settings_category_developer))
         SectionItem(
-            icon = KupassIcons.AccountCircle,
-            title = stringResource(R.string.settings_about_title),
-            subtitle = BuildConfig.DEV_NAME,
-            onClick = { onOpen { openUrl(it, BuildConfig.DEV_URL) } },
-        )
-        SectionItem(
             icon = KupassIcons.Gavel,
             title = stringResource(R.string.settings_license_title),
             subtitle = stringResource(R.string.settings_license_summary),
