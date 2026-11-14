@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- In-app updates: each time you open Kupass, it checks GitHub for a newer release and offers to install it. Download fetches the APK inside the app, checks it against the SHA-256 published with the release, and installs it; Android asks once to allow Kupass to install apps, and on Android 12 and later the update then installs without another prompt. Beta builds are offered newer betas, stable builds only stable releases. Later hides the offer until the next time you open Kupass, and Settings › Check for updates turns the check off. The request sends nothing about you or your vault.
+- In-app updates: when you open Kupass, it asks GitHub for a newer release, at most once an hour, and offers to install it. Download fetches the APK inside the app, checks it against the SHA-256 published with the release, and installs it; Android asks once to allow Kupass to install apps, and on Android 12 and later the update then installs without another prompt. Beta builds are offered newer betas, stable builds only stable releases. Later hides the offer until the next time you open Kupass, and a release Kupass has found is offered at every open until you install it, also without a connection. Settings › Check for updates asks GitHub right away. The request sends nothing about you or your vault.
 - Settings shows a beta build's version as, for example, `3.1.0-beta.2`.
 - Beta releases: pushing a tag such as `v3.1.0-beta.1` publishes the signed APK as a GitHub prerelease. Release builds take their versionCode from the tag, so each beta installs as an update over the previous one, and the stable release over every beta.
 - Autofill: Kupass fills saved sign-ins in apps and supported browsers after fingerprint/face or device-credential verification, and stays unlocked for your auto-lock time. Before verification it shows nothing but "Kupass".
@@ -48,10 +48,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Tightened the spacing between the bottom navigation and add button, added a subtle navigation shadow, and removed the duplicate add button from the empty-vault state.
 - Updated the build toolchain to the latest stable releases: Android Gradle Plugin 9.5.1, Gradle 9.9.1 (checksum-verified wrapper), Kotlin 2.4.21 (Compose compiler and serialization plugin), and KSP 2.3.13.
 - Updated development tooling: Spotless 8.11.0, Compose detekt rules 0.6.8, and the SHA-pinned upload-artifact action 7.0.2.
-- The developer entry in Settings now opens `https://achmaddaniel.nielcode.com`.
 - Updated libraries: Compose BOM 2026.09.00, Room 2.8.5, OSS Licenses 17.5.2 (plugin 0.13.0), kotlinx.coroutines 1.11.0, AndroidX Annotation 1.11.0, and Robolectric 4.18-beta-1 (Android 17 / API 37 support for tests).
 - Navigation now uses Jetpack Navigation 3 (1.2.1). Account details and the editor slide up when they open and slide back down when they close or when you use the back gesture. Home and the account list of a site cross-fade.
-- Kupass draws its own set of the 30 icons it uses instead of including the whole Material icons library, so the release APK is smaller (about 3.7 MB).
+- Kupass draws its own set of the icons it uses instead of including the whole Material icons library, so the release APK is smaller (about 3.7 MB).
 - AppCompat 1.8.0 and Material Components 1.14.0 are now declared explicitly instead of arriving transitively.
 - Redesigned bottom navigation: smoother spring animations, Material 3 tonal colors, and shadows on the navigation bar and the add button.
 - The password detail screen puts Edit and Delete in one overflow menu.
@@ -65,6 +64,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Search uses one input without an expanding popup. The heading collapses smoothly as search moves upward, results animate in place, and group badges retain their total account count when filtering.
 - The app font is 94% smaller (3.9 MB → 236 KB) with identical rendering.
 - Swipe an individual account physically left-to-right to request its existing delete confirmation; leftward swipes on Home reach Data, and vertical swipes still scroll. Site/app items never perform bulk deletion; accessibility delete uses the same confirmation.
+- Lookalike characters, Offer to save logins, and Dynamic colors in Settings are switches you flip in place instead of Enable/Disable dialogs.
+- Turning dynamic colors on or off recolors Kupass at once, without a restart.
+
+### Removed
+
+- The Developer entry in Settings.
 
 ### Fixed
 
