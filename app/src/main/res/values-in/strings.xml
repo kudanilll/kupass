@@ -173,8 +173,11 @@
     <string name="empty_search_title">Tidak ditemukan</string>
     <string name="empty_search_body">Tidak ada isi vault yang cocok dengan “%1$s”.</string>
     <string name="settings_check_updates">Periksa pembaruan</string>
-    <string name="settings_check_updates_on">Setiap kali Kupass dibuka</string>
-    <string name="settings_check_updates_off">Nonaktif</string>
+    <string name="settings_check_updates_summary">Diperiksa otomatis. Ketuk untuk memeriksa sekarang</string>
+    <string name="settings_check_updates_checking">Memeriksa…</string>
+    <string name="update_check_latest">Kupass sudah versi terbaru</string>
+    <string name="update_check_failed">Tidak bisa memeriksa pembaruan. Periksa koneksi internet.</string>
+    <string name="update_check_release_only">Build debug tidak memeriksa pembaruan</string>
     <string name="update_title">Pembaruan tersedia</string>
     <string name="update_available">Kupass %1$s siap dipasang. Isi Brankas tetap seperti sebelumnya.</string>
     <string name="update_downloading">Mengunduh Kupass %1$s…</string>

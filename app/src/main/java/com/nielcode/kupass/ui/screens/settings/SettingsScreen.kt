@@ -2,6 +2,7 @@ package com.nielcode.kupass.ui.screens.settings
 
 import android.content.Context
 import android.content.Intent
+import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -18,6 +19,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,8 +48,10 @@ import com.nielcode.kupass.ui.theme.AppearanceSettings
 import com.nielcode.kupass.ui.theme.Typography
 import com.nielcode.kupass.ui.theme.kupassDarkColorScheme
 import com.nielcode.kupass.ui.theme.kupassLightColorScheme
+import com.nielcode.kupass.update.CheckResult
 import com.nielcode.kupass.utils.AppConfig
 import com.nielcode.kupass.utils.openUrl
+import kotlinx.coroutines.launch
 
 private const val SECONDS_PER_MINUTE = 60
 
@@ -58,7 +62,6 @@ private enum class SettingsDialog {
     DynamicColor,
     ExcludeLookalike,
     OfferToSave,
-    CheckUpdates,
     Restart,
 }
 
@@ -71,7 +74,10 @@ fun SettingsScreen(
 ) {
     val context = LocalContext.current
     val container = remember(context) { (context.applicationContext as App).container }
-    val settings = remember(container) { SettingsController(context, container.preferenceManager) }
+    val settings =
+        remember(container) {
+            SettingsController(context, container.preferenceManager, container.updates::checkNow)
+        }
     var openDialog by remember { mutableStateOf<SettingsDialog?>(null) }
 
     Scaffold(modifier = modifier.fillMaxSize(), contentWindowInsets = pagerPageInsets()) {
@@ -108,10 +114,7 @@ fun SettingsScreen(
                     onDynamicColorClick = { openDialog = SettingsDialog.DynamicColor },
                 )
                 AboutSection(
-                    dynamicColorEnabled =
-                        settings.dynamicColor == AppConfig.DynamicColors.Code.ENABLE,
-                    checkForUpdates = settings.checkForUpdates,
-                    onCheckForUpdatesClick = { openDialog = SettingsDialog.CheckUpdates },
+                    settings = settings,
                     onOpen = { launch ->
                         // Use the launching activity's bounded allowance for external screens.
                         onAllowBackground()
@@ -138,6 +141,7 @@ fun SettingsScreen(
 internal class SettingsController(
     private val context: Context,
     private val prefs: PreferenceManager,
+    private val checkNow: suspend () -> CheckResult,
 ) {
     var language by mutableIntStateOf(prefs.language)
         private set
@@ -199,13 +203,27 @@ internal class SettingsController(
         offerToSaveLogins = enabled
     }
 
-    var checkForUpdates by mutableStateOf(prefs.checkForUpdates)
+    var checkingForUpdates by mutableStateOf(false)
         private set
 
-    fun selectCheckForUpdates(enabled: Boolean) {
-        if (enabled == checkForUpdates) return
-        prefs.checkForUpdates = enabled
-        checkForUpdates = enabled
+    /**
+     * Asks GitHub for a newer release now. A release it finds opens the update dialog.
+     *
+     * @return the message to show instead; null when the dialog opens or a check is running.
+     */
+    suspend fun checkForUpdates(): Int? {
+        if (checkingForUpdates) return null
+        checkingForUpdates = true
+        return try {
+            when (checkNow()) {
+                is CheckResult.Found -> null
+                CheckResult.UpToDate -> R.string.update_check_latest
+                CheckResult.Failed -> R.string.update_check_failed
+                CheckResult.Unavailable -> R.string.update_check_release_only
+            }
+        } finally {
+            checkingForUpdates = false
+        }
     }
 }
 
@@ -289,12 +307,12 @@ private fun AppearanceSection(
 /** @param onOpen starts an external screen; receives the launch action to run. */
 @Composable
 private fun AboutSection(
-    dynamicColorEnabled: Boolean,
-    checkForUpdates: Boolean,
-    onCheckForUpdatesClick: () -> Unit,
+    settings: SettingsController,
     onOpen: ((Context) -> Unit) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     Column(modifier = modifier) {
         SectionHeader(title = stringResource(R.string.settings_category_developer))
         SectionItem(
@@ -304,8 +322,14 @@ private fun AboutSection(
             onClick = {
                 onOpen {
                     OssLicensesMenuActivity.setTheme(
-                        kupassLightColorScheme(it, dynamicColorEnabled),
-                        kupassDarkColorScheme(it, dynamicColorEnabled),
+                        kupassLightColorScheme(
+                            it,
+                            settings.dynamicColor == AppConfig.DynamicColors.Code.ENABLE,
+                        ),
+                        kupassDarkColorScheme(
+                            it,
+                            settings.dynamicColor == AppConfig.DynamicColors.Code.ENABLE,
+                        ),
                         Typography,
                     )
                     it.startActivity(Intent(it, OssLicensesMenuActivity::class.java))
@@ -317,10 +341,16 @@ private fun AboutSection(
             title = stringResource(R.string.settings_check_updates),
             subtitle =
                 stringResource(
-                    if (checkForUpdates) R.string.settings_check_updates_on
-                    else R.string.settings_check_updates_off
+                    if (settings.checkingForUpdates) R.string.settings_check_updates_checking
+                    else R.string.settings_check_updates_summary
                 ),
-            onClick = onCheckForUpdatesClick,
+            onClick = {
+                scope.launch {
+                    settings.checkForUpdates()?.let {
+                        Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+                    }
+                }
+            },
         )
         SectionItem(
             icon = KupassIcons.Code,
@@ -384,16 +414,12 @@ private fun SettingsDialogHost(
                 },
             )
         SettingsDialog.ExcludeLookalike,
-        SettingsDialog.OfferToSave,
-        SettingsDialog.CheckUpdates -> ToggleSettingDialog(dialog, settings, onDismiss)
+        SettingsDialog.OfferToSave -> ToggleSettingDialog(dialog, settings, onDismiss)
         SettingsDialog.Restart -> RestartDialog()
     }
 }
 
-/**
- * On/off settings that apply at once: lookalike exclusion, the autofill save offer, and the update
- * check.
- */
+/** On/off settings that apply at once: lookalike exclusion and the autofill save offer. */
 @Composable
 private fun ToggleSettingDialog(
     dialog: SettingsDialog,
@@ -408,17 +434,11 @@ private fun ToggleSettingDialog(
                     settings.excludeLookalike,
                     settings::selectExcludeLookalike,
                 )
-            SettingsDialog.OfferToSave ->
+            else ->
                 Triple(
                     R.string.settings_offer_save,
                     settings.offerToSaveLogins,
                     settings::selectOfferToSaveLogins,
-                )
-            else ->
-                Triple(
-                    R.string.settings_check_updates,
-                    settings.checkForUpdates,
-                    settings::selectCheckForUpdates,
                 )
         }
     BinaryChoiceDialog(

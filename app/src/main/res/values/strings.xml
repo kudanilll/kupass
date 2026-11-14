@@ -181,8 +181,11 @@
     <string name="empty_search_title">No results</string>
     <string name="empty_search_body">Nothing in your vault matches “%1$s”.</string>
     <string name="settings_check_updates">Check for updates</string>
-    <string name="settings_check_updates_on">Each time Kupass opens</string>
-    <string name="settings_check_updates_off">Off</string>
+    <string name="settings_check_updates_summary">Checked automatically. Tap to check now</string>
+    <string name="settings_check_updates_checking">Checking…</string>
+    <string name="update_check_latest">Kupass is up to date</string>
+    <string name="update_check_failed">Couldn\'t check for updates. Check your internet connection.</string>
+    <string name="update_check_release_only">Debug builds don\'t check for updates</string>
     <string name="update_title">Update available</string>
     <string name="update_available">Kupass %1$s is ready to install. Your vault stays as it is.</string>
     <string name="update_downloading">Downloading Kupass %1$s…</string>

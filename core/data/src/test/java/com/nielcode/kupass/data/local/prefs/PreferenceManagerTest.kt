@@ -2,7 +2,9 @@ package com.nielcode.kupass.data.local.prefs
 
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -40,13 +42,16 @@ class PreferenceManagerTest {
     }
 
     @Test
-    fun `the update check defaults to on and persists`() {
+    fun `the last release list starts empty and persists`() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         val prefs = PreferenceManager(context)
 
-        assertTrue(prefs.checkForUpdates)
+        assertEquals(0L, prefs.updateCheckedAt)
+        assertNull(prefs.updateReleases)
 
-        prefs.checkForUpdates = false
-        assertFalse(PreferenceManager(context).checkForUpdates)
+        prefs.updateCheckedAt = 42L
+        prefs.updateReleases = "[]"
+        assertEquals(42L, PreferenceManager(context).updateCheckedAt)
+        assertEquals("[]", PreferenceManager(context).updateReleases)
     }
 }

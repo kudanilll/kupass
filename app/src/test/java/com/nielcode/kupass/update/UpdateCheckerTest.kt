@@ -3,6 +3,10 @@ package com.nielcode.kupass.update
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import com.nielcode.kupass.data.local.prefs.PreferenceManager
+import com.nielcode.kupass.update.CheckResult.Failed
+import com.nielcode.kupass.update.CheckResult.Found
+import com.nielcode.kupass.update.CheckResult.Unavailable
+import com.nielcode.kupass.update.CheckResult.UpToDate
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
@@ -12,53 +16,89 @@ import org.robolectric.RobolectricTestRunner
 @RunWith(RobolectricTestRunner::class)
 class UpdateCheckerTest {
 
-    private val prefs = PreferenceManager(ApplicationProvider.getApplicationContext<Context>())
+    // A new PreferenceManager per checker, as after a restart of the app process.
+    private val context = ApplicationProvider.getApplicationContext<Context>()
     private val installed = AppVersion(3, 1, 0, beta = 1)
     private var feed: List<GitHubRelease>? = listOf(release("v3.1.0-beta.2"))
     private var requests = 0
+    private var now = 1_000_000_000L
 
     private fun checker(version: AppVersion? = installed) =
         UpdateChecker(
-            prefs,
+            PreferenceManager(context),
             version,
             fetchReleases = {
                 requests++
                 feed
             },
+            now = { now },
         )
 
-    @Test
-    fun `every open asks for the release list and offers the newest release`() {
-        assertEquals("v3.1.0-beta.2", checker().updateToOffer()?.tag)
+    private fun tagFound(force: Boolean = false, version: AppVersion? = installed): String? =
+        (checker(version).check(force) as? Found)?.update?.tag
 
-        feed = listOf(release("v3.1.0-beta.3"), release("v3.1.0-beta.2"))
-        assertEquals("v3.1.0-beta.3", checker().updateToOffer()?.tag)
+    @Test
+    fun `GitHub is asked at most once an hour`() {
+        assertEquals("v3.1.0-beta.2", tagFound())
+
+        feed = listOf(release("v3.1.0-beta.3"))
+        now += HOUR - 1
+        assertEquals("v3.1.0-beta.2", tagFound())
+        assertEquals(1, requests)
+
+        now += 1
+        assertEquals("v3.1.0-beta.3", tagFound())
         assertEquals(2, requests)
     }
 
     @Test
-    fun `a failed request or nothing newer offers nothing`() {
+    fun `a release found earlier is offered until it is installed`() {
+        checker().check()
         feed = null
-        assertNull(checker().updateToOffer())
+        now += HOUR
 
-        feed = emptyList()
-        assertNull(checker().updateToOffer())
-
-        feed = listOf(release("v3.1.0-beta.1"))
-        assertNull(checker().updateToOffer())
+        // The request fails, and the release found an hour ago is still offered.
+        assertEquals("v3.1.0-beta.2", tagFound())
+        assertNull(tagFound(version = AppVersion(3, 1, 0, beta = 2)))
     }
 
     @Test
-    fun `nothing is asked or offered with the switch off or in a debug build`() {
-        prefs.checkForUpdates = false
-        assertNull(checker().updateToOffer())
+    fun `Check now always asks`() {
+        checker().check()
+        feed = listOf(release("v3.1.0-beta.3"))
 
-        prefs.checkForUpdates = true
-        assertNull(checker(version = null).updateToOffer())
+        assertEquals("v3.1.0-beta.3", tagFound(force = true))
+        assertEquals(2, requests)
+    }
+
+    @Test
+    fun `nothing newer is up to date, and a failed request without a remembered release fails`() {
+        feed = listOf(release("v3.1.0-beta.1"))
+        assertEquals(UpToDate, checker().check())
+
+        feed = null
+        assertEquals(Failed, checker().check(force = true))
+    }
+
+    @Test
+    fun `a clock set back asks again`() {
+        checker().check()
+        now -= 1
+
+        checker().check()
+
+        assertEquals(2, requests)
+    }
+
+    @Test
+    fun `a debug build never asks`() {
+        assertEquals(Unavailable, checker(version = null).check(force = true))
         assertEquals(0, requests)
     }
 
     private companion object {
+        const val HOUR = 60 * 60 * 1000L
+
         fun release(tag: String) =
             GitHubRelease(
                 tagName = tag,

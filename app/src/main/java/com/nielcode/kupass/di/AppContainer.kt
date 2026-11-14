@@ -74,7 +74,7 @@ class AppContainer(
                 fetchReleases = { fetchReleases(BuildConfig.UPDATE_FEED_URL) },
             )
         UpdateManager(
-            offer = checker::updateToOffer,
+            checkForUpdate = checker::check,
             download = UpdateDownloader(File(appContext.cacheDir, "updates"))::download,
             installer = UpdateInstaller(appContext),
             scope = applicationScope,

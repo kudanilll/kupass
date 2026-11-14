@@ -34,6 +34,7 @@ class UpdateManagerTest {
 
     private var offered: AvailableUpdate? = update
     private var offers = 0
+    private val forced = mutableListOf<Boolean>()
     private var downloadGate = CompletableDeferred<File?>()
     private var reportProgress: ((Int) -> Unit)? = null
     private val installer =
@@ -53,9 +54,10 @@ class UpdateManagerTest {
     private fun TestScope.manager(): UpdateManager {
         val dispatcher = StandardTestDispatcher(testScheduler)
         return UpdateManager(
-            offer = {
+            checkForUpdate = { force ->
                 offers++
-                offered
+                forced += force
+                offered?.let(CheckResult::Found) ?: CheckResult.UpToDate
             },
             download = { _, progress ->
                 reportProgress = progress
@@ -126,6 +128,32 @@ class UpdateManagerTest {
         advanceUntilIdle()
 
         assertEquals(1, offers)
+    }
+
+    @Test
+    fun `opening the app lets the checker skip GitHub within the hour`() = runTest {
+        offeredManager()
+
+        assertEquals(listOf(false), forced)
+    }
+
+    @Test
+    fun `Check now asks GitHub and shows the release it finds, also after Later`() = runTest {
+        val manager = offeredManager()
+        manager.close()
+
+        assertEquals(CheckResult.Found(update), manager.checkNow())
+        assertEquals(Available(update), manager.state.value)
+        assertEquals(listOf(false, true), forced)
+    }
+
+    @Test
+    fun `Check now with nothing newer keeps the dialog hidden`() = runTest {
+        offered = null
+        val manager = manager()
+
+        assertEquals(CheckResult.UpToDate, manager.checkNow())
+        assertEquals(Idle, manager.state.value)
     }
 
     @Test

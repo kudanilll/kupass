@@ -43,6 +43,10 @@ internal fun parseReleases(json: String): List<GitHubRelease>? =
         null
     }
 
+/** The release-list JSON that [parseReleases] reads back. */
+internal fun encodeReleases(releases: List<GitHubRelease>): String =
+    FeedJson.encodeToString(releases)
+
 /**
  * The newest release [installed] can update to. Beta builds may move to newer betas or stable
  * releases; stable builds only to stable releases. A beta is recognized by its tag.
