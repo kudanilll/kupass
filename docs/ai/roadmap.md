@@ -10,7 +10,7 @@
 - **M1 Trustworthy Vault: done**, merged to `master` in PR #2: EN-00, EN-01, EN-03, EN-06 (+EN-06b), F-2.1, EN-04, S-3.1, S-3.2, EN-07, EN-05, S-2.4, S-2.5, S-3.3, plus a security-review fix for the app lock.
 - **M0 Foundation: done.** EN-02 (Spotless/ktfmt + detekt with Compose rules, 0 findings, enforced in CI) is on `build/format-and-static-analysis`.
 - **Released:** `v3.1.0-beta.1` (2026-11-11), the first prerelease built and signed by CI with the release key, and `v3.1.0-beta.2` (2026-11-12).
-- **Next (Danil, 2026-11-13):** UI/UX polish (the list under Epic E4), then the stable `3.1.0`, ideally without a `beta.3`. The autofill device QA (EN-7.2c) must pass before it, and before its release notes Danil decides how `v2.0.0` users move over (CONCERNS §1). Room 3 waits until after `3.1.0`. The independent review of `:feature:autofill` ran on 2026-11-10 and all its findings are fixed.
+- **Next (Danil, 2026-11-13):** UI/UX polish (the list under Epic E4), then the stable `3.1.0`, ideally without a `beta.3`. The autofill device QA (EN-7.2c) must pass before it, and its release notes tell `v2.0.0` users to move over by hand (decided 2026-11-16, CONCERNS §1). Room 3 waits until after `3.1.0`. The independent review of `:feature:autofill` ran on 2026-11-10 and all its findings are fixed.
 
 ## 1. Overview
 
@@ -140,14 +140,14 @@ Danil will send reference images for the redesign items, and the list may grow.
 | UX-01 | Data page: swiping stopped working after a vertical drag, and the page did not stretch           | ✅ Done 2026-11-13 (PR #55)                  |
 | UX-02 | MIUI: a light bar behind gesture navigation in the light theme                                   | ✅ Done 2026-11-13 (PR #55)                  |
 | UX-03 | MIUI 14: the system font instead of Kupass's fonts                                               | ✅ Done 2026-11-13 (PR #55)                  |
-| UX-04 | Settings: remove the Developer entry                                                             | ✅ Done 2026-11-14 on `feat/settings-polish` |
-| UX-05 | Settings: the Kupass entry opens the official website instead of GitHub                          | ✅ Done 2026-11-15 on `feat/settings-polish` |
-| UX-06 | Settings: Check for updates checks on tap; the automatic check always runs, at most once an hour | ✅ Done 2026-11-14 on `feat/settings-polish` |
-| UX-07 | Settings: on/off settings are switches                                                           | ✅ Done 2026-11-14 on `feat/settings-polish` |
-| UX-08 | Settings: dynamic colors apply without a restart                                                 | ✅ Done 2026-11-14 on `feat/settings-polish` |
-| UX-09 | App icon like the splash icon                                                                    | Open                                         |
-| UX-10 | Animated splash icon                                                                             | Open                                         |
-| UX-11 | Splash background follows the app background, with or without dynamic colors                     | Open                                         |
+| UX-04 | Settings: remove the Developer entry                                                             | ✅ Done 2026-11-14 (PR #56)                  |
+| UX-05 | Settings: the Kupass entry opens the official website instead of GitHub                          | ✅ Done 2026-11-15 (PR #56)                  |
+| UX-06 | Settings: Check for updates checks on tap; the automatic check always runs, at most once an hour | ✅ Done 2026-11-14 (PR #56)                  |
+| UX-07 | Settings: on/off settings are switches                                                           | ✅ Done 2026-11-14 (PR #56)                  |
+| UX-08 | Settings: dynamic colors apply without a restart                                                 | ✅ Done 2026-11-14 (PR #56)                  |
+| UX-09 | App icon like the splash icon                                                                    | ✅ Done 2026-11-15 on `feat/splash-and-icon` |
+| UX-10 | Animated splash icon                                                                             | ✅ Done 2026-11-15 on `feat/splash-and-icon` |
+| UX-11 | Splash background follows the app background, with or without dynamic colors                     | ✅ Done 2026-11-15 on `feat/splash-and-icon` |
 | UX-12 | Top and bottom content gradient with blur (blur on Android 12 and later only)                    | Open                                         |
 | UX-13 | Undo snackbar after deleting a password (S-4.1)                                                  | Open                                         |
 | UX-14 | Bottom navigation: a thin but wide shadow                                                        | Open                                         |

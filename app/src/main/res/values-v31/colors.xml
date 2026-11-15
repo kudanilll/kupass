@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Compose derives the background (neutral variant tone 98); tone 99 is the closest system color. -->
+    <color name="splash_background">@android:color/system_neutral2_10</color>
+    <!-- The primary of dynamicLightColorScheme (tone 40). -->
+    <color name="splash_key">@android:color/system_accent1_600</color>
+</resources>

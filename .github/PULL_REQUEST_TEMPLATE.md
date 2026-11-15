@@ -21,4 +21,4 @@
 - [ ] User-visible changes are listed under `## [Unreleased]` in `CHANGELOG.md`.
 - [ ] Every commit is signed off (`git commit -s`).
 
-<!-- Kupass blocks screenshots in the app. For UI changes, describe what changed or attach screenshots from a debug build where you disabled FLAG_SECURE locally. -->
+<!-- Release builds block screenshots; debug builds allow them for now. For UI changes, describe what changed or attach screenshots from a debug build. -->
