@@ -67,7 +67,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Lookalike characters, Offer to save logins, and Dynamic colors in Settings are switches you flip in place instead of Enable/Disable dialogs.
 - Turning dynamic colors on or off recolors Kupass at once, without a restart.
 - Settings › Kupass opens the Kupass website, kupass.nielcode.com, instead of the GitHub repository.
-- A new app icon: the dotted key from the splash screen, white on green. Android 13 and later can tint it with the other themed icons.
+- A new app icon: the dotted key from the splash screen, white on the Kupass primary green. Android 13 and later can tint it with the other themed icons.
 - On Android 12 and later the splash key draws itself dot by dot, from the ring to the teeth, in 0.8 seconds. When Kupass is ready sooner, the splash screen waits for the whole key.
 - The splash key takes the Kupass primary color instead of a fixed green. With dynamic colors on Android 12 and later, the key and the splash background take your wallpaper colors like the rest of Kupass.
 

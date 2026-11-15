@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- The launcher icon tile behind the white dotted key. -->
-    <color name="ic_launcher_background">#FF00674F</color>
+    <!-- The launcher icon tile behind the white dotted key: the light primary (primaryLight in
+         Color.kt), also in dark mode, where the white key needs the contrast. It stays this green:
+         a launcher can't follow the dynamic color setting in Kupass. -->
+    <color name="ic_launcher_background">#FF4C662B</color>
     <!-- The splash screen without dynamic colors: the app background and primary (backgroundLight and primaryLight in Color.kt)... -->
     <color name="splash_background_static">#FFF9FAEF</color>
     <color name="splash_key_static">#FF4C662B</color>
