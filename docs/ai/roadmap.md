@@ -10,7 +10,7 @@
 - **M1 Trustworthy Vault: done**, merged to `master` in PR #2: EN-00, EN-01, EN-03, EN-06 (+EN-06b), F-2.1, EN-04, S-3.1, S-3.2, EN-07, EN-05, S-2.4, S-2.5, S-3.3, plus a security-review fix for the app lock.
 - **M0 Foundation: done.** EN-02 (Spotless/ktfmt + detekt with Compose rules, 0 findings, enforced in CI) is on `build/format-and-static-analysis`.
 - **Released:** `v3.1.0-beta.1` (2026-11-11), the first prerelease built and signed by CI with the release key, and `v3.1.0-beta.2` (2026-11-12).
-- **Next (Danil, 2026-11-13):** UI/UX polish (the list under Epic E4), then the stable `3.1.0`, ideally without a `beta.3`. The autofill device QA (EN-7.2c) must pass before it, and before its release notes Danil decides how `v2.0.0` users move over (CONCERNS §1). Room 3 waits until after `3.1.0`. The independent review of `:feature:autofill` ran on 2026-11-10 and all its findings are fixed.
+- **Next (Danil, 2026-11-13):** UI/UX polish (the list under Epic E4), then the stable `3.1.0`, ideally without a `beta.3`. The autofill device QA (EN-7.2c) must pass before it, and its release notes tell `v2.0.0` users to move over by hand (decided 2026-11-16, CONCERNS §1). Room 3 waits until after `3.1.0`. The independent review of `:feature:autofill` ran on 2026-11-10 and all its findings are fixed.
 
 ## 1. Overview
 
