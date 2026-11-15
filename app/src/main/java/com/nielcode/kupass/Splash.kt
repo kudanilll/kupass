@@ -8,16 +8,17 @@ import androidx.core.splashscreen.SplashScreenViewProvider
 
 /** Bounds the wait if a device reports a longer animation than the key has. */
 private const val SPLASH_MAX_WAIT_MILLIS = 1000L
-private const val SPLASH_FADE_MILLIS = 200L
 
-/** Lets the key animation (Android 12+) finish when Kupass is ready sooner, then fades out. */
+/**
+ * Lets the key animation (Android 12+) finish when Kupass is ready sooner, then removes the splash
+ * screen at once. No fade: the key is a separate surface that a fading splash view leaves on screen
+ * until the end, over the vault.
+ */
 internal fun SplashScreen.waitForKeyAnimation() = setOnExitAnimationListener { splash ->
-    splash.view
-        .animate()
-        .alpha(0f)
-        .setStartDelay(splash.animationLeftMillis().coerceIn(0L, SPLASH_MAX_WAIT_MILLIS))
-        .setDuration(SPLASH_FADE_MILLIS)
-        .withEndAction(splash::remove)
+    splash.view.postDelayed(
+        splash::remove,
+        splash.animationLeftMillis().coerceIn(0L, SPLASH_MAX_WAIT_MILLIS),
+    )
 }
 
 private fun SplashScreenViewProvider.animationLeftMillis() =
