@@ -34,7 +34,7 @@ class MainActivity : AppCompatActivity() {
     private var userLeaving = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        installSplashScreen()
+        installSplashScreen().waitForKeyAnimation()
         super.onCreate(savedInstanceState)
 
         authentication =
