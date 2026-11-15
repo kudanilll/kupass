@@ -11,6 +11,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.biometric.BiometricPrompt
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.Lifecycle
@@ -44,6 +45,10 @@ class MainActivity : AppCompatActivity() {
         biometricPrompt = createPrompt(authentication.state.value.nativeRequest?.token)
         observeAuthentication()
         updates.onAppOpen(restored = savedInstanceState != null)
+        lifecycleScope.launch {
+            snapshotFlow { (application as App).container.dynamicColor.value }
+                .collect { matchNextSplashScreen(it) }
+        }
 
         enableEdgeToEdge()
         // MIUI draws this contrast scrim even with gesture navigation; our pages fade out instead.

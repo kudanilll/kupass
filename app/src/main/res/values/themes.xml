@@ -3,12 +3,19 @@
 
     <style name="Theme.Kupass" parent="Theme.AppCompat.Light.NoActionBar" />
 
+    <!-- With dynamic colors, as Kupass starts by default. -->
     <style name="Theme.Kupass.SplashScreen" parent="Theme.SplashScreen">
-        <!-- Need to match surfaceLight in Colors.kt -->
-        <item name="windowSplashScreenBackground">#FFF9FAEF</item>
+        <item name="windowSplashScreenBackground">@color/splash_background</item>
+        <item name="kupassSplashKey">@color/splash_key</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/splash_icon</item>
         <!-- The icon animation in drawable-v31/splash_icon.xml; Android 13+ measures it itself. -->
         <item name="windowSplashScreenAnimationDuration">800</item>
         <item name="postSplashScreenTheme">@style/Theme.Kupass</item>
+    </style>
+
+    <!-- Dynamic colors off. MainActivity hands it to the system; keep the name stable. -->
+    <style name="Theme.Kupass.SplashScreen.Static">
+        <item name="windowSplashScreenBackground">@color/splash_background_static</item>
+        <item name="kupassSplashKey">@color/splash_key_static</item>
     </style>
 </resources>

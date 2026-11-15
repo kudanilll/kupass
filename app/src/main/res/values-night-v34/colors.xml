@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The background of dynamicDarkColorScheme. -->
+    <color name="splash_background">@android:color/system_background_dark</color>
+    <!-- The primary of dynamicDarkColorScheme. -->
+    <color name="splash_key">@android:color/system_primary_dark</color>
+</resources>

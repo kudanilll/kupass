@@ -1,6 +1,8 @@
 package com.nielcode.kupass.ui.theme
 
+import android.app.UiModeManager
 import android.content.Context
+import android.os.Build
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
 import com.nielcode.kupass.R
@@ -19,14 +21,32 @@ object AppearanceSettings {
             AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(tag))
     }
 
-    /** Applies the night mode for an [AppConfig.Theme.Code] value. */
-    fun applyTheme(themeCode: Int) {
-        AppCompatDelegate.setDefaultNightMode(
-            when (themeCode) {
-                AppConfig.Theme.Code.LIGHT -> AppCompatDelegate.MODE_NIGHT_NO
-                AppConfig.Theme.Code.DARK -> AppCompatDelegate.MODE_NIGHT_YES
-                else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
-            }
-        )
+    /**
+     * Applies the night mode for an [AppConfig.Theme.Code] value. From Android 12 the system keeps
+     * it for Kupass, so the splash screen it draws before Kupass runs is in the same mode, and
+     * AppCompat follows the configuration the system then gives Kupass.
+     */
+    fun applyTheme(context: Context, themeCode: Int) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            context
+                .getSystemService(UiModeManager::class.java)
+                .setApplicationNightMode(
+                    when (themeCode) {
+                        AppConfig.Theme.Code.LIGHT -> UiModeManager.MODE_NIGHT_NO
+                        AppConfig.Theme.Code.DARK -> UiModeManager.MODE_NIGHT_YES
+                        // For an app, AUTO clears its own mode, so it follows the system again.
+                        else -> UiModeManager.MODE_NIGHT_AUTO
+                    }
+                )
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+        } else {
+            AppCompatDelegate.setDefaultNightMode(
+                when (themeCode) {
+                    AppConfig.Theme.Code.LIGHT -> AppCompatDelegate.MODE_NIGHT_NO
+                    AppConfig.Theme.Code.DARK -> AppCompatDelegate.MODE_NIGHT_YES
+                    else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+                }
+            )
+        }
     }
 }

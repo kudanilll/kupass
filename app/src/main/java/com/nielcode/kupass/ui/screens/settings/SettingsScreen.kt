@@ -177,7 +177,7 @@ internal class SettingsController(
         if (code == theme) return
         prefs.theme = code
         theme = code
-        AppearanceSettings.applyTheme(code)
+        AppearanceSettings.applyTheme(context, code)
     }
 
     fun selectDynamicColor(enabled: Boolean) {

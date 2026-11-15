@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The background of dynamicLightColorScheme. -->
+    <color name="splash_background">@android:color/system_background_light</color>
+    <!-- The primary of dynamicLightColorScheme. -->
+    <color name="splash_key">@android:color/system_primary_light</color>
+</resources>

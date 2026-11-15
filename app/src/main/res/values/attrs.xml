@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The color of the dotted key on the splash screen; each splash theme sets it. -->
+    <attr name="kupassSplashKey" format="color" />
+</resources>

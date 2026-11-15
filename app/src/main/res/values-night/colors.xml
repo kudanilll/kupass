@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- primaryDark in Color.kt -->
+    <!-- backgroundDark and primaryDark in Color.kt -->
+    <color name="splash_background_static">#FF12140E</color>
     <color name="splash_key_static">#FFB1D18A</color>
 </resources>

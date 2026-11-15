@@ -2,13 +2,5 @@
 <resources>
 
     <style name="Theme.Kupass" parent="Theme.AppCompat.DayNight.NoActionBar" />
-
-    <style name="Theme.Kupass.SplashScreen" parent="Theme.SplashScreen">
-        <!-- Need to match surfaceDark in Colors.kt -->
-        <item name="windowSplashScreenBackground">#FF12140E</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_icon</item>
-        <!-- The icon animation in drawable-v31/splash_icon.xml; Android 13+ measures it itself. -->
-        <item name="windowSplashScreenAnimationDuration">800</item>
-        <item name="postSplashScreenTheme">@style/Theme.Kupass</item>
-    </style>
+    <!-- The splash screens in values/themes.xml take their night colors from values-night/colors.xml. -->
 </resources>

@@ -59,7 +59,7 @@ class App : Application(), CoreContainerProvider {
 
         // Apply user settings on app startup
         AppearanceSettings.applyLanguage(this, prefs.language)
-        AppearanceSettings.applyTheme(prefs.theme)
+        AppearanceSettings.applyTheme(this, prefs.theme)
         applyDynamicColors(prefs)
     }
 

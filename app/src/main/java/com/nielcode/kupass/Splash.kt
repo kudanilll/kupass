@@ -1,5 +1,8 @@
 package com.nielcode.kupass
 
+import android.app.Activity
+import android.content.res.Resources
+import android.os.Build
 import androidx.core.splashscreen.SplashScreen
 import androidx.core.splashscreen.SplashScreenViewProvider
 
@@ -19,3 +22,15 @@ internal fun SplashScreen.waitForKeyAnimation() = setOnExitAnimationListener { s
 
 private fun SplashScreenViewProvider.animationLeftMillis() =
     iconAnimationStartMillis + iconAnimationDurationMillis - System.currentTimeMillis()
+
+/**
+ * The system draws the splash screen before Kupass runs, so it is told now which background the
+ * next launch needs. Below Android 12 there are no dynamic colors and nothing to tell.
+ */
+internal fun Activity.matchNextSplashScreen(dynamicColor: Boolean) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        splashScreen.setSplashScreenTheme(
+            if (dynamicColor) Resources.ID_NULL else R.style.Theme_Kupass_SplashScreen_Static
+        )
+    }
+}

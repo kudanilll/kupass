@@ -2,6 +2,10 @@
 <resources>
     <!-- The launcher icon tile behind the white dotted key. -->
     <color name="ic_launcher_background">#FF00674F</color>
-    <!-- The dotted key on the splash screen: the app primary (primaryLight in Color.kt). -->
+    <!-- The splash screen without dynamic colors: the app background and primary (backgroundLight and primaryLight in Color.kt)... -->
+    <color name="splash_background_static">#FFF9FAEF</color>
     <color name="splash_key_static">#FF4C662B</color>
+    <!-- ...and with them; values-v31 and values-v34 point these at the wallpaper colors. -->
+    <color name="splash_background">@color/splash_background_static</color>
+    <color name="splash_key">@color/splash_key_static</color>
 </resources>
