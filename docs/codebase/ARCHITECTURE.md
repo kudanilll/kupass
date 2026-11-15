@@ -8,7 +8,7 @@
 - **Why:** each screen has a `*ViewModel : ViewModel` exposing `StateFlow`, constructed through its `Factory` from `App.container` (`di/AppContainer`). All ViewModels go through `PasswordRepository`, which wraps `PasswordDao`. There is no domain/use-case layer and no DI framework.
 - **Primary constraints:**
   1. Offline only: all data lives in the app sandbox (Room + SharedPreferences) with no backend.
-  2. Security: secrets are encrypted with a non-exportable Android Keystore key, and the UI is protected by `FLAG_SECURE`.
+  2. Security: secrets are encrypted with a non-exportable Android Keystore key, and the UI is protected by `FLAG_SECURE` in release builds (debug builds allow screenshots for now, CONCERNS §1).
   3. Lightweight: minimal dependencies (no Hilt, Coil, or network stack yet).
 
 ## 2) System Flow
@@ -56,7 +56,7 @@ Multi-account groups reuse `PasswordListItem` with a primary-color count badge a
 
 | Layer or module                                             | Owns                                                                                                                                   | Must not own                                                            | Evidence                                                                             |
 | ----------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| `App`                                                       | Process-wide setup: FLAG_SECURE, locale, night mode, dynamic colors                                                                    | Vault data                                                              | `App.kt`                                                                             |
+| `App`                                                       | Process-wide setup: FLAG_SECURE (release builds), locale, night mode, dynamic colors                                                   | Vault data                                                              | `App.kt`                                                                             |
 | `AppLock` + `EntryAuthenticationViewModel` + `MainActivity` | Activity-local absence timer and bounded exemptions, memory-only request/entry grants, native prompt session and rotation reattachment | Vault data, process-wide timers, persisted grants, composition closures | `security/AppLock.kt`, `security/EntryAuthenticationViewModel.kt`, `MainActivity.kt` |
 | Compose screens                                             | Rendering, ephemeral UI state (dialogs, visibility toggles, form fields), toasts, clipboard                                            | Persistence, crypto                                                     | `ui/screens/**`                                                                      |
 | ViewModels                                                  | Screen state as `StateFlow`, one-shot results (`SaveState`, `DeleteState`, `VaultEvent` channel), coroutines                           | Android Views, `Context` beyond `Application`                           | `*ViewModel.kt`                                                                      |
@@ -87,7 +87,7 @@ Multi-account groups reuse `PasswordListItem` with a primary-color count badge a
 - ~~Fail-open crypto~~: fixed by EN-06 (CryptoManager v2 is fail-closed and versioned).
 - ~~No DB migration path~~: fixed by EN-03 (exported schemas, `MIGRATIONS` registry, `KupassDatabaseMigrationTest`).
 - **First start without a snapshot:** after install, an update that discards the snapshot, or a Keystore key change, the first read still decrypts every field of every row once (one Keystore operation per field). Later changes decrypt only new rows. See CONCERNS §4.
-- **Two dynamic-color mechanisms:** `DynamicColors.applyToActivitiesIfAvailable` (View theme) in `App` and the `KupassTheme(dynamicColor)` Compose scheme in `MainActivity`. Only the latter affects Compose UI. [TODO] confirm whether the View-level call is still needed (splash/system dialogs).
+- **Two dynamic-color mechanisms:** `DynamicColors.applyToActivitiesIfAvailable` (View theme) in `App` and the `KupassTheme(dynamicColor)` Compose scheme in `MainActivity`. Only the latter affects Compose UI. [TODO] confirm whether the View-level call is still needed (system dialogs). The splash screen uses neither: its background is `@color/splash_background` and its key `?attr/kupassSplashKey` (`@color/splash_key`, wallpaper colors on Android 12+), or `Theme.Kupass.SplashScreen.Static` with the fixed colors when `MainActivity` has told the system that dynamic colors are off.
 
 ## 6) Evidence
 

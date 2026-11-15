@@ -140,14 +140,14 @@ Danil will send reference images for the redesign items, and the list may grow.
 | UX-01 | Data page: swiping stopped working after a vertical drag, and the page did not stretch           | ✅ Done 2026-11-13 (PR #55)                  |
 | UX-02 | MIUI: a light bar behind gesture navigation in the light theme                                   | ✅ Done 2026-11-13 (PR #55)                  |
 | UX-03 | MIUI 14: the system font instead of Kupass's fonts                                               | ✅ Done 2026-11-13 (PR #55)                  |
-| UX-04 | Settings: remove the Developer entry                                                             | ✅ Done 2026-11-14 on `feat/settings-polish` |
-| UX-05 | Settings: the Kupass entry opens the official website instead of GitHub                          | ✅ Done 2026-11-15 on `feat/settings-polish` |
-| UX-06 | Settings: Check for updates checks on tap; the automatic check always runs, at most once an hour | ✅ Done 2026-11-14 on `feat/settings-polish` |
-| UX-07 | Settings: on/off settings are switches                                                           | ✅ Done 2026-11-14 on `feat/settings-polish` |
-| UX-08 | Settings: dynamic colors apply without a restart                                                 | ✅ Done 2026-11-14 on `feat/settings-polish` |
-| UX-09 | App icon like the splash icon                                                                    | Open                                         |
-| UX-10 | Animated splash icon                                                                             | Open                                         |
-| UX-11 | Splash background follows the app background, with or without dynamic colors                     | Open                                         |
+| UX-04 | Settings: remove the Developer entry                                                             | ✅ Done 2026-11-14 (PR #56)                  |
+| UX-05 | Settings: the Kupass entry opens the official website instead of GitHub                          | ✅ Done 2026-11-15 (PR #56)                  |
+| UX-06 | Settings: Check for updates checks on tap; the automatic check always runs, at most once an hour | ✅ Done 2026-11-14 (PR #56)                  |
+| UX-07 | Settings: on/off settings are switches                                                           | ✅ Done 2026-11-14 (PR #56)                  |
+| UX-08 | Settings: dynamic colors apply without a restart                                                 | ✅ Done 2026-11-14 (PR #56)                  |
+| UX-09 | App icon like the splash icon                                                                    | ✅ Done 2026-11-15 on `feat/splash-and-icon` |
+| UX-10 | Animated splash icon                                                                             | ✅ Done 2026-11-15 on `feat/splash-and-icon` |
+| UX-11 | Splash background follows the app background, with or without dynamic colors                     | ✅ Done 2026-11-15 on `feat/splash-and-icon` |
 | UX-12 | Top and bottom content gradient with blur (blur on Android 12 and later only)                    | Open                                         |
 | UX-13 | Undo snackbar after deleting a password (S-4.1)                                                  | Open                                         |
 | UX-14 | Bottom navigation: a thin but wide shadow                                                        | Open                                         |

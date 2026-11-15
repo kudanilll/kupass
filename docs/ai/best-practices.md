@@ -12,7 +12,7 @@ Engineering guidelines for Kupass. When an API detail matters, confirm it agains
   - Keep secrets as `CharArray`/`ByteArray` where practical and don't put them in `toString()`, logs, crash reports, or navigation arguments (pass IDs, not secrets).
 - **Storage & backup:** keep `allowBackup="false"`, and also exclude sensitive domains in `data_extraction_rules.xml` (`device-transfer` still runs on some OEMs even with `allowBackup="false"`).
 - **Clipboard:** mark sensitive clips (`ClipDescription.EXTRA_IS_SENSITIVE`, API 33+) and clear them after a timeout on every API level.
-- **Screens:** keep `FLAG_SECURE`. Don't show secrets in notifications or recents.
+- **Screens:** keep `FLAG_SECURE` in release builds (debug builds skip it for now, see CONCERNS §1). Don't show secrets in notifications or recents.
 - **Intents:** keep only the launcher activity exported. Validate every incoming URI/intent (see the `android-intent-security` skill). Guard `startActivity` against `ActivityNotFoundException`.
 - **Release:** R8 on, no debug logging in release, and no secrets in `BuildConfig` (an APK is fully recoverable).
 
