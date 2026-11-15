@@ -31,10 +31,12 @@ class App : Application(), CoreContainerProvider {
             runCatching { container.passwordRepository.upgradeStoredFormat() }
         }
 
-        // Block screenshots for all Activities
+        // Block screenshots for all Activities. Debug builds allow them for now, for development
+        // (Danil, 2026-11-16; CONCERNS §1). Release builds always block them.
         registerActivityLifecycleCallbacks(
             object : ActivityLifecycleCallbacks {
                 override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
+                    if (BuildConfig.DEBUG) return
                     activity.window.setFlags(
                         WindowManager.LayoutParams.FLAG_SECURE,
                         WindowManager.LayoutParams.FLAG_SECURE,
