@@ -19,7 +19,7 @@ ktfmt = "0.64"
 kotlinxCoroutines = "1.11.0"
 # What the app already resolves at runtime; core modules declare it without changing the APK.
 kotlinxCoroutinesCore = "1.11.0"
-ksp = "2.3.13"
+ksp = "2.3.14"
 lifecycleRuntimeKtx = "2.11.0"
 lifecycleViewmodelCompose = "2.11.0"
 material = "1.14.0"
